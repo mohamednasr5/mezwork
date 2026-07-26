@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل الدخول - MezoMenu</title>
+    <meta name="description" content="سجّل دخولك إلى حساب مطعمك على MezoMenu">
+    
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest-admin.json">
+    <meta name="theme-color" content="#DC2626">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/auth.css">
+</head>
+<body class="auth-page">
+    <div class="auth-container">
+        <!-- Logo & Header -->
+        <div class="auth-header">
+            <a href="/" class="auth-logo">
+                <div class="logo-icon">M</div>
+                <span>MezoMenu</span>
+            </a>
+            <h1>مرحباً بعودتك</h1>
+            <p>سجّل دخولك لإدارة قائمة طعامك</p>
+        </div>
+
+        <!-- Login Form -->
+        <form id="loginForm" class="auth-form" onsubmit="handleLogin(event)">
+            <!-- Email Field -->
+            <div class="form-group">
+                <label for="email">البريد الإلكتروني أو رقم الهوية</label>
+                <input 
+                    type="email" 
+                    id="email" 
+                    name="email"
+                    value="demo@mernasmenu.com"
+                    placeholder="أدخل بريدك الإلكتروني"
+                    required
+                    autocomplete="email"
+                >
+            </div>
+
+            <!-- Password Field -->
+            <div class="form-group">
+                <label for="password">كلمة المرور</label>
+                <div class="password-input">
+                    <input 
+                        type="password" 
+                        id="password" 
+                        name="password"
+                        value="demo1234"
+                        placeholder="أدخل كلمة المرور"
+                        required
+                        autocomplete="current-password"
+                    >
+                    <button type="button" class="toggle-password" onclick="togglePassword()" aria-label="إظهار/إخفاء كلمة المرور">
+                        <svg class="eye-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                            <circle cx="12" cy="12" r="3"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- CAPTCHA / Security Badge -->
+            <div class="captcha-container">
+                <div class="captcha-badge">
+                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='32' viewBox='0 0 80 32'%3E%3Crect fill='%23f97316' width='80' height='32' rx='4'/%3E%3Ctext x='40' y='21' font-family='Arial' font-size='10' fill='white' text-anchor='middle'%3ECLOUDFLARE%3C/text%3E%3C/svg%3E" alt="Cloudflare">
+                    <span>حماية متقدمة • تحقق إنسان</span>
+                    <div class="captcha-check">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="#22c55e">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M9 12l2 2 4-4" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <span>تم التحقق!</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" id="submitBtn" class="btn btn-primary btn-block btn-lg">
+                <span class="btn-text">تسجيل الدخول</span>
+                <span class="btn-loader hidden"><div class="spinner spinner-sm"></div></span>
+            </button>
+
+            <!-- Demo Credentials -->
+            <div class="demo-credentials">
+                <span class="demo-label">حساب تجريبي:</span>
+                <code>demo@mernasmenu.com / demo1234</code>
+            </div>
+
+            <!-- Error Message (Hidden by default) -->
+            <div id="errorMessage" class="alert alert-error hidden"></div>
+
+            <!-- Success Message (Hidden by default) -->
+            <div id="successMessage" class="alert alert-success hidden"></div>
+        </form>
+
+        <!-- Footer Links -->
+        <div class="auth-footer">
+            <a href="/register.html" class="btn btn-link">ليس لديك حساب؟ سجّل الآن</a>
+            <div class="footer-links">
+                <a href="#">نسيت كلمة المرور؟</a>
+                <span class="separator">•</span>
+                <a href="#" onclick="showSupport()">تحتاج مساعدة؟</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/js/main.js"></script>
+    <script src="/js/auth.js"></script>
+</body>
+</html>

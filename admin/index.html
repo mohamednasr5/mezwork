@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم - MezoMenu</title>
+    <meta name="description" content="لوحة تحكم مطعمك - إدارة القائمة والطلبات والإعدادات">
+    
+    <!-- PWA Admin -->
+    <link rel="manifest" href="/manifest-admin.json">
+    <meta name="theme-color" content="#DC2626">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body class="admin-page">
+    <!-- Sidebar Navigation -->
+    <aside id="sidebar" class="sidebar">
+        <div class="sidebar-header">
+            <a href="/admin/" class="sidebar-logo">
+                <div class="logo-icon">M</div>
+                <span>MezoMenu</span>
+            </a>
+            <button class="sidebar-close" onclick="toggleSidebar()" aria-label="إغلاق القائمة">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+        </div>
+        
+        <!-- User Info -->
+        <div class="sidebar-user">
+            <div class="user-avatar">م</div>
+            <div class="user-info">
+                <span class="user-name" id="userName">مطعم تجريبي</span>
+                <span class="user-plan badge badge-success">مشترك فعال</span>
+            </div>
+        </div>
+
+        <!-- Navigation Menu -->
+        <nav class="sidebar-nav">
+            <ul class="nav-list">
+                <li class="nav-item active">
+                    <a href="/admin/" class="nav-link">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="7" height="7"/>
+                            <rect x="14" y="3" width="7" height="7"/>
+                            <rect x="14" y="14" width="7" height="7"/>
+                            <rect x="3" y="14" width="7" height="7"/>
+                        </svg>
+                        <span>الرئيسية</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/admin/menu.html" class="nav-link">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                        </svg>
+                        <span>تحرير القائمة</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/admin/ai-analyze.html" class="nav-link">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                        </svg>
+                        <span>تراكب ذكي</span>
+                        <span class="nav-badge">AI</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/admin/categories.html" class="nav-link">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="8" y1="6" x2="21" y2="6"/>
+                            <line x1="8" y1="12" x2="21" y2="12"/>
+                            <line x1="8" y1="18" x2="21" y2="18"/>
+                            <line x1="3" y1="6" x2="3.01" y2="6"/>
+                            <line x1="3" y1="12" x2="3.01" y2="12"/>
+                            <line x1="3" y1="18" x2="3.01" y2="18"/>
+                        </svg>
+                        <span>الأقسام</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/admin/items.html" class="nav-link">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
+                            <line x1="7" y1="7" x2="7.01" y2="7"/>
+                        </svg>
+                        <span>الأصناف</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/admin/orders.html" class="nav-link">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                            <path d="M9 14l2 2 4-4"/>
+                        </svg>
+                        <span>الطلبات</span>
+                        <span class="nav-badge notification-badge" id="ordersBadge">3</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/admin/customers.html" class="nav-link">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                            <circle cx="9" cy="7" r="4"/>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                        </svg>
+                        <span>العملاء</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/admin/marketing.html" class="nav-link">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                        </svg>
+                        <span>التسويق</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/admin/analytics.html" class="nav-link">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="20" x2="18" y2="10"/>
+                            <line x1="12" y1="20" x2="12" y2="4"/>
+                            <line x1="6" y1="20" x2="6" y2="14"/>
+                        </svg>
+                        <span>المبيعات</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/admin/branches.html" class="nav-link">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                            <circle cx="12" cy="10" r="3"/>
+                        </svg>
+                        <span>الفروع</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/admin/settings.html" class="nav-link">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="3"/>
+                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                        </svg>
+                        <span>الإعدادات</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/admin/help.html" class="nav-link">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                            <line x1="12" y1="17" x2="12.01" y2="17"/>
+                        </svg>
+                        <span>المساعدة</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Support Button -->
+        <div class="sidebar-footer">
+            <a href="https://wa.me/201558056568" target="_blank" class="support-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="#25d366">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                </svg>
+                <span>Support</span>
+            </a>
+            
+            <!-- Logout Button -->
+            <button onclick="logout()" class="logout-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                    <polyline points="16,17 21,12 16,7"/>
+                    <line x1="21" y1="12" x2="9" y2="12"/>
+                </svg>
+                <span>تسجيل الخروج</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+        <!-- Top Header Bar -->
+        <header class="top-header">
+            <div class="header-right">
+                <button class="menu-toggle" onclick="toggleSidebar()" aria-label="فتح القائمة">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="3" y1="12" x2="21" y2="12"/>
+                        <line x1="3" y1="6" x2="21" y2="6"/>
+                        <line x1="3" y1="18" x2="21" y2="18"/>
+                    </svg>
+                </button>
+                
+                <!-- Search Bar -->
+                <div class="search-bar">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"/>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    </svg>
+                    <input type="text" placeholder="ابحث في لوحة التحكم..." id="globalSearch">
+                </div>
+            </div>
+
+            <div class="header-left">
+                <!-- Language Switcher -->
+                <div class="lang-switcher">
+                    <button class="lang-btn active">AR</button>
+                    <button class="lang-btn">EN</button>
+                </div>
+
+                <!-- Notifications -->
+                <button class="notification-btn" onclick="toggleNotifications()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                    </svg>
+                    <span class="notification-dot"></span>
+                </button>
+
+                <!-- User Menu -->
+                <div class="user-menu">
+                    <button class="user-menu-btn" onclick="toggleUserMenu()">
+                        <div class="user-avatar-sm">م</div>
+                        <span class="hide-mobile">demo@mernasmenu.com</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6,9 12,15 18,9"/>
+                        </svg>
+                    </button>
+                    
+                    <!-- Dropdown Menu -->
+                    <div id="userDropdown" class="dropdown-menu hidden">
+                        <a href="/admin/settings.html" class="dropdown-item">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                <circle cx="12" cy="7" r="4"/>
+                            </svg>
+                            الملف الشخصي
+                        </a>
+                        <a href="/admin/settings.html#billing" class="dropdown-item">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+                                <line x1="1" y1="10" x2="23" y2="10"/>
+                            </svg>
+                            الفواتير
+                        </a>
+                        <hr class="dropdown-divider">
+                        <button onclick="logout()" class="dropdown-item text-danger">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                                <polyline points="16,17 21,12 16,7"/>
+                                <line x1="21" y1="12" x2="9" y2="12"/>
+                            </svg>
+                            تسجيل الخروج
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Dashboard Content -->
+        <div class="dashboard-content">
+            <!-- Welcome Banner -->
+            <div class="welcome-banner">
+                <div class="banner-icon">🎉</div>
+                <div class="banner-text">
+                    <h2>مرحباً بك في لوحة التحكم!</h2>
+                    <p>إليك نظرة سريعة على أداء مطعمك اليوم</p>
+                </div>
+                <div class="banner-actions hide-mobile">
+                    <a href="/admin/menu.html" class="btn btn-primary btn-sm">تحرير القائمة</a>
+                </div>
+            </div>
+
+            <!-- Stats Cards Row -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon orders-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                        </svg>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="totalOrders">127</span>
+                        <span class="stat-label">إجمالي الطلبات</span>
+                    </div>
+                    <div class="stat-trend up">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="23,6 13.5,15.5 8.5,10.5 1,18"/>
+                        </svg>
+                        +12%
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon revenue-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="12" y1="1" x2="12" y2="23"/>
+                            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                        </svg>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="totalRevenue">15,450</span>
+                        <span class="stat-label">ج.م إجمالي المبيعات</span>
+                    </div>
+                    <div class="stat-trend up">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="23,6 13.5,15.5 8.5,10.5 1,18"/>
+                        </svg>
+                        +8%
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon customers-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                            <circle cx="9" cy="7" r="4"/>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                        </svg>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="totalCustomers">89</span>
+                        <span class="stat-label">عدد العملاء</span>
+                    </div>
+                    <div class="stat-trend up">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="23,6 13.5,15.5 8.5,10.5 1,18"/>
+                        </svg>
+                        +5%
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon views-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                            <circle cx="12" cy="12" r="3"/>
+                        </svg>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="totalViews">2,340</span>
+                        <span class="stat-label">مشاهدات القائمة</span>
+                    </div>
+                    <div class="stat-trend down">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="23,18 13.5,8.5 8.5,13.5 1,6"/>
+                        </svg>
+                        -3%
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Dashboard Grid -->
+            <div class="dashboard-grid">
+                <!-- Restaurant Card & QR Code -->
+                <div class="card restaurant-card">
+                    <div class="card-header">
+                        <h3>بطاقة المطعم</h3>
+                        <a href="/admin/settings.html" class="btn btn-sm btn-outline">تعديل</a>
+                    </div>
+                    <div class="restaurant-info">
+                        <div class="restaurant-logo" id="restaurantLogo">
+                            <img src="/assets/icons/default-restaurant.svg" alt="شعار المطعم" onerror="this.style.display='none'">
+                        </div>
+                        <div class="restaurant-details">
+                            <h4 id="restaurantName">مطعم البركة</h4>
+                            <p id="restaurantSlug">@matam-el-baraka</p>
+                            <div class="restaurant-meta">
+                                <span class="badge badge-success">نشط</span>
+                                <span class="text-muted text-sm">منذ 30 يوم</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- QR Code Section -->
+                    <div class="qr-section">
+                        <h4>QR Code للقائمة</h4>
+                        <div class="qr-code-container">
+                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://mezomenu.com/menu/matam-el-baraka" alt="QR Code" class="qr-code-img">
+                        </div>
+                        <div class="qr-actions">
+                            <button onclick="downloadQR()" class="btn btn-sm btn-outline">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                    <polyline points="7,10 12,15 17,10"/>
+                                    <line x1="12" y1="15" x2="12" y2="3"/>
+                                </svg>
+                                تحميل QR
+                            </button>
+                            <button onclick="copyMenuLink()" class="btn btn-sm btn-outline">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                                </svg>
+                                نسخ الرابط
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Orders -->
+                <div class="card orders-card">
+                    <div class="card-header">
+                        <h3>الطلبات الأخيرة</h3>
+                        <a href="/admin/orders.html" class="btn btn-sm btn-outline">عرض الكل</a>
+                    </div>
+                    <div class="orders-list" id="recentOrders">
+                        <!-- Orders will be loaded dynamically -->
+                        <div class="order-item">
+                            <div class="order-info">
+                                <span class="order-id">#ORD-001</span>
+                                <span class="order-customer">أحمد محمد</span>
+                            </div>
+                            <div class="order-details">
+                                <span class="order-total">245 ج.م</span>
+                                <span class="badge badge-warning">قيد التجهيز</span>
+                            </div>
+                        </div>
+                        <div class="order-item">
+                            <div class="order-info">
+                                <span class="order-id">#ORD-002</span>
+                                <span class="order-customer">سارة علي</span>
+                            </div>
+                            <div class="order-details">
+                                <span class="order-total">180 ج.م</span>
+                                <span class="badge badge-success">تم التسليم</span>
+                            </div>
+                        </div>
+                        <div class="order-item">
+                            <div class="order-info">
+                                <span class="order-id">#ORD-003</span>
+                                <span class="order-customer">محمد حسن</span>
+                            </div>
+                            <div class="order-details">
+                                <span class="order-total">320 ج.م</span>
+                                <span class="badge badge-info">جديد</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="card quick-actions-card">
+                    <div class="card-header">
+                        <h3>إجراءات سريعة</h3>
+                    </div>
+                    <div class="quick-actions-grid">
+                        <a href="/admin/ai-analyze.html" class="action-btn ai-action">
+                            <span class="action-icon">🤖</span>
+                            <span>تحليل قائمة بالـ AI</span>
+                        </a>
+                        <a href="/admin/items.html?action=add" class="action-btn add-action">
+                            <span class="action-icon">➕</span>
+                            <span>إضافة صنف جديد</span>
+                        </a>
+                        <a href="/admin/categories.html" class="action-btn category-action">
+                            <span class="action-icon">📂</span>
+                            <span>إدارة الأقسام</span>
+                        </a>
+                        <a href="/admin/settings.html" class="action-btn settings-action">
+                            <span class="action-icon">⚙️</span>
+                            <span>إعدادات المطعم</span>
+                        </a>
+                        <a href="#" onclick="printQRCode()" class="action-btn print-action">
+                            <span class="action-icon">🖨️</span>
+                            <span>طباعة QR Codes</span>
+                        </a>
+                        <a href="/admin/marketing.html" class="action-btn marketing-action">
+                            <span class="action-icon">📢</span>
+                            <span>حملة تسويقية</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Popular Items Chart Placeholder -->
+                <div class="card chart-card">
+                    <div class="card-header">
+                        <h3>الأصناف الأكثر طلباً</h3>
+                        <select class="chart-period-select">
+                            <option value="7d">آخر 7 أيام</option>
+                            <option value="30d" selected>آخر 30 يوم</option>
+                            <option value="90d">آخر 90 يوم</option>
+                        </select>
+                    </div>
+                    <div class="chart-placeholder">
+                        <div class="bar-chart">
+                            <div class="bar-item">
+                                <div class="bar" style="height: 90%;" data-value="45"></div>
+                                <span class="bar-label">بيتزا مارجريتا</span>
+                            </div>
+                            <div class="bar-item">
+                                <div class="bar" style="height: 75%;" data-value="38"></div>
+                                <span class="bar-label">برجر لحم</span>
+                            </div>
+                            <div class="bar-item">
+                                <div class="bar" style="height: 60%;" data-value="30"></div>
+                                <span class="bar-label">سلطة كيزر</span>
+                            </div>
+                            <div class="bar-item">
+                                <div class="bar" style="height: 50%;" data-value="25"></div>
+                                <span class="bar-label">سباغيتي</span>
+                            </div>
+                            <div class="bar-item">
+                                <div class="bar" style="height: 35%;" data-value="18"></div>
+                                <span class="bar-label">تشكن كريسبى</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Notification Panel -->
+    <div id="notificationPanel" class="notification-panel hidden">
+        <div class="panel-header">
+            <h3>الإشعارات</h3>
+            <button onclick="toggleNotifications()" class="close-btn">&times;</button>
+        </div>
+        <div class="panel-content">
+            <div class="notification-item unread">
+                <div class="notif-icon new-order">🆕</div>
+                <div class="notif-content">
+                    <p><strong>طلب جديد</strong> - #ORD-004</p>
+                    <span class="notif-time">منذ 5 دقائق</span>
+                </div>
+            </div>
+            <div class="notification-item unread">
+                <div class="notif-icon status-change">🔄</div>
+                <div class="notif-content">
+                    <p>تم تغيير حالة الطلب #ORD-001 إلى "قيد التوصيل"</p>
+                    <span class="notif-time">منذ 15 دقيقة</span>
+                </div>
+            </div>
+            <div class="notification-item">
+                <div class="notif-icon review">⭐</div>
+                <div class="notif-content">
+                    <p>تقييم جديد: 5 نجوم من أحمد محمد</p>
+                    <span class="notif-time">منذ ساعة</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Overlay for mobile sidebar -->
+    <div id="overlay" class="sidebar-overlay hidden" onclick="toggleSidebar()"></div>
+
+    <!-- Scripts -->
+    <script src="/js/main.js"></script>
+    <script src="/js/admin.js"></script>
+</body>
+</html>
