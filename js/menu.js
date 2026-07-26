@@ -232,7 +232,7 @@ function createItemCard(item) {
 }
 
 // ========================================
-   Category Filtering & Search
+// Category Filtering & Search
 // ========================================
 
 function filterByCategory(categoryId) {
@@ -295,7 +295,7 @@ function handleSearch(query) {
 }
 
 // ========================================
-   Item Modal
+// Item Modal
 // ========================================
 
 function openItemModal(itemId) {
@@ -361,7 +361,7 @@ function quickAddToCart(itemId) {
 }
 
 // ========================================
-   Cart Management
+// Cart Management
 // ========================================
 
 function addToCart(item, quantity, notes) {
@@ -466,7 +466,7 @@ function toggleCart() {
 }
 
 // ========================================
-   Order Submission
+// Order Submission
 // ========================================
 
 function proceedToOrder() {
@@ -596,7 +596,7 @@ function buildWhatsAppMessage(orderData) {
 }
 
 // ========================================
-   Utility Functions
+// Utility Functions
 // ========================================
 
 function showLoading(show) {
@@ -648,7 +648,7 @@ function getCuisineName(cuisineType) {
 }
 
 // ========================================
-   Offline Support
+// Offline Support
 // ========================================
 
 if ('serviceWorker' in navigator) {

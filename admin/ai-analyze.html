@@ -189,6 +189,23 @@
             document.getElementById('analyzeBtn').disabled = true;
         }
         
+        function showAnalysisProgress(container) {
+            container.innerHTML = `
+                <div class="analysis-progress">
+                    <span class="progress-icon">🔍</span>
+                    <h3>جاري تحليل صورة القائمة بالذكاء الاصطناعي...</h3>
+                    <div class="progress-steps">
+                        <div class="progress-step active"><span>📷</span><span>قراءة الصورة</span></div>
+                        <div class="progress-step active"><span>🧠</span><span>تحليل المحتوى</span></div>
+                        <div class="progress-step"><span>📋</span><span>استخراج البيانات</span></div>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar"></div>
+                    </div>
+                </div>
+            `;
+        }
+
         async function analyzeMenu() {
             if (!uploadedMenuImage) return;
             
@@ -464,6 +481,7 @@
         .category-icon { font-size: 24px; }
         .category-name { flex: 1; font-weight: 500; }
         .items-count { color: #6366f1; font-weight: 600; }
+        .results-items { min-width: 0; }
         
         .items-grid-mini { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; }
         .result-item-card { background: white; padding: 16px; border-radius: 12px; text-align: center; }
@@ -491,6 +509,12 @@
         .analysis-error { text-align: center; padding: 40px 20px; }
         .analysis-error span { font-size: 64px; display: block; margin-bottom: 16px; }
         .analysis-error h3 { color: #dc2626; margin-bottom: 8px; }
+        .error-suggestion { color: #9ca3af; font-size: 13px; margin-bottom: 16px; }
+        
+        .generated-image-container .image-info { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+        .source-badge { background: #ede9fe; color: #6d28d9; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+        .prompt-hint { color: #9ca3af; font-size: 12px; }
+        .error-text { color: #dc2626; font-weight: 600; margin-top: 12px; }
         
         .ai-usage-stats { background: white; border-radius: 20px; padding: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
         .ai-usage-stats h3 { color: #111827; margin-bottom: 20px; }
