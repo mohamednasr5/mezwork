@@ -71,7 +71,7 @@ export default {
             return new Response(JSON.stringify({
                 success: false,
                 error: 'Internal server error',
-                message: process.env.NODE_ENV === 'development' ? error.message : undefined,
+                message: env.ENVIRONMENT === 'development' ? error.message : undefined,
                 timestamp: Date.now()
             }), {
                 status: 500,

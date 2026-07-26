@@ -56,14 +56,17 @@ function handlePreflight(request) {
  */
 function jsonResponse(data, status = 200, request) {
     const body = JSON.stringify(data);
+    // ⚠️ Buffer غير متاح في Cloudflare Workers runtime (Node.js global فقط).
+    // بنستخدم TextEncoder اللي متاح فعلياً في بيئة الـ Workers لحساب طول البايتات.
+    const byteLength = new TextEncoder().encode(body).length;
     const response = new Response(body, {
         status,
         headers: {
             'Content-Type': 'application/json; charset=utf-8',
-            'Content-Length': Buffer.byteLength(body).toString()
+            'Content-Length': byteLength.toString()
         }
     });
-    
+
     return corsHeaders(response, request);
 }
 
@@ -74,11 +77,12 @@ function jsonResponse(data, status = 200, request) {
  * @param {Request} request - The incoming request
  * @returns {Response} - Error response with CORS headers
  */
-function errorResponse(message, status = 400, request) {
+function errorResponse(message, status = 400, request, details = null) {
     return jsonResponse({
         success: false,
         error: message,
-        timestamp: Date.now()
+        timestamp: Date.now(),
+        ...(details ? { details } : {})
     }, status, request);
 }
 

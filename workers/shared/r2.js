@@ -3,20 +3,21 @@
  * Handles image uploads and retrieval from R2
  */
 
-// R2 Configuration
-const R2_CONFIG = {
-    bucket: process.env.R2_BUCKET_NAME || 'mezomenu-images',
-    publicUrl: process.env.R2_PUBLIC_URL || 'https://images.mezomenu.com'
-};
-
 /**
  * R2 Storage Helper Class
+ *
+ * ⚠️ Cloudflare Workers لا يدعم process.env — الإعدادات لازم تجي من env
+ * الطلب الحالي، مش من متغير Node غير موجود في هذه البيئة.
  */
 class R2Helper {
-    constructor(binding) {
+    /**
+     * @param {R2Bucket} binding - R2 binding (env.IMAGES_BUCKET من wrangler.toml)
+     * @param {object} env - Cloudflare Workers env binding (لقراءة R2_BUCKET_NAME/R2_PUBLIC_URL)
+     */
+    constructor(binding, env = null) {
         this.bucket = binding;  // R2 binding from worker environment
-        this.bucketName = R2_CONFIG.bucket;
-        this.publicUrl = R2_CONFIG.publicUrl;
+        this.bucketName = env?.R2_BUCKET_NAME || 'mezomenu-images';
+        this.publicUrl = env?.R2_PUBLIC_URL || 'https://images.mezomenu.com';
     }
 
     /**
@@ -322,6 +323,6 @@ class R2Helper {
     }
 }
 
-// Export class and configuration
-export { R2Helper, R2_CONFIG };
+// Export class
+export { R2Helper };
 export default R2Helper;

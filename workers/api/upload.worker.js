@@ -9,6 +9,7 @@ import R2Helper from '../shared/r2.js';
 
 export default {
     async fetch(request, env) {
+        firebase.configure(env); // ⚠️ لازم قبل أي استخدام لـ firebase.read/write (يقرأ من env بدل process.env)
         const url = new URL(request.url);
         
         if (request.method === 'OPTIONS') {
@@ -153,7 +154,7 @@ async function uploadImage(request, env) {
         console.log(`[Upload] Uploading image for restaurant ${auth.restaurantId}: ${filename}`);
 
         // Initialize R2 helper
-        const r2 = new R2Helper(env.R2_IMAGES);
+        const r2 = new R2Helper(env.IMAGES_BUCKET, env);
 
         // Determine folder based on upload type
         const folder = url.searchParams.get('folder') || 'general';
@@ -219,7 +220,7 @@ async function getImageInfo(request, env, url) {
             return errorResponse('غير مصرح بالوصول لهذه الصورة', 403, request);
         }
 
-        const r2 = new R2Helper(env.R2_IMAGES);
+        const r2 = new R2Helper(env.IMAGES_BUCKET, env);
         const object = await r2.get(key);
 
         if (!object || !object.exists) {
@@ -231,7 +232,7 @@ async function getImageInfo(request, env, url) {
             size: object.size,
             contentType: object.contentType,
             lastModified: object.lastModified,
-            url: `${process.env.R2_PUBLIC_URL}/${key}`
+            url: `${env.R2_PUBLIC_URL || 'https://images.mezomenu.com'}/${key}`
         }, null, request);
 
     } catch (error) {
@@ -260,7 +261,7 @@ async function deleteImage(request, env, url) {
             return errorResponse('غير مصرح بحذف هذه الصورة', 403, request);
         }
 
-        const r2 = new R2Helper(env.R2_IMAGES);
+        const r2 = new R2Helper(env.IMAGES_BUCKET, env);
         const deleted = await r2.delete(key);
 
         if (!deleted) {
@@ -298,7 +299,7 @@ async function batchUpload(request, env) {
             return errorResponse('الحد الأقصى 10 صور في المرة الواحدة', 400, request);
         }
 
-        const r2 = new R2Helper(env.R2_IMAGES);
+        const r2 = new R2Helper(env.IMAGES_BUCKET, env);
         const results = [];
 
         for (let i = 0; i < images.length; i++) {
@@ -367,7 +368,7 @@ async function generatePresignedUrl(request, env) {
             return errorResponse('اسم الملف مطلوب', 400, request);
         }
 
-        const r2 = new R2Helper(env.R2_IMAGES);
+        const r2 = new R2Helper(env.IMAGES_BUCKET, env);
         
         // Generate unique key
         const key = `${auth.restaurantId}/presigned/${Date.now()}-${r2.sanitizeFilename(filename)}`;

@@ -8,6 +8,7 @@ import firebase from '../shared/firebase.js';
 
 export default {
     async fetch(request, env) {
+        firebase.configure(env); // ⚠️ لازم قبل أي استخدام لـ firebase.read/write (يقرأ من env بدل process.env)
         const url = new URL(request.url);
         
         if (request.method === 'OPTIONS') {
@@ -258,7 +259,7 @@ async function createOrder(request, env) {
         // If WhatsApp enabled, send to WhatsApp
         const restaurantData = await firebase.read(`restaurants/${restaurantId}`);
         if (restaurantData?.settings?.enableWhatsApp && restaurantData?.whatsappNumber) {
-            await sendWhatsAppMessage(restaurantData.whatsappNumber, formatWhatsAppMessage(order));
+            await sendWhatsAppMessage(restaurantData.whatsappNumber, formatWhatsAppMessage(order), env);
         }
 
         return successResponse({
@@ -546,19 +547,19 @@ async function sendStatusChangeNotification(restaurantId, order, newStatus) {
     }
 }
 
-async function sendWhatsAppMessage(toNumber, message) {
+async function sendWhatsAppMessage(toNumber, message, env = {}) {
     try {
         // Integrate with WhatsApp Business API
         // This is a placeholder - actual implementation depends on your WhatsApp provider
-        
-        const whatsappApiUrl = process.env.WHATSAPP_API_URL;
-        
+
+        const whatsappApiUrl = env.WHATSAPP_API_URL;
+
         if (whatsappApiUrl) {
             await fetch(whatsappApiUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${process.env.WHATSAPP_API_TOKEN}`
+                    'Authorization': `Bearer ${env.WHATSAPP_API_TOKEN}`
                 },
                 body: JSON.stringify({
                     to: toNumber.replace('+', ''),

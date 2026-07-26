@@ -3,20 +3,32 @@
  * Secure access to Firebase Realtime Database
  */
 
-// Firebase configuration (should use environment variables in production)
-const FIREBASE_CONFIG = {
-    databaseURL: `https://${process.env.FIREBASE_PROJECT_ID || 'mezomenu-app'}-default-rtdb.firebaseio.com`,
-    apiKey: process.env.FIREBASE_API_KEY || ''
-};
-
 /**
  * Initialize Firebase Admin SDK (for server-side operations)
  * Note: In Cloudflare Workers, we use REST API instead of admin SDK
+ *
+ * ⚠️ Cloudflare Workers لا يدعم process.env — لازم تمرر env من الـ fetch
+ * handler عن طريق configure(env)، أو مرّر databaseUrl/apiKey مباشرة.
  */
 class FirebaseHelper {
-    constructor() {
-        this.baseUrl = FIREBASE_CONFIG.databaseURL;
-        this.apiKey = FIREBASE_CONFIG.apiKey;
+    constructor(env = null) {
+        const databaseUrl = env?.FIREBASE_DATABASE_URL ||
+            `https://${env?.FIREBASE_PROJECT_ID || 'mezomenu-app'}-default-rtdb.firebaseio.com`;
+        this.baseUrl = databaseUrl;
+        this.apiKey = env?.FIREBASE_API_KEY || '';
+    }
+
+    /**
+     * إعادة ضبط الإعدادات من env الطلب الحالي.
+     * لازم تُستدعى أول حاجة في كل fetch handler قبل استخدام firebase.read/write/...
+     * @param {object} env - Cloudflare Workers env binding
+     */
+    configure(env) {
+        if (!env) return this;
+        this.baseUrl = env.FIREBASE_DATABASE_URL ||
+            `https://${env.FIREBASE_PROJECT_ID || 'mezomenu-app'}-default-rtdb.firebaseio.com`;
+        this.apiKey = env.FIREBASE_API_KEY || '';
+        return this;
     }
 
     /**

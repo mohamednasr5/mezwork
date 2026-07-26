@@ -8,6 +8,7 @@ import firebase from '../shared/firebase.js';
 
 export default {
     async fetch(request, env) {
+        firebase.configure(env); // ⚠️ لازم قبل أي استخدام لـ firebase.read/write (يقرأ من env بدل process.env)
         const url = new URL(request.url);
         
         if (request.method === 'OPTIONS') {

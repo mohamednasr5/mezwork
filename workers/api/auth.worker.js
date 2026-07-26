@@ -11,6 +11,7 @@ export default {
      * Handle incoming requests
      */
     async fetch(request, env) {
+        firebase.configure(env); // ⚠️ لازم قبل أي استخدام لـ firebase.read/write (يقرأ من env بدل process.env)
         const url = new URL(request.url);
         
         // Handle CORS preflight
