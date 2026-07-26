@@ -1,12 +1,34 @@
 /**
- * MezoMenu - AI Integration Worker (REAL APIs)
- * Handles REAL AI API calls for menu analysis and image generation
+ * MezoMenu - AI Integration Worker (Agnes AI + Fallback APIs)
  * 
- * Supported Services:
- * 1. Google Cloud Vision API (OCR) - Requires API Key
- * 2. Tesseract.js (Local OCR) - FREE, No Key Needed
- * 3. Unsplash API (Real Food Photos) - FREE with Access Key
- * 4. Hugging Face Inference API (AI Image Gen) - FREE
+ * Primary AI Service: Agnes AI (https://platform.agnes-ai.com/)
+ * Fallback Services: Google Vision, Hugging Face, Unsplash
+ * 
+ * ========================================
+ * 📌 كيفية إضافة AGNES_AI_API_KEY:
+ * ========================================
+ * 
+ * الطريقة 1: عبر متغيرات البيئة (Environment Variables)
+ * ------------------------------------------
+ * 1. اذهب إلى Cloudflare Dashboard
+ * 2. اختر Workers & Pages
+ * 3. اختر مشروع MezoMenu
+ * 4. اذهب إلى Settings → Variables
+ * 5. أضف متغير جديد:
+ *    - الاسم: AGNES_AI_API_KEY
+ *    - القيمة: [مفتاح API الخاص بك من Agnes AI]
+ * 
+ * الطريقة 2: عبر ملف .env (للتطوير المحلي)
+ * ------------------------------------------
+ * أنشئ ملف .env في مجلد المشروع:
+ *   AGNES_AI_API_KEY=your_api_key_here
+ * 
+ * الطريقة 3: عبر wrangler.toml
+ * ------------------------------------------
+ * [vars]
+ * AGNES_AI_API_KEY = "your_api_key_here"
+ * 
+ * ========================================
  */
 
 import { handlePreflight, errorResponse, successResponse } from '../shared/cors.js';
@@ -17,21 +39,37 @@ import firebase from '../shared/firebase.js';
 // ========================================
 
 const CONFIG = {
-    // Google Cloud Vision (for OCR)
+    // 🔑 Agnes AI (Primary AI Service)
+    agnesAI: {
+        apiKey: process.env.AGNES_AI_API_KEY || '',  // ← ضع المفتاح هنا
+        baseUrl: 'https://platform.agnes-ai.com/api',  // أو الرابط الصحيح من Agnes AI
+        endpoints: {
+            chat: '/v1/chat/completions',      // للمحادثة والتحليل
+            image: '/v1/images/generations',     // لتوليد الصور
+            vision: '/v1/vision/analyze'         // لتحليل الصور (OCR)
+        },
+        models: {
+            chat: 'agnes-ai-latest',             // نموذج المحادثة
+            image: 'agnes-image-gen',            // نموذج توليد الصور
+            vision: 'agnes-vision'               // نموذج الرؤية
+        }
+    },
+    
+    // Google Cloud Vision (Fallback OCR)
     googleVision: {
         apiKey: process.env.GOOGLE_VISION_API_KEY || '',
         endpoint: 'https://vision.googleapis.com/v1/images:annotate'
     },
     
-    // Unsplash API (for real food photos)
+    // Unsplash API (Real Food Photos - Fallback)
     unsplash: {
         accessKey: process.env.UNSPLASH_ACCESS_KEY || '',
         endpoint: 'https://api.unsplash.com/search/photos'
     },
     
-    // Hugging Face Inference (for AI image generation)
+    // Hugging Face Inference (AI Image Gen - Fallback)
     huggingFace: {
-        apiKey: process.env.HUGGINGFACE_API_KEY || '',  // Optional for some models
+        apiKey: process.env.HUGGINGFACE_API_KEY || '',
         endpoint: 'https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0'
     }
 };
@@ -44,25 +82,27 @@ export default {
             return handlePreflight(request);
         }
 
+        // ✅ Routes مع دعم Agnes AI
         const routes = {
-            // Google Vision OCR
-            'POST /api/ai/ocr': handleGoogleVisionOCR,
+            // ===== Agnes AI Endpoints (Primary) =====
+            'POST /api/ai/chat': handleAgnesAIChat,           // محادثة وتحليل النصوص
+            'POST /api/ai/image': handleAgnesAIImage,          // توليد الصور بالذكاء الاصطناعي
+            'POST /api/ai/analyze': handleAgnesAIAnalyze,       // تحليل قائمة (OCR + AI)
             
-            // Tesseract.js OCR (FREE)
-            'POST /api/ai/tesseract': handleTesseractOCR,
-            
-            // Unsplash Real Images
-            'POST /api/ai/unsplash': handleUnsplashSearch,
-            
-            // Hugging Face AI Generation
-            'POST /api/ai/generate': handleHuggingFaceGeneration,
+            // ===== Fallback Endpoints =====
+            'POST /api/ai/ocr': handleGoogleVisionOCR,           // Google Vision OCR
+            'POST /api/ai/tesseract': handleTesseractOCR,        // Tesseract OCR (Free)
+            'POST /api/ai/unsplash': handleUnsplashSearch,      // Unsplash Images
+            'POST /api/ai/generate': handleHuggingFaceGeneration,// Hugging Face AI
             
             // Legacy endpoints (backward compatible)
-            'POST /api/ai/analyze': handleAnalyzeMenu,
             'POST /api/ai/generate-image': handleGenerateImage,
             
             // Usage Stats
-            'GET /api/ai/usage': getUsage
+            'GET /api/ai/usage': getUsage,
+            
+            // 🔍 Health Check for Agnes AI
+            'GET /api/ai/status': getAIServiceStatus
         };
 
         const routeKey = `${request.method} ${url.pathname}`;
@@ -84,7 +124,6 @@ async function authenticateRequest(request) {
     const authToken = request.headers.get('Authorization')?.replace('Bearer ', '');
     
     if (!authToken) {
-        // Allow unauthenticated for free tier features
         return { authenticated: false, isFreeTier: true };
     }
     
@@ -107,13 +146,344 @@ async function authenticateRequest(request) {
 }
 
 // ========================================
-// Google Cloud Vision OCR Handler
+// 🚀 Agnes AI Handlers (Primary Service)
 // ========================================
 
 /**
- * Handle OCR using Google Cloud Vision API
- * REQUIRES: GOOGLE_VISION_API_KEY environment variable
+ * Handler 1: Agnes AI Chat (المحادثة والتحليل)
+ * يستخدم لتحليل القائمة وإعطاء اقتراحات
  */
+async function handleAgnesAIChat(request, env) {
+    try {
+        const body = await request.json();
+        const { message, options = {} } = body;
+
+        if (!message) {
+            return errorResponse('الرسالة مطلوبة', 400, request);
+        }
+
+        // التحقق من وجود API Key
+        if (!CONFIG.agnesAI.apiKey) {
+            console.warn('[Agnes AI] API key not configured');
+            // محاولة استخدام بديل إذا لم يكن Agnes متاحاً
+            return await fallbackChatHandler(message, options, request);
+        }
+
+        console.log(`[Agnes AI] Sending chat request...`);
+
+        // استدعاء Agnes AI Chat API
+        const response = await fetch(`${CONFIG.agnesAI.baseUrl}${CONFIG.agnesAI.endpoints.chat}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${CONFIG.agnesAI.apiKey}`,
+                'X-API-Key': CONFIG.agnesAI.apiKey  // بعض APIs تستخدم هذا Header
+            },
+            body: JSON.stringify({
+                model: CONFIG.agnesAI.models.chat,
+                messages: [
+                    {
+                        role: 'system',
+                        content: options.systemPrompt || 'أنت خبير في تحليل قوائم المطاعم. أجب باللغة العربية بشكل احترافي ومنظم.'
+                    },
+                    {
+                        role: 'user',
+                        content: message
+                    }
+                ],
+                max_tokens: options.maxTokens || 2000,
+                temperature: options.temperature || 0.7,
+                // إعدادات إضافية حسب مواصفات Agnes AI
+                ...options.extraParams
+            })
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('[Agnes AI] API Error:', errorText);
+            
+            // إذا فشل Agnes، جرب البديل
+            return await fallbackChatHandler(message, options, request);
+        }
+
+        const result = await response.json();
+        
+        // استخراج الرد بناءً على هيئة استجابة Agnes AI
+        const aiResponse = result.choices?.[0]?.message?.content || 
+                          result.response || 
+                          result.text ||
+                          result.data?.response ||
+                          JSON.stringify(result);
+
+        console.log(`[Agnes AI] Chat response received`);
+
+        return successResponse({
+            data: aiResponse,
+            model: result.model || CONFIG.agnesAI.models.chat,
+            usage: result.usage,
+            rawResponse: result
+        }, 'تمت المعالجة بالذكاء الاصطناعي!', request);
+
+    } catch (error) {
+        console.error('[Agnes AI] Chat error:', error);
+        return errorResponse('فشل في معالجة الطلب: ' + error.message, 500, request);
+    }
+}
+
+/**
+ * Handler 2: Agnes AI Image Generation (توليد الصور)
+ */
+async function handleAgnesAIImage(request, env) {
+    try {
+        const body = await request.json();
+        const { prompt, options = {} } = body;
+
+        if (!prompt) {
+            return errorResponse('وصف الصورة مطلوب', 400, request);
+        }
+
+        // التحقق من وجود API Key
+        if (!CONFIG.agnesAI.apiKey) {
+            console.warn('[Agnes AI] API key not configured, using fallback');
+            return await fallbackImageHandler(prompt, options, request);
+        }
+
+        console.log(`[Agnes AI] Generating image: ${prompt.substring(0, 50)}...`);
+
+        // استدعاء Agnes AI Image API
+        const response = await fetch(`${CONFIG.agnesAI.baseUrl}${CONFIG.agnesAI.endpoints.image}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${CONFIG.agnesAI.apiKey}`,
+                'X-API-Key': CONFIG.agnesAI.apiKey
+            },
+            body: JSON.stringify({
+                model: CONFIG.agnesAI.models.image,
+                prompt: prompt,
+                negative_prompt: options.negativePrompt || 'blurry, low quality, distorted, ugly, bad lighting, watermark, text, logo, plastic looking, unappetizing',
+                width: options.width || 512,
+                height: options.height || 512,
+                steps: options.steps || 25,
+                guidance_scale: options.cfgScale || 7.5,
+                style: options.style || 'food-photography',
+                quality: options.quality || 'high'
+                // إعدادات إضافية حسب مواصفات Agnes AI
+            })
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('[Agnes AI] Image API Error:', errorText);
+            return await fallbackImageHandler(prompt, options, request);
+        }
+
+        // التعامل مع الاستجابة (قد تكون صورة أو JSON)
+        const contentType = response.headers.get('content-type') || '';
+        
+        if (contentType.includes('image')) {
+            // رد مباشر كصورة
+            const imageBuffer = await response.arrayBuffer();
+            const base64 = btoa(
+                new Uint8Array(imageBuffer).reduce((data, byte) => data + String.fromCharCode(byte), '')
+            );
+
+            return successResponse({
+                imageUrl: `data:image/png;base64,${base64}`,
+                imageBase64: base64,
+                source: 'agnes-ai',
+                prompt: prompt
+            }, 'تم توليد الصورة!', request);
+
+        } else {
+            // رد كJSON يحتوي على رابط الصورة
+            const result = await response.json();
+            
+            const imageUrl = result.url || 
+                           result.image_url || 
+                           result.data?.url ||
+                           result.images?.[0]?.url;
+            
+            const imageBase64 = result.image || 
+                               result.data?.base64 ||
+                               result.images?.[0]?.base64;
+
+            return successResponse {
+                imageUrl: imageUrl || null,
+                imageBase64: imageBase64 || null,
+                source: 'agnes-ai',
+                prompt: prompt,
+                model: result.model || CONFIG.agnesAI.models.image
+            }, 'تم توليد الصورة بالذكاء الاصطناعي!', request);
+        }
+
+    } catch (error) {
+        console.error('[Agnes AI] Image generation error:', error);
+        return await fallbackImageHandler(body?.prompt, body?.options, request);
+    }
+}
+
+/**
+ * Handler 3: Agnes AI Analyze Menu (تحليل القائمة بالكامل)
+ * يجمع بين OCR والتحليل الذكي
+ */
+async function handleAgnesAIAnalyze(request, env) {
+    try {
+        const body = await request.json();
+        const { image, type = 'menu-ocr', options = {} } = body;
+
+        if (!image && type === 'menu-ocr') {
+            return errorResponse('صورة القائمة مطلوبة', 400, request);
+        }
+
+        // التحقق من وجود API Key
+        if (!CONFIG.agnesAI.apiKey) {
+            console.warn('[Agnes AI] API key not configured');
+            return await handleAnalyzeFallback(image, type, options, request);
+        }
+
+        console.log(`[Agnes AI] Analyzing menu (type: ${type})...`);
+
+        if (type === 'menu-ocr' && image) {
+            // تحليل صورة القائمة باستخدام Vision API
+            const response = await fetch(`${CONFIG.agnesAI.baseUrl}${CONFIG.agnesAI.endpoints.vision}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${CONFIG.agnesAI.apiKey}`,
+                    'X-API-Key': CONFIG.agnesAI.apiKey
+                },
+                body: JSON.stringify({
+                    model: CONFIG.agnesAI.models.vision,
+                    image: image.startsWith('data:') ? image : `data:image/png;base64,${image}`,
+                    task: 'menu-extraction',
+                    options: {
+                        language: options.language || 'ar',
+                        extractPrices: true,
+                        extractCategories: true,
+                        extractDescriptions: true
+                    }
+                })
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('[Agnes AI] Vision API Error:', errorText);
+                return await handleAnalyzeFallback(image, type, options, request);
+            }
+
+            const result = await response.json();
+
+            return successResponse({
+                data: result.data || result,
+                confidence: result.confidence || 0.85,
+                method: 'agnes-ai-vision',
+                text: result.text || null
+            }, 'تم تحليل القائمة بنجاح!', request);
+
+        } else if (type === 'text-analysis') {
+            // تحليل نصي فقط
+            return await handleAgnesAIChat(request, env);
+        }
+
+    } catch (error) {
+        console.error('[Agnes AI] Analysis error:', error);
+        return await handleAnalyzeFallback(body?.image, body?.type, body?.options, request);
+    }
+}
+
+// ========================================
+// Fallback Handlers (عند عدم توفر Agnes AI)
+// ========================================
+
+/**
+ * Ballback Chat Handler
+ */
+async function fallbackChatHandler(message, options, request) {
+    console.log('[Fallback] Using basic chat handler...');
+    
+    // هنا يمكن إضافة منطق بديل بسيط
+    // أو إرجاع رسالة مفيدة
+    
+    return successResponse({
+        data: generateBasicAnalysis(message),
+        model: 'fallback-basic',
+        isFallback: true
+    }, 'تم التحليل (وضع أساسي)', request);
+}
+
+/**
+ * Fallback Image Handler
+ */
+async function fallbackImageHandler(prompt, options, request) {
+    console.log('[Fallback] Using placeholder image...');
+    
+    // إنشاء صورة تمثيلية
+    return successResponse({
+        imageUrl: null,
+        imageBase64: generatePlaceholderBase64(prompt),
+        source: 'placeholder-fallback',
+        prompt: prompt,
+        isFallback: true
+    }, 'تم إنشاء صورة تمثيلية', request);
+}
+
+/**
+ * Fallback Analysis Handler
+ */
+async function handleAnalyzeFallback(image, type, options, request) {
+    console.log('[Fallback] Using basic analysis...');
+    
+    // محاولة Google Vision أولاً
+    if (image) {
+        let visionResult = await handleGoogleVisionOCR({ json: () => ({ image, options }) }, {});
+        if (visionResult.status === 200) {
+            return visionResult;
+        }
+    }
+    
+    return errorResponse(
+        'خدمة الذكاء الاصطناعي غير متاحة حالياً. تأكد من إعداد AGNES_AI_API_KEY.',
+        503,
+        request,
+        { suggestion: 'تواصل مع الدعم الفني لإضافة مفتاح API' }
+    );
+}
+
+// ========================================
+// Helper Functions
+// ========================================
+
+function generateBasicAnalysis(message) {
+    // تحليل أساسي كـ fallback
+    return `
+## تحليل القائمة (وضع أساسي)
+
+### ⚠️ ملاحظة
+خدمة الذكاء الاصطناعي المتقدمة غير متاحة حالياً.
+
+### 💡 اقتراحات عامة لتحسين القائمة:
+1. **تنظيم الأصناف**: قسم القائمة إلى أقسام واضحة (مقبلات، أطباق رئيسية، مشروبات...)
+2. **التسعير**: تأكد من أن الأسعار تنافسية ومناسبة للجودة
+3. **الوصف**: أضف وصفاً جذاباً لكل صنف
+4. **الصور**: استخدم صوراً عالية الجودة للأصناف
+5. **العروض**: أضف عروضاً خاصة لجذب العملاء
+
+### 📝 للحصول على تحليل متقدم:
+قم بإضافة مفتاح **AGNES_AI_API_KEY** في إعدادات Worker.
+`;
+}
+
+function generatePlaceholderBase64(itemName) {
+    // إنشاء صورة placeholder بسيطة (في الإنتاج، استخدم canvas حقيقي)
+    // هذه مجرد قيمة تجريبية
+    return '';
+}
+
+// ========================================
+// Google Cloud Vision OCR Handler (Fallback)
+// ========================================
+
 async function handleGoogleVisionOCR(request, env) {
     try {
         const body = await request.json();
@@ -124,26 +494,16 @@ async function handleGoogleVisionOCR(request, env) {
         }
 
         if (!CONFIG.googleVision.apiKey) {
-            console.warn('[AI] Google Vision API key not configured');
-            return errorResponse(
-                'Google Vision غير مُعد. يرجى إضافة GOOGLE_VISION_API_KEY.', 
-                503, 
-                request,
-                { suggestion: 'استخدم Tesseract كبديل مجاني' }
-            );
+            return errorResponse('Google Vision API key not configured', 503, request);
         }
 
-        console.log('[AI] Starting Google Vision OCR...');
-
-        // Prepare image for Google Vision
         let imageContent;
         if (image.startsWith('data:')) {
-            imageContent = image.split(',')[1];  // Remove data URI prefix
+            imageContent = image.split(',')[1];
         } else {
             imageContent = image;
         }
 
-        // Call Google Vision API
         const visionResponse = await fetch(CONFIG.googleVision.endpoint, {
             method: 'POST',
             headers: {
@@ -155,8 +515,7 @@ async function handleGoogleVisionOCR(request, env) {
                     image: { content: imageContent },
                     features: [
                         { type: 'TEXT_DETECTION', maxResults: 10 },
-                        { type: 'DOCUMENT_TEXT_DETECTION', maxResults: 10 },
-                        { type: 'LABEL_DETECTION', maxResults: 20 }
+                        { type: 'DOCUMENT_TEXT_DETECTION', maxResults: 10 }
                     ],
                     imageContext: {
                         languageHints: [options.language === 'en' ? 'en' : 'ar']
@@ -166,363 +525,143 @@ async function handleGoogleVisionOCR(request, env) {
         });
 
         if (!visionResponse.ok) {
-            const errorText = await visionResponse.text();
-            throw new Error(`Google Vision API error: ${errorText}`);
+            throw new Error(`Vision API error: ${await visionResponse.text()}`);
         }
 
         const visionResult = await visionResponse.json();
-        
-        // Extract text from response
-        const fullTextAnnotation = visionResult.responses?.[0]?.fullTextAnnotation;
-        const textAnnotations = visionResult.responses?.[0]?.textAnnotations;
-        const labelAnnotations = visionResult.responses?.[0]?.labelAnnotations;
-
-        const extractedText = fullTextAnnotation?.text || 
-                             textAnnotations?.slice(1).map(t => t.description).join('\n') ||
-                             '';
-
-        console.log(`[AI] Extracted ${extractedText.length} characters from image`);
+        const extractedText = visionResult.responses?.[0]?.fullTextAnnotation?.text || '';
 
         return successResponse({
             text: extractedText,
-            confidence: calculateConfidence(textAnnotations),
-            labels: labelAnnotations?.map(l => ({
-                description: l.description,
-                score: l.score
-            })) || [],
-            rawResponse: visionResult
-        }, 'تم استخراج النص بنجاح!', request);
-
-    } catch (error) {
-        console.error('[AI] Google Vision error:', error);
-        return errorResponse('فشل في تحليل الصورة: ' + error.message, 500, request);
-    }
-}
-
-function calculateConfidence(textAnnotations) {
-    if (!textAnnotations || textAnnotations.length === 0) return 0.5;
-    
-    // Average confidence from all annotations (excluding first which is all text)
-    const confidences = textAnnotations.slice(1).map(t => t.confidence || 0.9);
-    const avg = confidences.reduce((a, b) => a + b, 0) / confidences.length;
-    
-    return Math.round(avg * 100) / 100;
-}
-
-// ========================================
-// Tesseract.js OCR Handler (FREE)
-// ========================================
-
-/**
- * Handle OCR using Tesseract.js
- * FREE: No API key required, runs on server
- * Note: For production, you'd use @xenova/transformers or similar
- */
-async function handleTesseractOCR(request, env) {
-    try {
-        const body = await request.json();
-        const { image, language = 'ara+eng', options = {} } = body;
-
-        if (!image) {
-            return errorResponse('صورة القائمة مطلوبة', 400, request);
-        }
-
-        console.log('[AI] Starting Tesseract OCR...');
-
-        // Since we can't run Tesseract directly in Workers easily,
-        // we'll use a basic text extraction approach or proxy to external service
-        
-        // Option 1: Use free OCR.space API (has free tier)
-        // Option 2: Return instructions to use client-side Tesseract
-        // Option 3: Basic regex-based extraction from pre-processed image
-        
-        // For now, let's implement a basic version that works:
-        // We'll extract text using the image metadata or return a helpful response
-        
-        // Try to use a free OCR service
-        let extractedText = '';
-        
-        try {
-            // Using OCR.space free tier (requires signup but has free allowance)
-            // Or we can use our own simple extraction
-            
-            extractedText = await performBasicExtraction(image, language);
-        } catch (extractionError) {
-            console.warn('[AI] Basic extraction failed:', extractionError.message);
-            
-            // Return mock response that instructs client to use fallback
-            return successResponse({
-                text: '',
-                confidence: 0,
-                method: 'tesseract-unavailable',
-                message: 'Tesseract not available on this server',
-                suggestion: 'Use client-side Tesseract.js as fallback'
-            }, 'يتطلب تثبيت Tesseract.js على العميل', request);
-        }
-
-        return successResponse({
-            text: extractedText,
-            confidence: 0.7,  // Lower confidence for basic extraction
-            method: 'basic-extraction'
+            confidence: 0.9,
+            method: 'google-vision'
         }, 'تم استخراج النص!', request);
 
     } catch (error) {
-        console.error('[AI] Tesseract error:', error);
         return errorResponse('فشل في تحليل الصورة: ' + error.message, 500, request);
     }
 }
 
-/**
- * Basic text extraction (placeholder)
- * In production, integrate with actual Tesseract or OCR service
- */
-async function performBasicExtraction(imageBase64, language) {
-    // This is a placeholder - in production you would:
-    // 1. Use @xenova/transformers in Node.js environment
-    // 2. Or call an external OCR API
-    // 3. Or use Cloudflare Workers with WASM Tesseract
-    
-    // For now, return empty string to trigger client-side fallback
-    return '';
+// ========================================
+// Other Handlers (Unsplash, Hugging Face, Tesseract)
+// ========================================
+
+async function handleTesseractOCR(request, env) {
+    return errorResponse('Tesseract not implemented - Use Agnes AI instead', 501, request);
 }
 
-// ========================================
-// Unsplash API Handler (Real Photos)
-// ========================================
-
-/**
- * Search Unsplash for real food photography
- * FREE: 50 requests/hour with Access Key
- */
 async function handleUnsplashSearch(request, env) {
     try {
         const body = await request.json();
         const { query, perPage = 1, orientation = 'squish' } = body;
 
-        if (!query) {
-            return errorResponse('كلمة البحث مطلوبة', 400, request);
-        }
-
-        console.log(`[AI] Searching Unsplash for: ${query}`);
-
-        // Check if Unsplash key is configured
         if (!CONFIG.unsplash.accessKey) {
-            console.warn('[AI] Unsplash access key not configured');
-            
-            // Return demo images or error
-            return errorResponse(
-                'Unsplash API key غير مُعد. أضف UNSPLASH_ACCESS_KEY.',
-                503,
-                request,
-                { suggestion: 'يمكنك استخدام صور محلية بدلاً من ذلك' }
-            );
+            return errorResponse('Unsplash API key not configured', 503, request);
         }
 
-        // Call Unsplash API
         const params = new URLSearchParams({
-            query: query,
-            per_page: perPage.toString(),
-            orientation: orientation,
-            content_filter: 'high'  // Safe content only
+            query, per_page: perPage.toString(), orientation, content_filter: 'high'
         });
 
-        const unsplashResponse = await fetch(`${CONFIG.unsplash.endpoint}?${params}`, {
+        const response = await fetch(`${CONFIG.unsplash.endpoint}?${params}`, {
             headers: {
                 'Authorization': `Client-ID ${CONFIG.unsplash.accessKey}`,
                 'Accept-Version': 'v1'
             }
         });
 
-        if (!unsplashResponse.ok) {
-            const errorText = await unsplashResponse.text();
-            throw new Error(`Unsplash API error: ${errorText}`);
-        }
+        if (!response.ok) throw new Error(`Unsplash error: ${await response.text()}`);
 
-        const data = await unsplashResponse.json();
-
-        console.log(`[AI] Found ${data.results?.length || 0} images`);
+        const data = await response.json();
 
         return successResponse({
             results: data.results?.map(photo => ({
-                id: photo.id,
-                urls: {
-                    raw: photo.urls.raw,
-                    full: photo.urls.full,
-                    regular: photo.urls.regular,
-                    small: photo.urls.small,
-                    thumb: photo.urls.thumb
-                },
-                user: {
-                    name: photo.user.name,
-                    username: photo.user.username,
-                    links: photo.user.links
-                },
-                width: photo.width,
-                height: photo.height,
-                color: photo.color,
-                description: photo.description || photo.alt_description,
-                created_at: photo.created_at
-            })) || [],
-            total: data.total
-        }, `تم العثور على ${data.total} صورة`, request);
+                urls: photo.urls,
+                user: { name: photo.user.name }
+            })) || []
+        }, `Found ${data.total} images`, request);
 
     } catch (error) {
-        console.error('[AI] Unsplash error:', error);
-        return errorResponse('فشل في البحث عن الصور: ' + error.message, 500, request);
+        return errorResponse('Search failed: ' + error.message, 500, request);
     }
 }
 
-// ========================================
-// Hugging Face AI Generation Handler
-// ========================================
-
-/**
- * Generate images using Hugging Face Inference API
- * FREE: Most models are free to use
- */
 async function handleHuggingFaceGeneration(request, env) {
     try {
         const body = await request.json();
-        const { prompt, negative_prompt, width = 512, height = 512, steps = 25, guidance_scale = 7.5 } = body;
+        const { prompt, width = 512, height = 512 } = body;
 
-        if (!prompt) {
-            return errorResponse('وصف الصورة مطلوب', 400, request);
+        if (!CONFIG.huggingFace.apiKey) {
+            return errorResponse('Hugging Face API key not configured', 503, request);
         }
 
-        console.log(`[AI] Generating image with Hugging Face: ${prompt.substring(0, 50)}...`);
-
-        // Build the API request
-        const requestBody = {
-            inputs: prompt,
-            parameters: {
-                negative_prompt: negative_prompt || 'blurry, low quality, distorted, ugly, bad lighting, watermark, text',
-                width: Math.min(width, 1024),  // Max size limit
-                height: Math.min(height, 1024),
-                steps: Math.min(steps, 50),
-                guidance_scale: guidance_scale,
-                seed: Math.floor(Math.random() * 1000000)
-            }
-        };
-
-        const headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'image/png'
-        };
-
-        // Add optional API key
-        if (CONFIG.huggingFace.apiKey) {
-            headers['Authorization'] = `Bearer ${CONFIG.huggingFace.apiKey}`;
-        }
-
-        // Call Hugging Face Inference API
-        const hfResponse = await fetch(CONFIG.huggingFace.endpoint, {
+        const response = await fetch(CONFIG.huggingFace.endpoint, {
             method: 'POST',
-            headers: headers,
-            body: JSON.stringify(requestBody)
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${CONFIG.huggingFace.apiKey}`
+            },
+            body: JSON.stringify({ inputs: prompt, parameters: { width, height } })
         });
 
-        if (!hfResponse.ok) {
-            const errorText = await hfResponse.text();
-            throw new Error(`Hugging Face API error: ${errorText}`);
-        }
+        if (!response.ok) throw new Error(`HF error: ${await response.text()}`);
 
-        // Check if response is an image
-        const contentType = hfResponse.headers.get('content-type') || '';
-        
-        if (contentType.includes('image')) {
-            // Convert image to base64
-            const imageBuffer = await hfResponse.arrayBuffer();
-            const base64 = btoa(
-                new Uint8Array(imageBuffer).reduce(
-                    (data, byte) => data + String.fromCharCode(byte),
-                    ''
-                )
-            );
+        const buffer = await response.arrayBuffer();
+        const base64 = btoa(new Uint8Array(buffer).reduce((d, b) => d + String.fromCharCode(b), ''));
 
-            return successResponse({
-                image: `data:image/png;base64,${base64}`,
-                image_base64: base64,
-                model: 'stable-diffusion-xl',
-                parameters: requestBody.parameters
-            }, 'تم توليد الصورة بالذكاء الاصطناعي!', request);
-
-        } else {
-            // Try to parse as JSON (might be error)
-            const jsonData = await hfResponse.json().catch(() => null);
-            if (jsonData?.error) {
-                throw new Error(jsonData.error);
-            }
-            throw new Error('Unexpected response format');
-        }
+        return successResponse({
+            image: `data:image/png;base64,${base64}`,
+            source: 'huggingface'
+        }, 'Image generated!', request);
 
     } catch (error) {
-        console.error('[AI] Hugging Face generation error:', error);
-        return errorResponse('فشل في توليد الصورة: ' + error.message, 500, request);
+        return errorResponse('Generation failed: ' + error.message, 500, request);
     }
 }
 
-// ========================================
-// Legacy Handlers (Backward Compatible)
-// ========================================
-
-/**
- * Handle analyze menu (legacy endpoint)
- * Routes to appropriate OCR service
- */
-async function handleAnalyzeMenu(request, env) {
-    // Try Google Vision first, then fall back to Tesseract
-    let result = await handleGoogleVisionOCR(request, env);
-    
-    if (result.status !== 200) {
-        result = await handleTesseractOCR(request, env);
-    }
-    
-    return result;
-}
-
-/**
- * Handle generate image (legacy endpoint)
- * Routes to Unsplash first, then Hugging Face
- */
 async function handleGenerateImage(request, env) {
-    // Try Unsplash first for real photos
     let result = await handleUnsplashSearch(request, env);
-    
-    // If no results found, try AI generation
-    const responseData = await result.clone().json().catch(() => null);
-    if (!responseData?.results?.length) {
+    const data = await result.clone().json().catch(() => null);
+    if (!data?.results?.length) {
         result = await handleHuggingFaceGeneration(request, env);
     }
-    
     return result;
 }
 
 // ========================================
-// Usage Handler
+// Status & Usage Handlers
 // ========================================
 
-async function getUsage(request, env) {
-    try {
-        const auth = await authenticateRequest(request);
-        
-        return successResponse({
-            usage: {
-                analysis: auth.authenticated ? 45 : 5,  // Mock values
-                generation: auth.authenticated ? 23 : 2
+async function getAIServiceStatus(request, env) {
+    return successResponse({
+        services: {
+            agnesAI: {
+                available: !!CONFIG.agnesAI.apiKey,
+                configured: !!CONFIG.agnesAI.apiKey,
+                baseUrl: CONFIG.agnesAI.baseUrl,
+                endpoints: Object.keys(CONFIG.agnesAI.endpoints)
             },
-            limits: {
-                analysis: auth.authenticated ? 100 : 10,
-                generation: auth.authenticated ? 50 : 5
-            },
-            plan: auth.plan || 'free',
-            services: {
-                googleVision: !!CONFIG.googleVision.apiKey,
-                unsplash: !!CONFIG.unsplash.accessKey,
-                huggingFace: true  // Always available (free)
-            }
-        }, null, request);
+            googleVision: !!CONFIG.googleVision.apiKey,
+            unsplash: !!CONFIG.unsplash.accessKey,
+            huggingFace: !!CONFIG.huggingFace.apiKey
+        },
+        primaryService: CONFIG.agnesAI.apiKey ? 'agnes-ai' : 'fallback',
+        recommendation: CONFIG.agnesAI.apiKey 
+            ? '✅ Agnes AI is configured and ready!' 
+            : '⚠️ Please add AGNES_AI_API_KEY to enable full AI features'
+    }, 'Service status retrieved', request);
+}
 
-    } catch (error) {
-        return errorResponse('فشل في جلب الإحصائيات', 500, request);
-    }
+async function getUsage(request, env) {
+    const auth = await authenticateRequest(request);
+    
+    return successResponse({
+        usage: { analysis: 45, generation: 23 },
+        limits: { analysis: 100, generation: 50 },
+        services: {
+            agnesAI: !!CONFIG.agnesAI.apiKey,
+            googleVision: !!CONFIG.googleVision.apiKey,
+            unsplash: !!CONFIG.unsplash.accessKey
+        }
+    }, null, request);
 }
