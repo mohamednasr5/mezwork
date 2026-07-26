@@ -343,8 +343,8 @@ function fileToBase64(file) {
 }
 
 function getWorkerURL() {
-    // In production, this would be your Cloudflare Workers URL
-    return window.location.origin;
+    // Cloudflare Workers URL for MezoMenu API
+    return 'https://menu.nonm1724.workers.dev';
 }
 
 function getAuthToken() {

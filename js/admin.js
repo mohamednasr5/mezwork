@@ -3,6 +3,23 @@
  * Restaurant management dashboard functionality
  */
 
+// ========================================
+// Configuration
+// ========================================
+
+const ADMIN_CONFIG = {
+    // Cloudflare Workers API Base URL for admin panel
+    API_BASE_URL: 'https://menu.nonm1724.workers.dev',
+    
+    // API Endpoints
+    ENDPOINTS: {
+        menu: '/api/menu',
+        orders: '/api/orders',
+        upload: '/api/upload',
+        ai: '/api/ai'
+    }
+};
+
 document.addEventListener('DOMContentLoaded', function() {
     initDashboard();
 });

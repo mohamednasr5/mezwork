@@ -3,15 +3,42 @@
  * Realtime Database Setup
  */
 
-// Firebase Configuration
+// Firebase Configuration - MezoMenu SaaS
 const firebaseConfig = {
-    apiKey: process.env.FIREBASE_API_KEY || "YOUR_API_KEY",
-    authDomain: process.env.FIREBASE_AUTH_DOMAIN || "YOUR_PROJECT.firebaseapp.com",
-    databaseURL: process.env.FIREBASE_DATABASE_URL || "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
-    projectId: process.env.FIREBASE_PROJECT_ID || "YOUR_PROJECT_ID",
-    storageBucket: process.env.FIREBASE_STORAGE_BUCKET || "YOUR_PROJECT.appspot.com",
-    messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID || "YOUR_SENDER_ID",
-    appId: process.env.FIREBASE_APP_ID || "YOUR_APP_ID"
+    apiKey: "AIzaSyB9SyGG0MNGWU-bmMVZVJITW0bxDbbkB94",
+    authDomain: "menu-b41e6.firebaseapp.com",
+    databaseURL: "https://menu-b41e6-default-rtdb.firebaseio.com",
+    projectId: "menu-b41e6",
+    storageBucket: "menu-b41e6.firebasestorage.app",
+    messagingSenderId: "912801475897",
+    appId: "1:912801475897:web:4b35f7a144b7c2cc3b4ce8",
+    measurementId: "G-D8DCQJ2GWJ"
+};
+
+// ========================================
+// API & Worker Configuration
+// ========================================
+
+const CONFIG = {
+    // Cloudflare Workers API Base URL
+    WORKER_URL: 'https://menu.nonm1724.workers.dev',
+    
+    // API Endpoints
+    API_ENDPOINTS: {
+        auth: '/api/auth',
+        menu: '/api/menu',
+        orders: '/api/orders',
+        upload: '/api/upload',
+        ai: '/api/ai',
+        publicMenu: '/api/public/menu'
+    },
+    
+    // R2 Public URL for images
+    R2_PUBLIC_URL: 'https://pub-xxxxx.r2.dev', // Update with your R2 public URL
+    
+    // App Settings
+    APP_NAME: 'MezoMenu',
+    APP_VERSION: '1.0.0'
 };
 
 // Initialize Firebase (if not already initialized)

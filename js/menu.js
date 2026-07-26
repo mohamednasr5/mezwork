@@ -4,6 +4,21 @@
  */
 
 // ========================================
+// Configuration
+// ========================================
+
+const MENU_CONFIG = {
+    // Cloudflare Workers API Base URL for customer menu
+    API_BASE_URL: 'https://menu.nonm1724.workers.dev',
+    
+    // API Endpoints
+    ENDPOINTS: {
+        publicMenu: '/api/public/menu',
+        submitOrder: '/api/orders'
+    }
+};
+
+// ========================================
 // Global State
 // ========================================
 
@@ -81,7 +96,7 @@ async function loadMenu() {
         }
 
         // Fetch menu data from API or Firebase
-        const response = await fetch(`/api/public/menu/${slug}`);
+        const response = await fetch(`${MENU_CONFIG.API_BASE_URL}${MENU_CONFIG.ENDPOINTS.publicMenu}/${slug}`);
         
         if (!response.ok) {
             throw new Error('المطعم غير موجود');

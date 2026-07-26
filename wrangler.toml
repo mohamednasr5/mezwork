@@ -20,7 +20,7 @@ APP_URL = "https://mezomenu.com"
 
 # R2 Storage for images
 [[r2_buckets]]
-binding = "R2_IMAGES"
+binding = "IMAGES_BUCKET"
 bucket_name = "mezomenu-images"
 
 # KV Namespace for caching (optional)
@@ -37,11 +37,17 @@ bucket_name = "mezomenu-images"
 # ========================================
 # Secrets (Set via: wrangler secret put)
 # ========================================
-# FIREBASE_API_KEY = ""
-# FIREBASE_PROJECT_ID = ""
-# FIREBASE_AUTH_DOMAIN = ""
-# FIREBASE_DATABASE_URL = ""
+
+# Firebase Configuration
+FIREBASE_API_KEY = "AIzaSyB9SyGG0MNGWU-bmMVZVJITW0bxDbbkB94"
+FIREBASE_PROJECT_ID = "menu-b41e6"
+FIREBASE_AUTH_DOMAIN = "menu-b41e6.firebaseapp.com"
+FIREBASE_DATABASE_URL = "https://menu-b41e6-default-rtdb.firebaseio.com"
+
+# NVIDIA AI API
 # NVIDIA_API_KEY = ""
+
+# WhatsApp API (optional)
 # WHATSAPP_API_URL = ""
 # WHATSAPP_API_TOKEN = ""
 
