@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>محرر القائمة - MezoMenu</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="manifest" href="../manifest-admin.json">
+    <meta name="theme-color" content="#6366f1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/admin.css">
+</head>
+<body class="admin-body">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <a href="dashboard.html" class="sidebar-logo">
+                <span class="logo-icon">🍽️</span>
+                <span class="logo-text">MezoMenu</span>
+            </a>
+            <button class="sidebar-close" id="sidebarClose" aria-label="إغلاق القائمة">✕</button>
+        </div>
+
+        <nav class="sidebar-nav">
+            <ul>
+                <li class="nav-item">
+                    <a href="dashboard.html" class="nav-link">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                        <span>الرئيسية</span>
+                    </a>
+                </li>
+                <li class="nav-item active">
+                    <a href="menu-editor.html" class="nav-link">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h13"/></svg>
+                        <span>القائمة</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="categories.html" class="nav-link">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+                        <span>الأقسام</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="orders.html" class="nav-link">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                        <span>الطلبات</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="ai-analyze.html" class="nav-link">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a4 4 0 014 4v2a4 4 0 01-8 0V6a4 4 0 014-4z"/><path d="M16 14H8a4 4 0 00-4 4v2h16v-2a4 4 0 00-4-4z"/></svg>
+                        <span>الذكاء الاصطناعي</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="settings.html" class="nav-link">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+                        <span>الإعدادات</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <div class="user-avatar">👨‍💼</div>
+                <div class="user-details">
+                    <span class="user-name" id="userName">أحمد محمد</span>
+                    <span class="user-role">صاحب مطعم</span>
+                </div>
+            </div>
+            <button onclick="handleLogout()" class="btn btn-outline btn-sm logout-btn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                تسجيل الخروج
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Top Bar -->
+        <header class="topbar">
+            <div class="topbar-right">
+                <button class="menu-toggle" id="menuToggle" aria-label="القائمة">
+                    <span></span><span></span><span></span>
+                </button>
+                <h1 class="page-title">محرر القائمة</h1>
+            </div>
+            <div class="topbar-left">
+                <button onclick="openAddItemModal()" class="btn btn-primary btn-sm">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    إضافة صنف
+                </button>
+            </div>
+        </header>
+
+        <!-- Menu Editor Content -->
+        <div class="menu-editor-content">
+            <!-- Filter Bar -->
+            <div class="filter-bar">
+                <div class="filter-group">
+                    <label>تصفية حسب القسم:</label>
+                    <select id="categoryFilter" onchange="filterItems()">
+                        <option value="all">جميع الأقسام</option>
+                    </select>
+                </div>
+                <div class="search-box">
+                    <input type="text" placeholder="ابحث عن صنف..." oninput="searchItems(this.value)">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+                </div>
+                <div class="view-toggle">
+                    <button class="active" onclick="setView('grid')" title="عرض شبكي">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                    </button>
+                    <button onclick="setView('list')" title="عرض قائمة">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Items Grid/List -->
+            <div class="items-container" id="itemsContainer">
+                <div class="empty-state">
+                    <span>🍽️</span>
+                    <h3>لا توجد أصناف بعد</h3>
+                    <p>ابدأ بإضافة أصناف لقائمتك أو استخدم الذكاء الاصطناعي لتحليل صورة قائمة</p>
+                    <div class="empty-actions">
+                        <button onclick="openAddItemModal()" class="btn btn-primary">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                            إضافة صنف يدوياً
+                        </button>
+                        <a href="ai-analyze.html" class="btn btn-outline">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a4 4 0 014 4v2a4 4 0 01-8 0V6a4 4 0 014-4z"/></svg>
+                            تحليل بصورة AI
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Add/Edit Item Modal -->
+    <div class="modal-overlay" id="itemModal" style="display: none;">
+        <div class="modal-content item-modal">
+            <div class="modal-header">
+                <h2 id="itemModalTitle">إضافة صنف جديد</h2>
+                <button onclick="closeItemModal()" class="modal-close">×</button>
+            </div>
+            <form id="itemForm" onsubmit="saveItem(event)">
+                <div class="modal-body">
+                    <div class="form-grid">
+                        <div class="form-group full-width">
+                            <label for="itemName">اسم الصنف *</label>
+                            <input type="text" id="itemName" required placeholder="مثال: بيتزا مارجريتا">
+                        </div>
+                        
+                        <div class="form-group full-width">
+                            <label for="itemDescription">الوصف</label>
+                            <textarea id="itemDescription" rows="3" placeholder="وصف موجز للصنف..."></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="itemPrice">السعر (ج.م) *</label>
+                            <input type="number" id="itemPrice" required min="0" step="0.5" placeholder="0.00">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="itemCategory">القسم *</label>
+                            <select id="itemCategory" required>
+                                <option value="">اختر القسم</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="itemEmoji">الأيقونة/الإيموجي</label>
+                            <input type="text" id="itemEmoji" placeholder="🍕" maxlength="2">
+                            <div class="emoji-picker">
+                                <button type="button" onclick="setEmoji('🍕')">🍕</button>
+                                <button type="button" onclick="setEmoji('🍔')">🍔</button>
+                                <button type="button" onclick="setEmoji('🍟')">🍟</button>
+                                <button type="button" onclick="setEmoji('🌮')">🌮</button>
+                                <button type="button" onclick="setEmoji('🍣')">🍣</button>
+                                <button type="button" onclick="setEmoji('🥗')">🥗</button>
+                                <button type="button" onclick="setEmoji('🍜')">🍜</button>
+                                <button type="button" onclick="setEmoji('🧁')">🧁</button>
+                                <button type="button" onclick="setEmoji('☕')">☕</button>
+                                <button type="button" onclick="setEmoji('🥤')">🥤</button>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="ItemImage">صورة الصنف</label>
+                            <div class="image-upload-area" onclick="document.getElementById('ItemImage').click()">
+                                <input type="file" id="ItemImage" accept="image/*" onchange="previewImage(this)" hidden>
+                                <div id="imagePreview" class="image-preview">
+                                    <span>📷</span>
+                                    <span>اضغط لرفع صورة</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-options">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="itemAvailable" checked>
+                            <span>متاح للطلب</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="itemPopular">
+                            <span>صنف شائع ⭐</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="itemFeatured">
+                            <span>صنف مميز ✨</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <input type="hidden" id="editingItemId" value="">
+                    <button type="button" onclick="closeItemModal()" class="btn btn-outline">إلغاء</button>
+                    <button type="submit" class="btn btn-primary">حفظ الصنف</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Mobile Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    
+    <script src="../js/firebase-config.js"></script>
+    <script src="../js/admin.js"></script>
+    
+    <script>
+        // Menu Editor Functions
+        let currentView = 'grid';
+        let items = [];
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCategories();
+            loadItems();
+        });
+        
+        function loadCategories() {
+            const categorySelect = document.getElementById('categoryFilter');
+            const itemCategorySelect = document.getElementById('itemCategory');
+            
+            // Load categories from Firebase or use mock data
+            const categories = [
+                { id: 'cat_1', name: 'المقبلات' },
+                { id: 'cat_2', name: 'الأطباق الرئيسية' },
+                { id: 'cat_3', name: 'المشروبات' },
+                { id: 'cat_4', name: 'الحلويات' }
+            ];
+            
+            categories.forEach(cat => {
+                const option = document.createElement('option');
+                option.value = cat.id;
+                option.textContent = cat.name;
+                categorySelect.appendChild(option);
+                
+                const option2 = option.cloneNode(true);
+                itemCategorySelect.appendChild(option2);
+            });
+        }
+        
+        function loadItems() {
+            // Load items from Firebase or show mock data
+            items = getMockItems();
+            renderItems(items);
+        }
+        
+        function getMockItems() {
+            return [
+                { id: 'item_1', name: 'بيتزا مارجريتا', description: 'صلصة طماطم، موزاريلا، ريحان', price: 85, categoryId: 'cat_2', emoji: '🍕', isAvailable: true, isPopular: true },
+                { id: 'item_2', name: 'برجر لحم', description: 'لحم بقري 100%، خس، طماطم', price: 95, categoryId: 'cat_2', emoji: '🍔', isAvailable: true, isPopular: true },
+                { id: 'item_3', name: 'سلطة سيزر', description: 'خس، كرانشي، بارميزان', price: 55, categoryId: 'cat_1', emoji: '🥗', isAvailable: true, isPopular: false }
+            ];
+        }
+        
+        function renderItems(itemsToRender) {
+            const container = document.getElementById('itemsContainer');
+            
+            if (itemsToRender.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <span>🍽️</span>
+                        <h3>لا توجد أصناف</h3>
+                        <p>جرب البحث بكلمات أخرى أو أضف صنف جديد</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            if (currentView === 'grid') {
+                container.innerHTML = `<div class="items-grid">${itemsToRender.map(item => createItemCard(item)).join('')}</div>`;
+            } else {
+                container.innerHTML = `<div class="items-list-view">${itemsToRender.map(item => createItemRow(item)).join('')}</div>`;
+            }
+        }
+        
+        function createItemCard(item) {
+            return `
+                <div class="menu-item-card ${!item.isAvailable ? 'unavailable' : ''}">
+                    <div class="item-image-wrapper">
+                        ${item.image ? `<img src="${item.image}" alt="${item.name}">` : `<span class="item-emoji-large">${item.emoji || '🍽️'}</span>`}
+                        ${item.isPopular ? '<span class="item-badge popular">⭐ شائع</span>' : ''}
+                        ${!item.isAvailable ? '<span class="item-badge unavailable">غير متاح</span>' : ''}
+                    </div>
+                    <div class="item-body">
+                        <h3 class="item-name">${item.name}</h3>
+                        <p class="item-description">${item.description || ''}</p>
+                        <div class="item-footer">
+                            <span class="item-price">${item.price} ج.م</span>
+                            <div class="item-actions">
+                                <button onclick="editItem('${item.id}')" class="action-btn edit" title="تعديل">✏️</button>
+                                <button onclick="deleteItem('${item.id}')" class="action-btn delete" title="حذف">🗑️</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function createItemRow(item) {
+            return `
+                <div class="item-row ${!item.isAvailable ? 'unavailable' : ''}">
+                    <div class="row-image">${item.emoji || '🍽️'}</div>
+                    <div class="row-info">
+                        <span class="row-name">${item.name}</span>
+                        <span class="row-category">${getCategoryName(item.categoryId)}</span>
+                    </div>
+                    <div class="row-price">${item.price} ج.م</div>
+                    <div class="row-status">${item.isAvailable ? 'متاح' : 'غير متاح'}</div>
+                    <div class="row-actions">
+                        <button onclick="editItem('${item.id}')" class="action-btn edit">✏️</button>
+                        <button onclick="deleteItem('${item.id}')" class="action-btn delete">🗑️</button>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function getCategoryName(categoryId) {
+            const select = document.getElementById('categoryFilter');
+            const option = select.querySelector(`option[value="${categoryId}"]`);
+            return option ? option.textContent : 'بدون قسم';
+        }
+        
+        function openAddItemModal() {
+            document.getElementById('itemModalTitle').textContent = 'إضافة صنف جديد';
+            document.getElementById('itemForm').reset();
+            document.getElementById('editingItemId').value = '';
+            document.getElementById('imagePreview').innerHTML = '<span>📷</span><span>اضغط لرفع صورة</span>';
+            document.getElementById('itemModal').style.display = 'flex';
+        }
+        
+        function closeItemModal() {
+            document.getElementById('itemModal').style.display = 'none';
+        }
+        
+        function editItem(itemId) {
+            const item = items.find(i => i.id === itemId);
+            if (!item) return;
+            
+            document.getElementById('itemModalTitle').textContent = 'تعديل الصنف';
+            document.getElementById('itemName').value = item.name;
+            document.getElementById('itemDescription').value = item.description || '';
+            document.getElementById('itemPrice').value = item.price;
+            document.getElementById('itemCategory').value = item.categoryId;
+            document.getElementById('itemEmoji').value = item.emoji || '';
+            document.getElementById('itemAvailable').checked = item.isAvailable;
+            document.getElementById('itemPopular').checked = item.isPopular || false;
+            document.getElementById('itemFeatured').checked = item.featured || false;
+            document.getElementById('editingItemId').value = itemId;
+            document.getElementById('itemModal').style.display = 'flex';
+        }
+        
+        async function saveItem(e) {
+            e.preventDefault();
+            
+            const itemId = document.getElementById('editingItemId').value;
+            const itemData = {
+                name: document.getElementById('itemName').value,
+                description: document.getElementById('itemDescription').value,
+                price: parseFloat(document.getElementById('itemPrice').value),
+                categoryId: document.getElementById('itemCategory').value,
+                emoji: document.getElementById('itemEmoji').value || '🍽️',
+                isAvailable: document.getElementById('itemAvailable').checked,
+                isPopular: document.getElementById('itemPopular').checked,
+                featured: document.getElementById('itemFeatured').checked
+            };
+            
+            if (itemId) {
+                // Update existing item
+                const index = items.findIndex(i => i.id === itemId);
+                if (index !== -1) {
+                    items[index] = { ...items[index], ...itemData };
+                }
+                showSuccessMessage('تم تحديث الصنف بنجاح');
+            } else {
+                // Add new item
+                const newItem = { ...itemData, id: 'item_' + Date.now() };
+                items.push(newItem);
+                showSuccessMessage('تم إضافة الصنف بنجاح');
+            }
+            
+            closeItemModal();
+            renderItems(filterAndSearchItems());
+        }
+        
+        function deleteItem(itemId) {
+            if (!confirm('هل أنت متأكد من حذف هذا الصنف؟')) return;
+            
+            items = items.filter(i => i.id !== itemId);
+            renderItems(filterAndSearchItems());
+            showErrorMessage('تم حذف الصنف');
+        }
+        
+        function filterItems() {
+            renderItems(filterAndSearchItems());
+        }
+        
+        function searchItems(query) {
+            renderItems(filterAndSearchItems(query));
+        }
+        
+        function filterAndSearchItems(searchQuery = '') {
+            const categoryId = document.getElementById('categoryFilter').value;
+            let filtered = items;
+            
+            if (categoryId !== 'all') {
+                filtered = filtered.filter(item => item.categoryId === categoryId);
+            }
+            
+            if (searchQuery) {
+                filtered = filtered.filter(item => 
+                    item.name.includes(searchQuery) || 
+                    (item.description && item.description.includes(searchQuery))
+                );
+            }
+            
+            return filtered;
+        }
+        
+        function setView(view) {
+            currentView = view;
+            document.querySelectorAll('.view-toggle button').forEach(btn => btn.classList.remove('active'));
+            event.target.closest('button').classList.add('active');
+            renderItems(filterAndSearchItems());
+        }
+        
+        function setEmoji(emoji) {
+            document.getElementById('itemEmoji').value = emoji;
+        }
+        
+        function previewImage(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('imagePreview').innerHTML = `<img src="${e.target.result}" alt="Preview">`;
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+        
+        function showSuccessMessage(msg) {
+            showToast(msg, 'success');
+        }
+        
+        function showErrorMessage(msg) {
+            showToast(msg, 'error');
+        }
+        
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = type === 'success' ? `✅ ${message}` : `❌ ${message}`;
+            toast.style.cssText = `
+                position: fixed; bottom: 20px; right: 20px;
+                background: ${type === 'success' ? '#10b981' : '#ef4444'};
+                color: white; padding: 16px 24px; border-radius: 12px;
+                font-weight: 600; z-index: 9999; animation: slideIn 0.3s ease;
+            `;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+    </script>
+</body>
+</html>

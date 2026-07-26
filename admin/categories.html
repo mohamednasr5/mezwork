@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة الأقسام - MezoMenu</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="manifest" href="../manifest-admin.json">
+    <meta name="theme-color" content="#6366f1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/admin.css">
+</head>
+<body class="admin-body">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <a href="dashboard.html" class="sidebar-logo">
+                <span class="logo-icon">🍽️</span>
+                <span class="logo-text">MezoMenu</span>
+            </a>
+            <button class="sidebar-close" id="sidebarClose" aria-label="إغلاق القائمة">✕</button>
+        </div>
+
+        <nav class="sidebar-nav">
+            <ul>
+                <li class="nav-item"><a href="dashboard.html" class="nav-link"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg><span>الرئيسية</span></a></li>
+                <li class="nav-item"><a href="menu-editor.html" class="nav-link"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h13"/></svg><span>القائمة</span></a></li>
+                <li class="nav-item active"><a href="categories.html" class="nav-link"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg><span>الأقسام</span></a></li>
+                <li class="nav-item"><a href="orders.html" class="nav-link"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg><span>الطلبات</span></a></li>
+                <li class="nav-item"><a href="ai-analyze.html" class="nav-link"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a4 4 0 014 4v2a4 4 0 01-8 0V6a4 4 0 014-4z"/></svg><span>الذكاء الاصطناعي</span></a></li>
+                <li class="nav-item"><a href="settings.html" class="nav-link"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg><span>الإعدادات</span></a></li>
+            </ul>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <div class="user-avatar">👨‍💼</div>
+                <div class="user-details">
+                    <span class="user-name">أحمد محمد</span>
+                    <span class="user-role">صاحب مطعم</span>
+                </div>
+            </div>
+            <button onclick="handleLogout()" class="btn btn-outline btn-sm logout-btn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                تسجيل الخروج
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Top Bar -->
+        <header class="topbar">
+            <div class="topbar-right">
+                <button class="menu-toggle" id="menuToggle" aria-label="القائمة"><span></span><span></span><span></span></button>
+                <h1 class="page-title">إدارة الأقسام</h1>
+            </div>
+            <div class="topbar-left">
+                <button onclick="openAddCategoryModal()" class="btn btn-primary btn-sm">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    إضافة قسم
+                </button>
+            </div>
+        </header>
+
+        <!-- Categories Content -->
+        <div class="categories-content">
+            <div class="categories-grid" id="categoriesGrid">
+                <!-- Categories will be loaded here -->
+            </div>
+        </div>
+    </main>
+
+    <!-- Add/Edit Category Modal -->
+    <div class="modal-overlay" id="categoryModal" style="display: none;">
+        <div class="modal-content category-modal">
+            <div class="modal-header">
+                <h2 id="categoryModalTitle">إضافة قسم جديد</h2>
+                <button onclick="closeCategoryModal()" class="modal-close">×</button>
+            </div>
+            <form id="categoryForm" onsubmit="saveCategory(event)">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="categoryName">اسم القسم *</label>
+                        <input type="text" id="categoryName" required placeholder="مثال: المقبلات">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="categoryIcon">الأيقونة/الإيموجي</label>
+                        <input type="text" id="categoryIcon" placeholder="📁" maxlength="2">
+                        <div class="emoji-picker">
+                            <button type="button" onclick="setCategoryEmoji('🍕')">🍕</button>
+                            <button type="button" onclick="setCategoryEmoji('🍔')">🍔</button>
+                            <button type="button" onclick="setCategoryEmoji('🥗')">🥗</button>
+                            <button type="button" onclick="setCategoryEmoji('🍜')">🍜</button>
+                            <button type="button" onclick="setCategoryEmoji('☕')">☕</button>
+                            <button type="button" onclick="setCategoryEmoji('🧁')">🧁</button>
+                            <button type="button" onclick="setCategoryEmoji('🥤')">🥤</button>
+                            <button type="button" onclick="setCategoryEmoji('🍰')">🍰</button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="categoryOrder">ترتيب العرض</label>
+                        <input type="number" id="categoryOrder" min="1" value="1">
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <input type="hidden" id="editingCategoryId" value="">
+                    <button type="button" onclick="closeCategoryModal()" class="btn btn-outline">إلغاء</button>
+                    <button type="submit" class="btn btn-primary">حفظ القسم</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Mobile Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    
+    <script src="../js/firebase-config.js"></script>
+    <script src="../js/admin.js"></script>
+    
+    <script>
+        let categories = [
+            { id: 'cat_1', name: 'المقبلات', icon: '🥗', order: 1, itemsCount: 8 },
+            { id: 'cat_2', name: 'الأطباق الرئيسية', icon: '🍽️', order: 2, itemsCount: 15 },
+            { id: 'cat_3', name: 'المشروبات', icon: '🥤', order: 3, itemsCount: 10 },
+            { id: 'cat_4', name: 'الحلويات', icon: '🧁', order: 4, itemsCount: 6 }
+        ];
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            renderCategories();
+        });
+        
+        function renderCategories() {
+            const grid = document.getElementById('categoriesGrid');
+            
+            if (categories.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state" style="grid-column: 1/-1;">
+                        <span>📁</span>
+                        <h3>لا توجد أقسام بعد</h3>
+                        <p>ابدأ بإنشاء أقسام لتنظيم قائمتك</p>
+                        <button onclick="openAddCategoryModal()" class="btn btn-primary">إنشاء أول قسم</button>
+                    </div>
+                `;
+                return;
+            }
+            
+            grid.innerHTML = categories.map(cat => `
+                <div class="category-card" data-id="${cat.id}">
+                    <div class="category-header">
+                        <span class="category-icon">${cat.icon || '📁'}</span>
+                        <div class="category-info">
+                            <h3>${cat.name}</h3>
+                            <span>${cat.itemsCount || 0} صنف</span>
+                        </div>
+                        <div class="category-actions">
+                            <button onclick="editCategory('${cat.id}')" class="action-btn edit" title="تعديل">✏️</button>
+                            <button onclick="deleteCategory('${cat.id}')" class="action-btn delete" title="حذف">🗑️</button>
+                        </div>
+                    </div>
+                    <div class="category-order">
+                        <label>الترتيب:</label>
+                        <input type="number" value="${cat.order}" min="1" onchange="updateOrder('${cat.id}', this.value)">
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function openAddCategoryModal() {
+            document.getElementById('categoryModalTitle').textContent = 'إضافة قسم جديد';
+            document.getElementById('categoryForm').reset();
+            document.getElementById('editingCategoryId').value = '';
+            document.getElementById('categoryModal').style.display = 'flex';
+        }
+        
+        function closeCategoryModal() {
+            document.getElementById('categoryModal').style.display = 'none';
+        }
+        
+        function editCategory(categoryId) {
+            const cat = categories.find(c => c.id === categoryId);
+            if (!cat) return;
+            
+            document.getElementById('categoryModalTitle').textContent = 'تعديل القسم';
+            document.getElementById('categoryName').value = cat.name;
+            document.getElementById('categoryIcon').value = cat.icon || '';
+            document.getElementById('categoryOrder').value = cat.order;
+            document.getElementById('editingCategoryId').value = categoryId;
+            document.getElementById('categoryModal').style.display = 'flex';
+        }
+        
+        function saveCategory(e) {
+            e.preventDefault();
+            
+            const categoryId = document.getElementById('editingCategoryId').value;
+            const categoryData = {
+                name: document.getElementById('categoryName').value,
+                icon: document.getElementById('categoryIcon').value || '📁',
+                order: parseInt(document.getElementById('categoryOrder').value)
+            };
+            
+            if (categoryId) {
+                const index = categories.findIndex(c => c.id === categoryId);
+                if (index !== -1) {
+                    categories[index] = { ...categories[index], ...categoryData };
+                }
+                showToast('تم تحديث القسم بنجاح', 'success');
+            } else {
+                categories.push({ ...categoryData, id: 'cat_' + Date.now(), itemsCount: 0 });
+                showToast('تم إضافة القسم بنجاح', 'success');
+            }
+            
+            closeCategoryModal();
+            renderCategories();
+        }
+        
+        function deleteCategory(categoryId) {
+            if (!confirm('هل أنت متأكد من حذف هذا القسم؟')) return;
+            categories = categories.filter(c => c.id !== categoryId);
+            renderCategories();
+            showToast('تم حذف القسم', 'success');
+        }
+        
+        function updateOrder(categoryId, newOrder) {
+            const cat = categories.find(c => c.id === categoryId);
+            if (cat) {
+                cat.order = parseInt(newOrder);
+                showToast('تم تحديث الترتيب', 'success');
+            }
+        }
+        
+        function setCategoryEmoji(emoji) {
+            document.getElementById('categoryIcon').value = emoji;
+        }
+        
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = type === 'success' ? `✅ ${message}` : `❌ ${message}`;
+            toast.style.cssText = `position: fixed; bottom: 20px; right: 20px; background: ${type === 'success' ? '#10b981' : '#ef4444'}; color: white; padding: 16px 24px; border-radius: 12px; font-weight: 600; z-index: 9999; animation: slideIn 0.3s ease;`;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+    </script>
+    
+    <style>
+        .categories-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            padding: 20px 0;
+        }
+        
+        .category-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border: 1px solid #e5e7eb;
+            transition: all 0.3s ease;
+        }
+        
+        .category-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        
+        .category-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        
+        .category-icon {
+            font-size: 36px;
+        }
+        
+        .category-info {
+            flex: 1;
+        }
+        
+        .category-info h3 {
+            margin: 0;
+            color: #111827;
+            font-size: 18px;
+        }
+        
+        .category-info span {
+            color: #6b7280;
+            font-size: 14px;
+        }
+        
+        .category-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .action-btn {
+            width: 32px;
+            height: 32px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.2s;
+        }
+        
+        .action-btn.edit { background: #f3f4f6; }
+        .action-btn.delete { background: #fef2f2; }
+        .action-btn:hover { transform: scale(1.1); }
+        
+        .category-order {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding-top: 16px;
+            border-top: 1px solid #e5e7eb;
+        }
+        
+        .category-order label {
+            color: #6b7280;
+            font-size: 14px;
+        }
+        
+        .category-order input {
+            width: 70px;
+            padding: 6px 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .emoji-picker {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .emoji-picker button {
+            width: 40px;
+            height: 40px;
+            font-size: 20px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .emoji-picker button:hover {
+            background: #f3f4f6;
+            transform: scale(1.1);
+        }
+    </style>
+</body>
+</html>
