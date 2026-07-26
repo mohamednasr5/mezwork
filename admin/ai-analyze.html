@@ -159,7 +159,7 @@
     
     <script src="../js/firebase-config.js"></script>
     <script src="../js/admin.js"></script>
-    <script src="../js/nvidia-ai.js"></script>
+    <script src="../js/ai-service.js"></script>
     
     <script>
         let uploadedMenuImage = null;
@@ -199,49 +199,24 @@
             analyzeBtn.disabled = true;
             analyzeBtn.innerHTML = '<span class="spinner"></span> جاري التحليل...';
             resultDiv.style.display = 'block';
-            resultDiv.innerHTML = `
-                <div class="analysis-progress">
-                    <div class="progress-icon">🤖</div>
-                    <h3>جاري تحليل القائمة...</h3>
-                    <div class="progress-steps">
-                        <div class="progress-step active"><span>📷</span>قراءة الصورة</div>
-                        <div class="progress-step"><span>🔍</span>استخراج النصوص</div>
-                        <div class="progress-step"><span>📋</span>تنظيم البيانات</div>
-                        <div class="progress-step"><span>✅</span>الانتهاء</div>
-                    </div>
-                    <div class="progress-bar-container">
-                        <div class="progress-bar"></div>
-                    </div>
-                </div>
-            `;
+            
+            // Use real progress UI from ai-service.js
+            showAnalysisProgress(resultDiv);
             
             try {
-                // Simulate AI analysis (in production, this calls NVIDIA API)
-                await new Promise(resolve => setTimeout(resolve, 3000));
+                // Call REAL AI analysis from ai-service.js (Agnes AI)
+                const realResult = await analyzeMenuImage(uploadedMenuImage, {
+                    language: 'ar',
+                    extractPrices: true,
+                    extractCategories: true
+                });
                 
-                // Mock results
-                const mockResult = {
-                    success: true,
-                    message: 'تم تحليل القائمة بنجاح! تم استخراج 6 أصناف في 4 أقسام',
-                    data: {
-                        categories: [
-                            { id: 'cat_1', name: 'المقبلات', order: 1 },
-                            { id: 'cat_2', name: 'الأطباق الرئيسية', order: 2 },
-                            { id: 'cat_3', name: 'المشروبات', order: 3 },
-                            { id: 'cat_4', name: 'الحلويات', order: 4 }
-                        ],
-                        items: [
-                            { id: 'i1', name: 'حمص بالطحينة', description: 'حمص مع طحينة وليمون', price: 45, categoryId: 'cat_1', emoji: '🧆' },
-                            { id: 'i2', name: 'ورق عنب محشي', description: 'محشي بالأرز واللحم', price: 65, categoryId: 'cat_1', emoji: '🍇' },
-                            { id: 'i3', name: 'مندي لحم', description: 'أرز بسمتي مع ضأن', price: 180, categoryId: 'cat_2', emoji: '🍖' },
-                            { id: 'i4', name: 'كبسة دجاج', description: 'أرز مع دجاج كامل', price: 150, categoryId: 'cat_2', emoji: '🍗' },
-                            { id: 'i5', name: 'عصير رمان', description: 'رمان طازج مع سكر', price: 35, categoryId: 'cat_3', emoji: '🧃' },
-                            { id: 'i6', name: 'كنافة بالقشطة', description: 'كنافة مع قشطة', price: 70, categoryId: 'cat_4', emoji: '🧁' }
-                        ]
-                    }
-                };
-                
-                displayAnalysisResults(mockResult);
+                if (realResult.success) {
+                    displayAnalysisResults(realResult);
+                    showToast(realResult.message || 'تم التحليل بنجاح!', 'success');
+                } else {
+                    throw new Error(realResult.error || 'فشل في التحليل');
+                }
                 
             } catch (error) {
                 resultDiv.innerHTML = `
@@ -249,6 +224,7 @@
                         <span>😕</span>
                         <h3>حدث خطأ في التحليل</h3>
                         <p>${error.message}</p>
+                        <p class="error-suggestion">${error.suggestion || 'تأكد من أن الصورة واضحة وحاول مرة أخرى'}</p>
                         <button onclick="analyzeMenu()" class="btn btn-primary">إعادة المحاولة</button>
                     </div>
                 `;
@@ -326,28 +302,60 @@
             container.innerHTML = `
                 <div class="generating-state">
                     <div class="spinner"></div>
-                    <p>جاري توليد الصورة...</p>
+                    <p>جاري توليد الصورة بالذكاء الاصطناعي...</p>
+                    <p class="sub-text">يستغرق هذا عادة 5-10 ثوانٍ</p>
                 </div>
             `;
             
             try {
-                // Simulate image generation (in production, this calls NVIDIA API)
-                await new Promise(resolve => setTimeout(resolve, 5000));
+                // Call REAL AI image generation from ai-service.js (Agnes AI)
+                const result = await aiGenerateImage(itemName, {
+                    style: 'food-photography',
+                    quality: 'high',
+                    width: 512,
+                    height: 512
+                });
                 
-                // Show placeholder/generated image
+                if (result.success) {
+                    const imageUrl = result.imageUrl || result.imageBase64;
+                    
+                    container.innerHTML = `
+                        <img id="generatedImage" src="${imageUrl}" alt="${itemName}" 
+                             onerror="this.src='${generatePlaceholder(itemName)}'">
+                        <div class="image-info">
+                            <span class="source-badge">🎨 ${result.source === 'agnes-ai' ? 'AI Agnes' : 'صورة تمثيلية'}</span>
+                            ${result.prompt ? `<span class="prompt-hint">تم توليد صورة لـ: ${itemName}</span>` : ''}
+                        </div>
+                        <div class="image-actions">
+                            <button onclick="downloadGeneratedImage()" class="btn btn-sm btn-primary">📥 تحميل</button>
+                            <button onclick="useInMenuItem()" class="btn btn-sm btn-outline">✅ استخدم للصنف</button>
+                            <button onclick="regenerateImage()" class="btn btn-sm btn-outline">🔄 إعادة التوليد</button>
+                        </div>
+                    `;
+                    
+                    showToast('تم توليد الصورة بنجاح!', 'success');
+                } else {
+                    throw new Error(result.error || 'فشل في توليد الصورة');
+                }
+                
+            } catch (error) {
+                console.error('Image generation error:', error);
                 container.innerHTML = `
                     <img id="generatedImage" src="${generatePlaceholder(itemName)}" alt="${itemName}">
+                    <p class="error-text">⚠️ ${error.message}</p>
+                    <p class="sub-text">تم عرض صورة تمثيلية بدلاً من ذلك</p>
                     <div class="image-actions">
                         <button onclick="downloadGeneratedImage()" class="btn btn-sm btn-primary">تحميل</button>
                         <button onclick="useInMenuItem()" class="btn btn-sm btn-outline">استخدم للصنف</button>
+                        <button onclick="regenerateImage()" class="btn btn-sm btn-outline">إعادة المحاولة</button>
                     </div>
                 `;
-                
-                showToast('تم توليد الصورة بنجاح!', 'success');
-                
-            } catch (error) {
-                container.innerHTML = `<p class="error-text">فشل في توليد الصورة: ${error.message}</p>`;
+                showToast('تم استخدام صورة تمثيلية', 'warning');
             }
+        }
+        
+        async function regenerateImage() {
+            await generateImage();
         }
         
         function generatePlaceholder(name) {

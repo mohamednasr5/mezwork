@@ -1,52 +1,63 @@
 /**
- * MezoMenu - NVIDIA AI Integration
- * Menu analysis and image generation using NVIDIA AI APIs
+ * MezoMenu - AI Integration (REAL APIs)
+ * Menu analysis and image generation using REAL AI services
+ * 
+ * Supported Services:
+ * - Google Cloud Vision API (OCR/Text Detection)
+ * - Hugging Face Inference API (Free Image Generation)
+ * - Unsplash API (Real Food Images)
+ * - Tesseract.js (Local OCR - Free)
  */
 
 // ========================================
 // Configuration
 // ========================================
 
-const NVIDIA_CONFIG = {
-    // These should be set via environment variables in production
-    apiKey: process.env.NVIDIA_API_KEY || 'YOUR_NVIDIA_API_KEY',
+const AI_CONFIG = {
+    // Worker URL for secure API calls
+    workerURL: 'https://menu.nonm1724.workers.dev',
     
-    // API Endpoints
+    // API Endpoints (Real Services)
     endpoints: {
-        vision: 'https://ai.api.nvidia.com/v1/vision/microsoft/florence-2',  // For menu OCR/analysis
-        imageGen: 'https://ai.api.nvidia.com/v1/genai/stabilityai/stable-diffusion-xl'  // For food image generation
+        // Google Cloud Vision for OCR
+        googleVision: '/api/ai/ocr',
+        
+        // Hugging Face for image generation (FREE)
+        huggingFace: '/api/ai/generate',
+        
+        // Unsplash for real food images
+        unsplash: 'https://api.unsplash.com/search/photos',
+        
+        // Fallback OCR with Tesseract
+        tesseract: '/api/ai/tesseract'
     },
     
-    // Rate limiting (requests per month based on plan)
-    rateLimits: {
-        free: { analysis: 0, generation: 0 },
-        pro: { analysis: 100, generation: 50 },
-        enterprise: { analysis: -1, generation: -1 }  // -1 = unlimited
+    // Unsplash Configuration (Free Tier: 50 requests/hour)
+    unsplash: {
+        accessKey: '',  // Set in environment or leave empty for demo mode
+        perPage: 5,
+        orientation: 'squish'
     }
 };
 
 // ========================================
-// Menu Analysis (OCR/Vision)
+// Menu Analysis (REAL OCR)
 // ========================================
 
 /**
- * Analyze a menu image using NVIDIA Vision AI
- * Extracts categories, items, prices, and descriptions
+ * Analyze a menu image using REAL OCR
+ * Extracts categories, items, prices, and descriptions from actual image
  * 
  * @param {File|string} imageFile - Image file or base64 string
  * @param {object} options - Analysis options
- * @returns {Promise<object>} - Analyzed menu data
+ * @returns {Promise<object>} - Analyzed menu data (REAL data from image)
  */
 async function analyzeMenuImage(imageFile, options = {}) {
     const restaurantId = getRestaurantId();
     
     try {
-        // Check usage limits
-        const usage = await getAIUsage(restaurantId);
-        if (usage.analysis >= getAnalysisLimit(restaurantId) && getAnalysisLimit(restaurantId) !== -1) {
-            throw new Error('وصلت للحد الأقصى من التحليل هذا الشهر');
-        }
-
+        console.log('🔍 Starting REAL menu analysis...');
+        
         // Convert file to base64 if needed
         let imageBase64;
         if (imageFile instanceof File) {
@@ -55,23 +66,37 @@ async function analyzeMenuImage(imageFile, options = {}) {
             imageBase64 = imageFile;
         }
 
-        console.log('🔍 Starting menu analysis...');
+        // Try multiple OCR methods in order of accuracy
+        
+        // Method 1: Try Google Cloud Vision via Worker (Most Accurate)
+        let result = await tryGoogleVisionOCR(imageBase64, options);
+        
+        // Method 2: If that fails, try Tesseract.js via Worker (Free, Local)
+        if (!result.success) {
+            console.log('⚠️ Google Vision failed, trying Tesseract...');
+            result = await tryTesseractOCR(imageBase64, options);
+        }
+        
+        // Method 3: Last resort - use client-side basic extraction
+        if (!result.success) {
+            console.log('⚠️ Server OCR failed, trying client-side fallback...');
+            result = await performClientSideAnalysis(imageBase64, options);
+        }
 
-        // Call NVIDIA Vision API
-        const result = await callNVIDIAVisionAPI(imageBase64, options);
-
-        // Parse and structure the results
-        const parsedMenu = parseMenuAnalysisResult(result);
-
-        // Log usage
-        await incrementAIUsage(restaurantId, 'analysis');
-
-        return {
-            success: true,
-            data: parsedMenu,
-            rawResult: result,
-            message: `تم تحليل القائمة بنجاح! تم استخراج ${parsedMenu.items.length} صنف في ${parsedMenu.categories.length} قسم`
-        };
+        if (result.success) {
+            // Log usage
+            await incrementAIUsage(restaurantId, 'analysis');
+            
+            return {
+                success: true,
+                data: result.data,
+                confidence: result.confidence || 0.8,
+                method: result.method || 'ocr',
+                message: `تم تحليل القائمة بنجاح! تم استخراج ${result.data.items.length} صنف في ${result.data.categories.length} قسم`
+            };
+        } else {
+            throw new Error(result.error || 'فشل في تحليل القائمة');
+        }
 
     } catch (error) {
         console.error('❌ Menu analysis error:', error);
@@ -79,22 +104,18 @@ async function analyzeMenuImage(imageFile, options = {}) {
         return {
             success: false,
             error: error.message || 'فشل في تحليل القائمة',
-            // Return mock data for development
-            mockData: getMockAnalysisData()
+            suggestion: 'تأكد من أن الصورة واضحة وقابلة للقراءة'
         };
     }
 }
 
 /**
- * Call NVIDIA Vision API for menu analysis
+ * Method 1: Google Cloud Vision API via Worker
  */
-async function callNVIDIAVisionAPI(imageBase64, options) {
-    // In production, this would make an actual API call to Cloudflare Worker
-    // which then calls NVIDIA API securely
-    
-    const workerEndpoint = `${getWorkerURL()}/api/ai/analyze`;
-    
+async function tryGoogleVisionOCR(imageBase64, options) {
     try {
+        const workerEndpoint = `${AI_CONFIG.workerURL}${AI_CONFIG.endpoints.googleVision}`;
+        
         const response = await fetch(workerEndpoint, {
             method: 'POST',
             headers: {
@@ -107,226 +128,641 @@ async function callNVIDIAVisionAPI(imageBase64, options) {
                     language: options.language || 'ar',
                     extractPrices: true,
                     extractCategories: true,
-                    extractDescriptions: true,
                     ...options
                 }
             })
         });
 
         if (!response.ok) {
-            throw new Error(`API error: ${response.status}`);
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || `Google Vision error: ${response.status}`);
         }
 
-        return await response.json();
+        const result = await response.json();
+        
+        return {
+            success: true,
+            data: parseOCRResult(result.data),
+            confidence: result.confidence || 0.9,
+            method: 'google-vision'
+        };
 
     } catch (error) {
-        console.warn('⚠️ Could not reach AI API, using fallback mode');
-        // Return mock data for development
-        return getMockVisionResponse();
+        console.warn('⚠️ Google Vision not available:', error.message);
+        return { success: false, error: error.message };
     }
 }
 
 /**
- * Parse raw vision API response into structured menu data
+ * Method 2: Tesseract.js via Worker (Free, No API Key Needed)
  */
-function parseMenuAnalysisResult(result) {
-    // This would parse the actual NVIDIA/Florence-2 response
-    // For now, returning structured format expected by the app
-    
-    if (result.mock) {
-        return result.data;
-    }
+async function tryTesseractOCR(imageBase64, options) {
+    try {
+        const workerEndpoint = `${AI_CONFIG.workerURL}${AI_CONFIG.endpoints.tesseract}`;
+        
+        const response = await fetch(workerEndpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                image: imageBase64,
+                language: options.language === 'ar' ? 'ara' : 'eng+ara',
+                options: {
+                    ...options,
+                    preprocess: true
+                }
+            })
+        });
 
+        if (!response.ok) {
+            throw new Error(`Tesseract error: ${response.status}`);
+        }
+
+        const result = await response.json();
+        
+        // Parse raw text into structured menu data
+        const parsedMenu = parseRawTextToMenu(result.text, options.language || 'ar');
+        
+        return {
+            success: true,
+            data: parsedMenu,
+            confidence: result.confidence || 0.7,
+            method: 'tesseract',
+            rawText: result.text
+        };
+
+    } catch (error) {
+        console.warn('⚠️ Tesseract not available:', error.message);
+        return { success: false, error: error.message };
+    }
+}
+
+/**
+ * Method 3: Client-side analysis (Basic fallback)
+ */
+async function performClientSideAnalysis(imageBase64, options) {
+    try {
+        // Create image element to analyze
+        const img = new Image();
+        await new Promise((resolve, reject) => {
+            img.onload = resolve;
+            img.onerror = reject;
+            img.src = imageBase64;
+        });
+        
+        // For now, show an error asking user to use better method
+        throw new Error('يتطلب تحليل الصورة خادم OCR. يرجى تفعيل Google Cloud Vision أو استخدام Tesseract.');
+        
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+/**
+ * Parse raw OCR text into structured menu data
+ * This is the KEY function that extracts real data from the image
+ */
+function parseRawTextToMenu(rawText, language = 'ar') {
+    const lines = rawText.split('\n').filter(line => line.trim().length > 0);
+    
+    const categories = [];
+    const items = [];
+    let currentCategory = null;
+    let categoryCounter = 0;
+    
+    // Common category keywords in Arabic and English
+    const categoryPatterns = [
+        // Arabic patterns
+        /مقبلات|أطباق جانبية|سلطات|شوربات/i,
+        /أطباق رئيسية|وجبات رئيسية|م main/i,
+        /مشروبات|عصائر|مشروبات باردة|ساخنة/i,
+        /حلويات|تحلية/i,
+        /سمك ومأكولات بحرية/i,
+        /سندويشات|برجر/i,
+        /بيتزا|معجنات/i,
+        /رز|أرز|معكرونة|باستا/i,
+        // English patterns
+        /appetizers|starters|sides/i,
+        /main.?course|entrees?|mains?/i,
+        /drinks?|beverages?|juices?/i,
+        /desserts?|sweets?/i,
+        /seafood|fish/i,
+        /sandwiches?|burgers?/i,
+        /pizza|pasta/i,
+        /salads?|soups?/i
+    ];
+    
+    // Price pattern (detects numbers that look like prices)
+    const pricePattern = /(?:(?:ج\.م|EGP|\$|€|£|ريال|درهم)\s*)?(\d+(?:[.,]\d{1,2})?)\s*(?:ج\.م|EGP|\$|€|£)?/;
+    
+    for (const line of lines) {
+        const trimmedLine = line.trim();
+        
+        // Skip very short lines or lines that are just numbers
+        if (trimmedLine.length < 2 || /^\d+$/.test(trimmedLine)) {
+            continue;
+        }
+        
+        // Check if this line is a category header
+        const isCategory = categoryPatterns.some(pattern => pattern.test(trimmedLine));
+        
+        if (isCategory && !pricePattern.test(trimmedLine)) {
+            categoryCounter++;
+            currentCategory = {
+                id: `cat_${categoryCounter}`,
+                name: trimmedLine.replace(/[^\w\s\u0600-\u06FF]/g, '').trim(),
+                order: categoryCounter
+            };
+            categories.push(currentCategory);
+            continue;
+        }
+        
+        // Try to extract item + price from line
+        const priceMatch = trimmedLine.match(pricePattern);
+        
+        if (priceMatch && currentCategory) {
+            const priceStr = priceMatch[1].replace(',', '.');
+            const price = parseFloat(priceStr);
+            
+            // Item name is everything before the price
+            let name = trimmedLine.substring(0, trimmedLine.indexOf(priceMatch[0])).trim();
+            
+            // Clean up the name
+            name = name.replace(/^[.\-–—]+/, '')  // Remove leading dots/dashes
+                       .replace(/[.\-–—]+$/, '')   // Remove trailing dots/dashes
+                       .replace(/\d+/g, '')         // Remove stray numbers
+                       .replace(/\s+/g, ' ')       // Normalize whitespace
+                       .trim();
+            
+            // Only add if we have a valid name (at least 2 chars)
+            if (name.length >= 2) {
+                items.push({
+                    id: `item_${Date.now()}_${items.length}`,
+                    name: name,
+                    description: '',
+                    price: price,
+                    categoryId: currentCategory.id,
+                    emoji: guessFoodEmoji(name),
+                    isAvailable: true,
+                    extractedFromImage: true
+                });
+            }
+        } else if (currentCategory && trimmedLine.length > 3) {
+            // Might be a description or item without clear price
+            // Add as potential item with price 0
+            items.push({
+                id: `item_${Date.now()}_${items.length}`,
+                name: trimmedLine,
+                description: '',
+                price: null,  // Price not detected
+                categoryId: currentCategory.id,
+                emoji: guessFoodEmoji(trimmedLine),
+                isAvailable: true,
+                needsPriceConfirmation: true,
+                extractedFromImage: true
+            });
+        }
+    }
+    
+    // If no categories were found but we have items, create a default category
+    if (categories.length === 0 && items.length > 0) {
+        categories.push({
+            id: 'cat_1',
+            name: language === 'ar' ? 'الأصناف' : 'Items',
+            order: 1
+        });
+        
+        // Update all items to use default category
+        items.forEach(item => {
+            item.categoryId = 'cat_1';
+        });
+    }
+    
     return {
-        restaurantName: result.restaurantName || '',
-        currency: result.currency || 'ج.م',
-        categories: result.categories || [],
-        items: result.items || []
+        restaurantName: '',  // Could be extracted from first line if it looks like restaurant name
+        currency: detectCurrency(rawText),
+        categories: categories,
+        items: items
     };
 }
 
+/**
+ * Parse structured OCR result
+ */
+function parseOCRResult(data) {
+    if (!data) {
+        return { categories: [], items: [] };
+    }
+    
+    // If already structured correctly
+    if (data.categories && data.items) {
+        return {
+            restaurantName: data.restaurantName || '',
+            currency: data.currency || 'ج.م',
+            categories: data.categories.map((cat, i) => ({
+                id: cat.id || `cat_${i + 1}`,
+                name: cat.name,
+                order: cat.order || i + 1
+            })),
+            items: data.items.map((item, i) => ({
+                id: item.id || `item_${Date.now()}_${i}`,
+                name: item.name,
+                description: item.description || '',
+                price: parseFloat(item.price) || 0,
+                categoryId: item.categoryId,
+                emoji: item.emoji || guessFoodEmoji(item.name),
+                isAvailable: item.isAvailable !== false,
+                extractedFromImage: true
+            }))
+        };
+    }
+    
+    // If raw text, parse it
+    if (typeof data === 'string' || data.text) {
+        return parseRawTextToMenu(data.text || data, 'ar');
+    }
+    
+    return { categories: [], items: [] };
+}
+
+/**
+ * Detect currency from text
+ */
+function detectCurrency(text) {
+    if (/ج\.م|جنيه|مصري/i.test(text)) return 'ج.م';
+    if (/EGP/i.test(text)) return 'ج.م';
+    if (/\$|دولار/i.test(text)) return '$';
+    if (/€|يورو/i.test(text)) return '€';
+    if (/£|جنيه.*إستريليني/i.test(text)) return '£';
+    if (/ريال|SAR/i.test(text)) return 'ر.س';
+    if (/درهم|AED/i.test(text)) return 'د.إ';
+    return 'ج.م';  // Default to EGP
+}
+
 // ========================================
-// Image Generation
+// Image Generation (REAL Images)
 // ========================================
 
 /**
- * Generate a food image using Stable Diffusion XL
+ * Generate or retrieve a REAL food image
+ * Uses Unsplash API for real food photos (FREE)
+ * Falls back to Hugging Face for AI generation
  * 
- * @param {string} prompt - Description of the food item
+ * @param {string} itemName - Name of the food item
  * @param {object} options - Generation options
- * @returns {Promise<object>} - Generated image data
+ * @returns {Promise<object>} - Real image data
  */
-async function generateFoodImage(prompt, options = {}) {
+async function generateFoodImage(itemName, options = {}) {
     const restaurantId = getRestaurantId();
 
     try {
-        // Check usage limits
-        const usage = await getAIUsage(restaurantId);
-        if (usage.generation >= getGenerationLimit(restaurantId) && getGenerationLimit(restaurantId) !== -1) {
-            throw new Error('وصلت للحد الأقصى من توليد الصور هذا الشهر');
+        console.log('🎨 Getting REAL food image for:', itemName);
+
+        // Method 1: Try Unsplash for real food photos (BEST QUALITY)
+        let result = await tryUnsplashImage(itemName, options);
+        
+        // Method 2: Try Hugging Face for AI-generated images (FREE)
+        if (!result.success) {
+            console.log('⚠️ Unsplash failed, trying Hugging Face...');
+            result = await tryHuggingFaceGeneration(itemName, options);
+        }
+        
+        // Method 3: Use high-quality placeholder with correct food emoji
+        if (!result.success) {
+            console.log('⚠️ AI generation failed, creating styled placeholder...');
+            result = await createStyledPlaceholder(itemName, options);
         }
 
-        console.log('🎨 Generating food image for:', prompt);
+        if (result.success) {
+            // Log usage
+            await incrementAIUsage(restaurantId, 'generation');
 
-        // Build enhanced prompt for better food images
-        const enhancedPrompt = buildFoodPrompt(prompt, options);
-
-        // Call NVIDIA Image Generation API
-        const result = await callNVIDIAImageGenAPI(enhancedPrompt, options);
-
-        // Upload generated image to R2 storage
-        let imageUrl = result.image;
-        if (result.imageBase64) {
-            imageUrl = await uploadGeneratedImage(result.imageBase64, prompt);
+            return {
+                success: true,
+                imageUrl: result.imageUrl,
+                imageBase64: result.imageBase64,
+                prompt: itemName,
+                source: result.source || 'generated',
+                message: 'تم الحصول على الصورة بنجاح!'
+            };
+        } else {
+            throw new Error(result.error || 'فشل في الحصول على الصورة');
         }
-
-        // Log usage
-        await incrementAIUsage(restaurantId, 'generation');
-
-        return {
-            success: true,
-            imageUrl: imageUrl,
-            imageBase64: result.imageBase64,
-            prompt: enhancedPrompt,
-            message: 'تم توليد الصورة بنجاح!'
-        };
 
     } catch (error) {
         console.error('❌ Image generation error:', error);
         
         return {
             success: false,
-            error: error.message || 'فشل في توليد الصورة'
+            error: error.message || 'فشل في الحصول على الصورة'
         };
     }
 }
 
 /**
- * Build optimized prompt for food photography
+ * Method 1: Unsplash API for REAL food photography
+ * FREE: 50 requests/hour, requires Access Key (can be public)
  */
-function buildFoodPrompt(basePrompt, options = {}) {
+async function tryUnsplashImage(searchQuery, options = {}) {
+    try {
+        // Build search query optimized for food
+        const query = buildUnsplashSearchQuery(searchQuery);
+        
+        // Use Worker to make the request (avoids CORS issues)
+        const workerEndpoint = `${AI_CONFIG.workerURL}/api/ai/unsplash`;
+        
+        const response = await fetch(workerEndpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                query: query,
+                perPage: 1,
+                orientation: 'squish'
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`Unsplash error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        
+        if (data.results && data.results.length > 0) {
+            const photo = data.results[0];
+            
+            return {
+                success: true,
+                imageUrl: photo.urls.regular,  // High quality
+                thumbnailUrl: photo.urls.small,
+                source: 'unsplash',
+                photographer: photo.user.name,
+                photographerUrl: photo.user.links.html
+            };
+        }
+        
+        throw new Error('No images found for this query');
+
+    } catch (error) {
+        console.warn('⚠️ Unsplash not available:', error.message);
+        return { success: false, error: error.message };
+    }
+}
+
+/**
+ * Build optimized search query for Unsplash
+ */
+function buildUnsplashSearchQuery(itemName) {
+    // Food-specific keywords for better results
+    const foodKeywords = {
+        'default': ['food', 'dish', 'cuisine', 'restaurant', 'delicious', 'gourmet'],
+        'بيتزا': ['pizza', 'italian', 'cheese', 'tomato'],
+        'برجر': ['burger', 'cheeseburger', 'fast food', 'beef'],
+        'دجاج': ['chicken', 'grilled chicken', 'roasted chicken'],
+        'سمك': ['fish', 'seafood', 'grilled fish'],
+        'سلطة': ['salad', 'fresh salad', 'healthy', 'vegetables'],
+        'شوربة': ['soup', 'bowl', 'warm', 'comforting'],
+        'معكرونة': ['pasta', 'italian pasta', 'noodles'],
+        'رز': ['rice', 'fried rice', 'basmati'],
+        'كنافة': ['kunafa', 'dessert', 'sweet', 'arabic dessert'],
+        'حلوى': ['dessert', 'cake', 'sweet', 'pastry'],
+        'عصير': ['juice', 'fresh juice', 'drink', 'beverage'],
+        'قهوة': ['coffee', 'espresso', 'cafe', 'latte'],
+        'شاي': ['tea', 'hot tea', 'cup of tea']
+    };
+    
+    // Find matching keywords
+    const nameLower = (itemName || '').toLowerCase();
+    let matchedKeywords = [];
+    
+    for (const [key, keywords] of Object.entries(foodKeywords)) {
+        if (key !== 'default' && nameLower.includes(key)) {
+            matchedKeywords = [...matchedKeywords, ...keywords];
+        }
+    }
+    
+    // Always include default keywords plus any matches
+    const allKeywords = [...new Set([...foodKeywords.default, ...matchedKeywords])];
+    
+    // Build final query
+    return `${itemName} ${allKeywords.join(' ')}`;
+}
+
+/**
+ * Method 2: Hugging Face Inference API (FREE AI Generation)
+ * Generates images using Stable Diffusion or similar models
+ */
+async function tryHuggingFaceGeneration(prompt, options = {}) {
+    try {
+        const enhancedPrompt = buildAIPrompt(prompt, options);
+        
+        const workerEndpoint = `${AI_CONFIG.workerURL}${AI_CONFIG.endpoints.huggingFace}`;
+        
+        const response = await fetch(workerEndpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                prompt: enhancedPrompt,
+                negative_prompt: options.negativePrompt || 'blurry, low quality, distorted, ugly, bad lighting, watermark, text, logo, plastic looking, unappetizing',
+                width: options.width || 512,
+                height: options.height || 512,
+                steps: options.steps || 25,
+                guidance_scale: options.cfgScale || 7.5
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`Hugging Face error: ${response.status}`);
+        }
+
+        const result = await response.json();
+        
+        if (result.image) {
+            return {
+                success: true,
+                imageUrl: result.image,  // URL or base64
+                imageBase64: result.image_base64,
+                source: 'huggingface-ai',
+                model: result.model || 'stable-diffusion'
+            };
+        }
+        
+        throw new Error('No image generated');
+
+    } catch (error) {
+        console.warn('⚠️ Hugging Face not available:', error.message);
+        return { success: false, error: error.message };
+    }
+}
+
+/**
+ * Build optimized prompt for AI image generation
+ */
+function buildAIPrompt(basePrompt, options = {}) {
     const styleModifiers = [
         'professional food photography',
         'studio lighting',
         'high quality',
         'appetizing',
         'gourmet presentation',
-        options.style || 'on a clean white plate'
-    ];
-
-    const qualityModifiers = [
-        '8k resolution',
-        'highly detailed',
+        options.style || 'on a clean white plate or rustic wooden table',
+        'mouth-watering',
+        'fresh ingredients',
+        'vibrant natural colors',
         'sharp focus',
-        'vibrant colors'
+        '8k resolution',
+        'award-winning food photography'
     ];
 
-    let fullPrompt = `${basePrompt}, ${styleModifiers.join(', ')}, ${qualityModifiers.join(', ')}`;
-    
-    // Add negative prompt for better results
-    if (!options.negativePrompt) {
-        options.negativePrompt = 'blurry, low quality, distorted, ugly, bad lighting, watermark, text';
-    }
-
-    return {
-        prompt: fullPrompt,
-        negative_prompt: options.negativePrompt,
-        ...options
-    };
+    return `${basePrompt}, ${styleModifiers.join(', ')}`;
 }
 
 /**
- * Call NVIDIA Stable Diffusion XL API
+ * Method 3: Styled Placeholder (Last Resort)
+ * Creates a beautiful placeholder with the correct food emoji
  */
-async function callNVIDIAImageGenAPI(promptConfig, options) {
-    const workerEndpoint = `${getWorkerURL()}/api/ai/generate`;
-
+async function createStyledPlaceholder(itemName, options = {}) {
     try {
-        const response = await fetch(workerEndpoint, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${getAuthToken()}`
-            },
-            body: JSON.stringify({
-                prompt: typeof promptConfig === 'string' ? promptConfig : promptConfig.prompt,
-                negative_prompt: promptConfig.negative_prompt,
-                width: options.width || 1024,
-                height: options.height || 1024,
-                samples: options.samples || 1,
-                steps: options.steps || 30,
-                cfg_scale: options.cfgScale || 7,
-                seed: options.seed || -1,
-                ...options
-            })
-        });
-
-        if (!response.ok) {
-            throw new Error(`API error: ${response.status}`);
-        }
-
-        return await response.json();
-
-    } catch (error) {
-        console.warn('⚠️ Could not reach image gen API');
+        const emoji = guessFoodEmoji(itemName);
+        const canvas = document.createElement('canvas');
+        canvas.width = 512;
+        canvas.height = 512;
+        const ctx = canvas.getContext('2d');
         
-        // Return placeholder for development
-        return {
-            image: null,
-            imageBase64: generatePlaceholderImage(promptConfig.prompt),
-            mock: true
+        // Beautiful gradient background based on food type
+        const gradients = {
+            warm: ['#ff6b6b', '#ee5a5a'],      // Red tones
+            fresh: ['#51cf66', '#40c057'],     // Green tones  
+            cool: ['#339af0', '#228be6'],      // Blue tones
+            sweet: ['#cc5de8', '#be4bdb'],     // Purple tones
+            neutral: ['#6366f1', '#8b5cf6']    // Indigo default
         };
+        
+        const gradientType = getGradientType(itemName);
+        const [color1, color2] = gradients[gradientType] || gradients.neutral;
+        
+        const gradient = ctx.createLinearGradient(0, 0, 512, 512);
+        gradient.addColorStop(0, color1);
+        gradient.addColorStop(1, color2);
+        ctx.fillStyle = gradient;
+        
+        // Rounded rectangle effect
+        roundRect(ctx, 0, 0, 512, 512, 40);
+        ctx.fill();
+        
+        // Decorative circles
+        ctx.globalAlpha = 0.1;
+        ctx.fillStyle = 'white';
+        ctx.beginPath();
+        ctx.arc(450, 60, 80, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(60, 450, 100, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+        
+        // Large food emoji
+        ctx.font = '180px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(emoji, 256, 220);
+        
+        // Item name text
+        ctx.font = 'bold 28px Cairo, sans-serif';
+        ctx.fillStyle = 'white';
+        ctx.fillText(truncateText(itemName, 20), 256, 340);
+        
+        // Subtitle
+        ctx.font = '18px Cairo, sans-serif';
+        ctx.fillStyle = 'rgba(255,255,255,0.8)';
+        ctx.fillText('صورة تمثيلية', 256, 380);
+        
+        // "Add real photo" hint
+        ctx.font = '14px Cairo, sans-serif';
+        ctx.fillStyle = 'rgba(255,255,255,0.6)';
+        ctx.fillText('يمكنك إضافة صورة حقيقية لاحقاً', 256, 420);
+        
+        const base64 = canvas.toDataURL('image/png');
+        
+        return {
+            success: true,
+            imageUrl: null,
+            imageBase64: base64,
+            source: 'placeholder-styled'
+        };
+        
+    } catch (error) {
+        return { success: false, error: error.message };
     }
+}
+
+/**
+ * Get gradient color scheme based on food type
+ */
+function getGradientType(itemName) {
+    const nameLower = (itemName || '').toLowerCase();
+    
+    if (/سلطة|خضروات|طازج|صحي/i.test(nameLower)) return 'fresh';
+    if (/حلوى|كيك|شوكولاتة|حلو/i.test(nameLower)) return 'sweet';
+    if (/مثلجات|بارد|عصير|مشروب/i.test(nameLower)) return 'cool';
+    if (/لحم|دجاج|مشوي|ساخن/i.test(nameLower)) return 'warm';
+    
+    return 'neutral';
+}
+
+/**
+ * Helper: Draw rounded rectangle
+ */
+function roundRect(ctx, x, y, width, height, radius) {
+    ctx.beginPath();
+    ctx.moveTo(x + radius, y);
+    ctx.lineTo(x + width - radius, y);
+    ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+    ctx.lineTo(x + width, y + height - radius);
+    ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+    ctx.lineTo(x + radius, y + height);
+    ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+    ctx.lineTo(x, y + radius);
+    ctx.quadraticCurveTo(x, y, x + radius, y);
+    ctx.closePath();
+}
+
+/**
+ * Helper: Truncate text to fit
+ */
+function truncateText(text, maxLength) {
+    if (!text) return '';
+    return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
 }
 
 // ========================================
 // Usage Tracking
 // ========================================
 
-/**
- * Get current AI usage for a restaurant
- */
 async function getAIUsage(restaurantId) {
-    if (!db) {
-        return { analysis: 15, generation: 8 };  // Mock values
-    }
-
     try {
-        const snapshot = await getRestaurantRef(restaurantId, 'aiUsage').once('value');
-        return snapshot.val() || { analysis: 0, generation: 0 };
-    } catch (error) {
-        console.error('Error getting AI usage:', error);
-        return { analysis: 0, generation: 0 };
-    }
-}
-
-/**
- * Increment AI usage counter
- */
-async function incrementAIUsage(restaurantId, type) {
-    if (!db) {
-        console.log(`📊 Incremented ${type} usage (dev mode)`);
-        return;
-    }
-
-    try {
-        const usageRef = getRestaurantRef(restaurantId, `aiUsage/${type}`);
-        const currentSnapshot = await usageRef.once('value');
-        const currentVal = currentSnapshot.val() || 0;
+        const response = await fetch(`${AI_CONFIG.workerURL}/api/ai/usage`, {
+            headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+        });
         
-        await usageRef.set(currentVal + 1);
+        if (response.ok) {
+            const data = await response.json();
+            return data.usage || { analysis: 0, generation: 0 };
+        }
     } catch (error) {
-        console.error('Error incrementing usage:', error);
+        console.error('Error getting usage:', error);
     }
+    
+    return { analysis: 0, generation: 0 };
 }
 
-function getAnalysisLimit(restaurantId) {
-    // Would fetch from user's plan
-    return NVIDIA_CONFIG.rateLimits.pro.analysis;  // Default to pro limit
-}
-
-function getGenerationLimit(restaurantId) {
-    return NVIDIA_CONFIG.rateLimits.pro.generation;
+async function incrementAIUsage(restaurantId, type) {
+    console.log(`📊 Incremented ${type} usage`);
+    // Usage is tracked server-side, this is just for logging
 }
 
 // ========================================
@@ -343,147 +779,81 @@ function fileToBase64(file) {
 }
 
 function getWorkerURL() {
-    // Cloudflare Workers URL for MezoMenu API
-    return 'https://menu.nonm1724.workers.dev';
+    return AI_CONFIG.workerURL;
 }
 
 function getAuthToken() {
     return localStorage.getItem('mezomenu_auth_token') || 'dev-token';
 }
 
-async function uploadGeneratedImage(base64Data, filename) {
-    // Upload to R2 via worker
-    const workerEndpoint = `${getWorkerURL()}/api/upload`;
+function getRestaurantId() {
+    return localStorage.getItem('mezomenu_restaurant_id') || 'default';
+}
+
+/**
+ * Guess appropriate emoji for food item
+ */
+function guessFoodEmoji(name) {
+    if (!name) return '🍽️';
     
-    try {
-        const response = await fetch(workerEndpoint, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${getAuthToken()}`
-            },
-            body: JSON.stringify({
-                image: base64Data,
-                filename: `ai-generated-${Date.now()}.png`,
-                folder: 'menu-items'
-            })
-        });
+    const nameLower = name.toLowerCase();
+    
+    const emojiMap = [
+        { keywords: ['بيتزا', 'pizza', 'پيتزا'], emoji: '🍕' },
+        { keywords: ['برجر', 'burger', 'همبرگر', 'ساندويتش'], emoji: '🍔' },
+        { keywords: ['فرايز', 'بطاطس', 'فريتس', 'fries'], emoji: '🍟' },
+        { keywords: ['سلطة', 'salad', 'سلطه'], emoji: '🥗' },
+        { keywords: ['شوربة', 'soup', 'شوربه'], emoji: '🍲' },
+        { keywords: ['دجاج', 'chicken', 'فرخ', 'جاجر'], emoji: '🍗' },
+        { keywords: ['سمك', 'fish', 'مأكولات بحرية', 'جمبري'], emoji: '🐟' },
+        { keywords: ['شاورما', 'kebab', 'كباب', 'مشويات', 'لحم', 'ستيك'], emoji: '🥩' },
+        { keywords: ['معكرونة', 'باستا', 'pasta', 'سباغتي'], emoji: '🍝' },
+        { keywords: ['رز', 'أرز', 'rice', 'مندي', 'كبسة', 'برياني'], emoji: '🍚' },
+        { keywords: ['خبز', 'bread', 'فينو', 'عيش'], emoji: '🍞' },
+        { keywords: ['عصير', 'juice', 'مشروب', 'شراب'], emoji: '🧃' },
+        { keywords: ['حلوى', 'ديسرت', 'dessert', 'كيك', 'cake', 'تورت'], emoji: '🍰' },
+        { keywords: ['آيس كريم', 'ice cream', 'جالاكس'], emoji: '🍦' },
+        { keywords: ['كنافة', 'بقلاوة', 'بسكوت', 'كوكيز'], emoji: '🧁' },
+        { keywords: ['قهوة', 'coffee', 'كوفي', 'اسبريسو'], emoji: '☕' },
+        { keywords: ['شاي', 'tea', 'شاي'], emoji: '🍵' },
+        { keywords: ['حليب', 'milk', 'لاتيه', 'كابتشينو'], emoji: '🥛' },
+        { keywords: ['حمص', 'hummus', 'مقبلات', 'متبل', 'طبق'], emoji: '🧆' },
+        { keywords: ['فواكه', 'fruit', 'fruits'], emoji: '🍎' },
+        { keywords: ['خضروات', 'vegetable', 'خضراوات'], emoji: '🥬' },
+        { keywords: ['بيض', 'egg', 'أومليت'], emoji: '🍳' },
+        { keywords: ['جبن', 'cheese', 'جبنة'], emoji: '🧀' },
+        { keywords: ['فشار', 'popcorn'], emoji: '🍿' },
+        { keywords: ['فطير', 'pie', 'بيتزا'], emoji: '🥧' },
+        { keywords: ['شوكولاتة', 'chocolate'], emoji: '🍫' },
+        { keywords: ['عسل', 'honey'], emoji: '🍯' },
+        { keywords: ['فطر', 'mushroom'], emoji: '🍄' },
+        { keywords: ['ليمون', 'lemon', 'برتقال'], emoji: '🍋' },
+        { keywords: ['موز', 'banana'], emoji: '🍌' },
+        { keywords: ['فراولة', 'strawberry', 'توت'], emoji: '🍓' },
+        { keywords: ['تفاح', 'apple'], emoji: '🍏' },
+        { keywords: ['عنب', 'grape'], emoji: '🍇' },
+        { keywords: ['بطيخ', 'watermelon'], emoji: '🍉' },
+        { keywords: ['مانجو', 'mango'], emoji: '🥭' },
+        { keywords: ['تمر', 'date'], emoji: '🌰' },
+        { keywords: ['فول', 'beans'], emoji: '🫘' },
+        { keywords: ['فلفل', 'pepper'], emoji: '🌶️' },
+        { keywords: ['أفوكادو', 'avocado'], emoji: '🥑' },
+        { keywords: ['خيار', 'cucumber'], emoji: '🥒' },
+        { keywords: ['جزر', 'carrot'], emoji: '🥕' },
+        { keywords: ['خس', 'lettuce'], emoji: '🥬' },
+        { keywords: ['ذرة', 'corn'], emoji: '🌽' },
+        { keywords: ['بيتزا', 'pizza'], emoji: '🍕' },
+        { keywords: ['بان كيك', 'pancake', 'وفل'], emoji: '🥞' },
+        { keywords: ['توست', 'toast', 'ساندويتش'], emoji: '🥪' }
+    ];
 
-        const result = await response.json();
-        return result.url;
-
-    } catch (error) {
-        console.error('Upload error:', error);
-        return null;
+    for (const entry of emojiMap) {
+        if (entry.keywords.some(kw => nameLower.includes(kw))) {
+            return entry.emoji;
+        }
     }
-}
 
-function generatePlaceholderImage(prompt) {
-    // Generate a simple SVG placeholder with text
-    const canvas = document.createElement('canvas');
-    canvas.width = 512;
-    canvas.height = 512;
-    const ctx = canvas.getContext('2d');
-    
-    // Background gradient
-    const gradient = ctx.createLinearGradient(0, 0, 512, 512);
-    gradient.addColorStop(0, '#6366f1');
-    gradient.addColorStop(1, '#8b5cf6');
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, 512, 512);
-    
-    // Food emoji
-    ctx.font = '200px Arial';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('🍽️', 256, 230);
-    
-    // Text
-    ctx.font = '24px Cairo, sans-serif';
-    ctx.fillStyle = 'white';
-    ctx.fillText('صورة بالذكاء الاصطناعي', 256, 350);
-    
-    return canvas.toDataURL('image/png');
-}
-
-// ========================================
-// Mock Data for Development
-// ========================================
-
-function getMockAnalysisData() {
-    return {
-        restaurantName: 'مطعم المثال',
-        currency: 'ج.م',
-        categories: [
-            { id: 'cat_1', name: 'المقبلات', order: 1 },
-            { id: 'cat_2', name: 'الأطباق الرئيسية', order: 2 },
-            { id: 'cat_3', name: 'المشروبات', order: 3 },
-            { id: 'cat_4', name: 'الحلويات', order: 4 }
-        ],
-        items: [
-            {
-                id: 'item_1',
-                name: 'حمص بالطحينة',
-                description: 'حمص مطبوخ مع طحينة سميك وليمون وزيت زيتون',
-                price: 45,
-                categoryId: 'cat_1',
-                emoji: '🧆',
-                isAvailable: true
-            },
-            {
-                id: 'item_2',
-                name: 'ورق عنب محشي',
-                description: 'ورق عنب محشي بالأرز واللحم المفروم',
-                price: 65,
-                categoryId: 'cat_1',
-                emoji: '🍇',
-                isAvailable: true
-            },
-            {
-                id: 'item_3',
-                name: 'مندي لحم',
-                description: 'أرز بسمتي مع لحم ضأن مطهو على الجمر',
-                price: 180,
-                categoryId: 'cat_2',
-                emoji: '🍖',
-                isAvailable: true
-            },
-            {
-                id: 'item_4',
-                name: 'كبسة دجاج',
-                description: 'أرز بسمتي مع دجاج كامل وبهارات خاصة',
-                price: 150,
-                categoryId: 'cat_2',
-                emoji: '🍗',
-                isAvailable: true
-            },
-            {
-                id: 'item_5',
-                name: 'عصير رمان طازج',
-                description: 'رمان طازج مع سكر ونعناع ومياه غازية',
-                price: 35,
-                categoryId: 'cat_3',
-                emoji: 🧃,
-                isAvailable: true
-            },
-            {
-                id: 'item_6',
-                name: 'كنافة بالقشطة',
-                description: 'كنافة نابلسية مع قشطة وشراب السكر',
-                price: 70,
-                categoryId: 'cat_4',
-                emoji: '🧁',
-                isAvailable: true
-            }
-        ]
-    };
-}
-
-function getMockVisionResponse() {
-    return {
-        mock: true,
-        data: getMockAnalysisData()
-    };
+    return '🍽️'; // Default food plate emoji
 }
 
 // ========================================
@@ -497,7 +867,8 @@ function showAnalysisProgress(container) {
     container.innerHTML = `
         <div class="analysis-progress">
             <div class="progress-icon">🤖</div>
-            <h3>جاري تحليل القائمة...</h3>
+            <h3>جاري تحليل القائمة بالذكاء الاصطناعي...</h3>
+            <p class="progress-subtitle">نقرأ الصورة ونستخرج البيانات فعلياً</p>
             <div class="progress-steps">
                 <div class="progress-step active" data-step="1">
                     <span class="step-icon">📷</span>
@@ -505,11 +876,11 @@ function showAnalysisProgress(container) {
                 </div>
                 <div class="progress-step" data-step="2">
                     <span class="step-icon">🔍</span>
-                    <span>استخراج النصوص</span>
+                    <span>استخراج النصوص (OCR)</span>
                 </div>
                 <div class="progress-step" data-step="3">
                     <span class="step-icon">📋</span>
-                    <span>تنظيم البيانات</span>
+                    <span>تنظيم الأصناف والأسعار</span>
                 </div>
                 <div class="progress-step" data-step="4">
                     <span class="step-icon">✅</span>
@@ -522,7 +893,6 @@ function showAnalysisProgress(container) {
         </div>
     `;
 
-    // Animate progress
     animateAnalysisProgress();
 }
 
@@ -546,7 +916,7 @@ function animateAnalysisProgress() {
         } else {
             clearInterval(interval);
         }
-    }, 1000);
+    }, 1200);  // Slightly slower to account for real processing time
 }
 
 /**
@@ -558,7 +928,7 @@ function showAnalysisResults(container, results) {
             <div class="analysis-error">
                 <span class="error-icon">😕</span>
                 <h3>${results.error}</h3>
-                <p>يرجى التأكد من صورة القائمة والمحاولة مرة أخرى</p>
+                <p>${results.suggestion || 'يرجى التأكد من صورة القائمة والمحاولة مرة أخرى'}</p>
                 <button onclick="retryAnalysis()" class="btn btn-primary">إعادة المحاولة</button>
             </div>
         `;
@@ -566,11 +936,14 @@ function showAnalysisResults(container, results) {
     }
 
     const data = results.data;
+    const hasExtractedFromImage = data.items.some(item => item.extractedFromImage);
     
     container.innerHTML = `
         <div class="analysis-results">
             <div class="results-header">
                 <span class="success-badge">✅ ${results.message}</span>
+                ${hasExtractedFromImage ? '<span class="real-data-badge">📸 بيانات مستخرجة من الصورة</span>' : ''}
+                ${results.method ? '<span class="method-badge">🔧 الطريقة: ' + results.method + '</span>' : ''}
             </div>
             
             <div class="results-sections">
@@ -590,11 +963,14 @@ function showAnalysisResults(container, results) {
                     <h4>الأصناف المستخرجة (${data.items.length})</h4>
                     <div class="items-grid">
                         ${data.items.map(item => `
-                            <div class="result-item-card">
+                            <div class="result-item-card ${item.needsPriceConfirmation ? 'needs-price' : ''}">
                                 <span class="item-emoji">${item.emoji || '🍽️'}</span>
                                 <h5>${item.name}</h5>
                                 <p>${item.description || ''}</p>
-                                <span class="item-price">${item.price} ${data.currency}</span>
+                                <span class="item-price">
+                                    ${item.price ? `${item.price} ${data.currency}` : '❓ السعر غير واضح'}
+                                </span>
+                                ${item.needsPriceConfirmation ? '<small class="price-hint">يرجى تأكيد السعر</small>' : ''}
                                 <label class="checkbox-label">
                                     <input type="checkbox" checked value="${item.id}">
                                     <span>إضافة</span>
@@ -617,13 +993,15 @@ function showAnalysisResults(container, results) {
     `;
 }
 
-// Export functions
+// Export functions for module usage
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
         analyzeMenuImage,
         generateFoodImage,
         getAIUsage,
         showAnalysisProgress,
-        showAnalysisResults
+        showAnalysisResults,
+        guessFoodEmoji,
+        parseRawTextToMenu
     };
 }
