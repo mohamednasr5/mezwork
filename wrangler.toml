@@ -23,6 +23,13 @@ APP_URL = "https://mezomenu.com"
 binding = "IMAGES_BUCKET"
 bucket_name = "mezomenu-images"
 
+# Static Assets (serves index.html, /admin/*, /css/*, /js/*, /images/*, /icons/* etc.)
+# See .assetsignore in the project root for files excluded from deployment.
+[assets]
+directory = "./"
+binding = "ASSETS"
+run_worker_first = ["/api/*", "/health"]
+
 # KV Namespace for caching (optional)
 # [[kv_namespaces]]
 # binding = "CACHE"

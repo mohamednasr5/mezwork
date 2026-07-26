@@ -1,0 +1,12 @@
+workers/
+config/
+.git/
+.github/
+node_modules/
+.env
+.env.*
+package.json
+package-lock.json
+wrangler.toml
+README.md
+AGNES_AI_SETUP.md

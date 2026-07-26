@@ -26,7 +26,7 @@ export default {
         }
 
         // Health check endpoint
-        if (url.pathname === '/health' || url.pathname === '/') {
+        if (url.pathname === '/health') {
             return new Response(JSON.stringify({
                 status: 'ok',
                 service: 'MezoMenu API',
@@ -53,8 +53,8 @@ export default {
             } else if (url.pathname.startsWith('/api/ai')) {
                 response = await aiWorker.fetch(request, env, ctx);
             } else {
-                // Serve static files or return 404
-                response = await serveStaticFile(url.pathname) || 
+                // Serve static files (html/css/js/images) via the Assets binding
+                response = await serveStaticFile(request, env) ||
                     errorResponse('Endpoint not found', 404, request);
             }
 
@@ -107,15 +107,30 @@ export default {
 // Static File Serving (for frontend)
 // ========================================
 
-async function serveStaticFile(pathname) {
-    // This would typically serve from R2 or an assets binding
-    // For now, just return null to let the 404 handler take over
-    
-    // Example implementation:
-    // const asset = await env.ASSETS.get(pathname);
-    // if (asset) return new Response(asset.body, { headers: { 'Content-Type': getContentType(pathname) }});
-    
-    return null;
+async function serveStaticFile(request, env) {
+    // Requires the [assets] binding configured in wrangler.toml (binding = "ASSETS")
+    if (!env.ASSETS) return null;
+
+    try {
+        const asset = await env.ASSETS.fetch(request);
+
+        // env.ASSETS.fetch returns a 404 Response (not null) when nothing matches
+        if (!asset || asset.status === 404) return null;
+
+        // Ensure correct content-type even if the asset store guesses wrong
+        const url = new URL(request.url);
+        const contentType = getContentType(url.pathname);
+        if (contentType && !asset.headers.get('Content-Type')) {
+            const headers = new Headers(asset.headers);
+            headers.set('Content-Type', contentType);
+            return new Response(asset.body, { status: asset.status, headers });
+        }
+
+        return asset;
+    } catch (err) {
+        console.error('[Static] Failed to serve asset:', err);
+        return null;
+    }
 }
 
 function getContentType(pathname) {
