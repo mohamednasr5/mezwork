@@ -628,7 +628,7 @@ function parseOCRResult(data) {
         return parseRawTextToMenu(data.text || data, 'ar');
     }
     
-    return { categories: [], items: };
+    return { categories: [], items: [] };
 }
 
 /**
