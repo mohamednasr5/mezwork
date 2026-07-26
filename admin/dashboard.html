@@ -279,5 +279,54 @@
     
     <script src="../js/firebase-config.js"></script>
     <script src="../js/admin.js"></script>
+    
+    <!-- Service Worker Registration for PWA -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('../sw.js')
+                    .then(function(registration) {
+                        console.log('[PWA] Service Worker registered successfully:', registration.scope);
+                    })
+                    .catch(function(error) {
+                        console.log('[PWA] Service Worker registration failed:', error);
+                    });
+            });
+            
+            // Handle PWA Install Prompt
+            let deferredPrompt;
+            window.addEventListener('beforeinstallprompt', function(e) {
+                e.preventDefault();
+                deferredPrompt = e;
+                
+                // Show install button/banner
+                const installBanner = document.getElementById('installBanner');
+                if (installBanner) {
+                    installBanner.style.display = 'block';
+                }
+            });
+            
+            // Install PWA function
+            window.installPWA = function() {
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    deferredPrompt.userChoice.then(function(choiceResult) {
+                        if (choiceResult.outcome === 'accepted') {
+                            console.log('[PWA] User accepted the install prompt');
+                        }
+                        deferredPrompt = null;
+                    });
+                }
+            };
+            
+            // Dismiss install banner
+            window.dismissInstallBanner = function() {
+                const banner = document.getElementById('installBanner');
+                if (banner) {
+                    banner.style.display = 'none';
+                }
+            };
+        }
+    </script>
 </body>
 </html>

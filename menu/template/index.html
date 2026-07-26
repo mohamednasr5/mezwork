@@ -254,5 +254,107 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <script src="../js/firebase-config.js"></script>
     <script src="../js/menu.js"></script>
+    
+    <!-- Service Worker Registration for PWA (Customer Menu) -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                // Register SW from the root for proper scope
+                navigator.serviceWorker.register('../../sw.js')
+                    .then(function(registration) {
+                        console.log('[PWA] Menu Service Worker registered successfully:', registration.scope);
+                        
+                        // Check for updates
+                        registration.addEventListener('updatefound', function() {
+                            const newWorker = registration.installing;
+                            newWorker.addEventListener('statechange', function() {
+                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    // New content is available
+                                    const toastContainer = document.getElementById('toastContainer');
+                                    if (toastContainer) {
+                                        const toast = document.createElement('div');
+                                        toast.className = 'toast success';
+                                        toast.innerHTML = '🔄 تحديث جديد متاح! <button onclick="location.reload()" style="background:none;border:none;color:inherit;text-decoration:underline;cursor:pointer;font-weight:bold;">حدث الآن</button>';
+                                        toastContainer.appendChild(toast);
+                                        setTimeout(() => toast.remove(), 10000);
+                                    }
+                                }
+                            });
+                        });
+                    })
+                    .catch(function(error) {
+                        console.log('[PWA] Service Worker registration failed:', error);
+                    });
+            });
+            
+            // Handle PWA Install Prompt
+            let deferredPrompt;
+            window.addEventListener('beforeinstallprompt', function(e) {
+                e.preventDefault();
+                deferredPrompt = e;
+                
+                // Show install banner
+                const installBanner = document.getElementById('installBanner');
+                if (installBanner) {
+                    installBanner.style.display = 'block';
+                }
+            });
+            
+            // Install PWA function
+            window.installPWA = function() {
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    deferredPrompt.userChoice.then(function(choiceResult) {
+                        if (choiceResult.outcome === 'accepted') {
+                            console.log('[PWA] User installed the menu app');
+                            const banner = document.getElementById('installBanner');
+                            if (banner) banner.style.display = 'none';
+                        }
+                        deferredPrompt = null;
+                    });
+                }
+            };
+            
+            // Dismiss install banner
+            window.dismissInstallBanner = function() {
+                const banner = document.getElementById('installBanner');
+                if (banner) banner.style.display = 'none';
+                localStorage.setItem('pwa-install-dismissed', Date.now().toString());
+            };
+            
+            // Check if we should show install banner (not dismissed recently)
+            const dismissedTime = localStorage.getItem('pwa-install-dismissed');
+            if (dismissedTime && (Date.now() - parseInt(dismissedTime)) < 7 * 24 * 60 * 60 * 1000) {
+                // Dismissed within last 7 days, don't show
+                const banner = document.getElementById('installBanner');
+                if (banner) banner.style.display = 'none';
+            }
+        }
+        
+        // Handle online/offline status
+        window.addEventListener('online', function() {
+            console.log('[PWA] App is online');
+            const toastContainer = document.getElementById('toastContainer');
+            if (toastContainer) {
+                const toast = document.createElement('div');
+                toast.className = 'toast success';
+                toast.textContent = '🌐 أنت متصل بالإنترنت الآن';
+                toastContainer.appendChild(toast);
+                setTimeout(() => toast.remove(), 3000);
+            }
+        });
+        
+        window.addEventListener('offline', function() {
+            console.log('[PWA] App is offline');
+            const toastContainer = document.getElementById('toastContainer');
+            if (toastContainer) {
+                const toast = document.createElement('div');
+                toast.className = 'toast error';
+                toast.textContent = '⚠️ أنت غير متصل - وضع عدم الاتصال مفعل';
+                toastContainer.appendChild(toast);
+                setTimeout(() => toast.remove(), 5000);
+            }
+        });
+    </script>
 </body>
 </html>
