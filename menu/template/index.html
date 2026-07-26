@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <!-- Dynamic title will be set by JavaScript -->
+    <title>قائمة الطعام - MezoMenu</title>
+    
+    <meta name="description" content="قائمة طعام تفاعلية - اطلب بسهولة">
+    <meta name="theme-color" content="#6366f1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest-menu.json">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/menu.css">
+</head>
+<body class="menu-body">
+    <!-- Loading State -->
+    <div id="loadingScreen" class="loading-screen">
+        <div class="loader">
+            <div class="spinner"></div>
+            <p>جاري تحميل القائمة...</p>
+        </div>
+    </div>
+
+    <!-- Error State -->
+    <div id="errorScreen" class="error-screen" style="display: none;">
+        <div class="error-content">
+            <span class="error-icon">😔</span>
+            <h2>عذراً، حدث خطأ</h2>
+            <p id="errorMessage">لم نتمكن من تحميل القائمة</p>
+            <button onclick="loadMenu()" class="btn btn-primary">إعادة المحاولة</button>
+        </div>
+    </div>
+
+    <!-- Main Menu App -->
+    <div id="menuApp" class="menu-app" style="display: none;">
+        
+        <!-- Restaurant Header -->
+        <header class="restaurant-header">
+            <div class="header-bg" id="headerBg"></div>
+            <div class="header-content">
+                <div class="restaurant-logo" id="restaurantLogo">🍽️</div>
+                <h1 class="restaurant-name" id="restaurantName">المطعم</h1>
+                <p class="restaurant-description" id="restaurantDescription"></p>
+                <div class="restaurant-meta">
+                    <span class="cuisine-type" id="cuisineType"></span>
+                    <span class="status-indicator open" id="statusIndicator">
+                        <span class="dot"></span>
+                        متاح الآن
+                    </span>
+                </div>
+            </div>
+            
+            <!-- Floating Action Buttons -->
+            <div class="header-actions">
+                <button class="action-btn search-btn" onclick="toggleSearch()" aria-label="بحث">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"/>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    </svg>
+                </button>
+                <button class="action-btn cart-btn" onclick="toggleCart()" aria-label="السلة">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="9" cy="21" r="1"/>
+                        <circle cx="20" cy="21" r="1"/>
+                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+                    </svg>
+                    <span class="cart-count" id="cartCount">0</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Search Bar (Hidden by default) -->
+        <div class="search-container" id="searchContainer" style="display: none;">
+            <div class="search-input-wrapper">
+                <input type="search" 
+                       id="searchInput" 
+                       placeholder="ابحث في القائمة..." 
+                       oninput="handleSearch(this.value)">
+                <button onclick="toggleSearch()" class="close-search">×</button>
+            </div>
+            <div class="search-results" id="searchResults"></div>
+        </div>
+
+        <!-- Categories Tabs -->
+        <nav class="categories-nav" id="categoriesNav">
+            <!-- Categories will be populated dynamically -->
+        </nav>
+
+        <!-- Menu Items Grid -->
+        <main class="menu-items-container" id="menuItemsContainer">
+            <!-- Items will be populated dynamically -->
+        </main>
+
+        <!-- Cart Sidebar -->
+        <aside class="cart-sidebar" id="cartSidebar">
+            <div class="cart-header">
+                <h3>سلة الطلبات</h3>
+                <button onclick="toggleCart()" class="close-cart">×</button>
+            </div>
+            
+            <div class="cart-items" id="cartItems">
+                <!-- Cart items will be populated here -->
+                <div class="empty-cart" id="emptyCart">
+                    <span>🛒</span>
+                    <p>السلة فارغة</p>
+                    <p class="hint">أضف أصنافاً لبدء الطلب</p>
+                </div>
+            </div>
+            
+            <div class="cart-footer" id="cartFooter" style="display: none;">
+                <div class="cart-summary">
+                    <div class="summary-row">
+                        <span>المجموع الفرعي</span>
+                        <span id="subtotal">0 ج.م</span>
+                    </div>
+                    <div class="summary-row total">
+                        <span>الإجمالي</span>
+                        <span id="totalAmount">0 ج.م</span>
+                    </div>
+                </div>
+                
+                <button onclick="proceedToOrder()" class="btn btn-primary btn-block btn-lg order-btn">
+                    <span>إتمام الطلب عبر واتساب</span>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                    </svg>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Item Detail Modal -->
+        <div class="item-modal" id="itemModal" style="display: none;">
+            <div class="modal-overlay" onclick="closeItemModal()"></div>
+            <div class="modal-content">
+                <button class="modal-close" onclick="closeItemModal()">×</button>
+                
+                <div class="modal-image" id="modalImage">
+                    <span class="modal-emoji" id="modalEmoji">🍽️</span>
+                </div>
+                
+                <div class="modal-info">
+                    <h2 id="modalItemName">اسم الصنف</h2>
+                    <p id="modalDescription" class="item-description"></p>
+                    
+                    <div class="modal-price">
+                        <span class="current-price" id="modalPrice">0 ج.م</span>
+                        <span class="original-price" id="modalOriginalPrice" style="display: none;"></span>
+                    </div>
+                    
+                    <!-- Quantity Selector -->
+                    <div class="quantity-selector">
+                        <button onclick="updateModalQuantity(-1)" class="qty-btn minus">−</button>
+                        <span class="qty-value" id="modalQuantity">1</span>
+                        <button onclick="updateModalQuantity(1)" class="qty-btn plus">+</button>
+                    </div>
+                    
+                    <!-- Special Instructions -->
+                    <div class="special-instructions">
+                        <label for="specialNotes">ملاحظات خاصة (اختياري)</label>
+                        <textarea id="specialNotes" 
+                                  placeholder="مثال: بدون بصل، حار جداً..." 
+                                  rows="2"></textarea>
+                    </div>
+                    
+                    <button onclick="addToCartFromModal()" class="btn btn-primary btn-block btn-lg add-to-cart-btn">
+                        أضف للسلة
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Modal -->
+        <div class="order-modal" id="orderModal" style="display: none;">
+            <div class="modal-overlay" onclick="closeOrderModal()"></div>
+            <div class="modal-content order-content">
+                <button class="modal-close" onclick="closeOrderModal()">×</button>
+                
+                <h2>إتمام الطلب</h2>
+                
+                <form id="orderForm" onsubmit="submitOrder(event)">
+                    <div class="form-group">
+                        <label for="customerName">الاسم *</label>
+                        <input type="text" id="customerName" required placeholder="أدخل اسمك الكامل">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="customerPhone">رقم الهاتف (واتساب) *</label>
+                        <input type="tel" id="customerPhone" required placeholder="+20 10X XXX XXXX">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="deliveryAddress">عنوان التوصيل (اختياري)</label>
+                        <textarea id="deliveryAddress" rows="2" placeholder="العنوان بالتفصيل..."></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="orderNotes">ملاحظات إضافية</label>
+                        <textarea id="orderNotes" rows="2" placeholder="أي طلبات خاصة..."></textarea>
+                    </div>
+                    
+                    <div class="order-summary-box">
+                        <h4>ملخص الطلب</h4>
+                        <div id="orderItemsSummary"></div>
+                        <div class="order-total">
+                            <span>الإجمالي:</span>
+                            <span id="orderTotalDisplay">0 ج.م</span>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-whatsapp btn-block btn-lg submit-order-btn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                        </svg>
+                        إرسال الطلب عبر واتساب
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Toast Notifications -->
+        <div id="toastContainer" class="toast-container"></div>
+        
+        <!-- Install PWA Banner -->
+        <div id="installBanner" class="install-banner" style="display: none;">
+            <div class="banner-content">
+                <span class="banner-icon">📱</span>
+                <div class="banner-text">
+                    <strong>ثبّت التطبيق!</strong>
+                    <span>احصل على تجربة أفضل بدون إنترنت</span>
+                </div>
+                <div class="banner-actions">
+                    <button onclick="installPWA()" class="btn btn-sm btn-primary">تثبيت</button>
+                    <button onclick="dismissInstallBanner()" class="btn btn-sm btn-outline">لاحقاً</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../js/firebase-config.js"></script>
+    <script src="../js/menu.js"></script>
+</body>
+</html>

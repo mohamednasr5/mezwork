@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إنشاء حساب - MezoMenu</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/auth.css">
+</head>
+<body class="auth-page">
+    <div class="auth-container">
+        <!-- Auth Card -->
+        <div class="auth-card register-card">
+            <div class="auth-header">
+                <a href="index.html" class="auth-logo">
+                    <span class="logo-icon">🍽️</span>
+                    <span class="logo-text">MezoMenu</span>
+                </a>
+                <h1>أنشئ حسابك مجاناً</h1>
+                <p>ابدأ رحلتك في التحول الرقمي لمطعمك</p>
+            </div>
+
+            <!-- Progress Steps -->
+            <div class="progress-steps">
+                <div class="step active" data-step="1">
+                    <span class="step-num">1</span>
+                    <span class="step-label">الحساب</span>
+                </div>
+                <div class="step-line"></div>
+                <div class="step" data-step="2">
+                    <span class="step-num">2</span>
+                    <span class="step-label">المطعم</span>
+                </div>
+                <div class="step-line"></div>
+                <div class="step" data-step="3">
+                    <span class="step-num">3</span>
+                    <span class="step-label">الاشتراك</span>
+                </div>
+            </div>
+
+            <form id="registerForm" class="auth-form">
+                <!-- Step 1: Account Info -->
+                <div class="form-step active" data-step="1">
+                    <div class="form-group">
+                        <label for="fullName">الاسم الكامل</label>
+                        <input type="text" id="fullName" name="fullName" placeholder="أحمد محمد" required>
+                        <span class="input-icon">👤</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">البريد الإلكتروني</label>
+                        <input type="email" id="regEmail" name="email" placeholder="owner@restaurant.com" required>
+                        <span class="input-icon">📧</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="phone">رقم الهاتف (واتساب)</label>
+                        <input type="tel" id="phone" name="phone" placeholder="+20 10X XXX XXXX" required>
+                        <span class="input-icon">📱</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="regPassword">كلمة المرور</label>
+                        <input type="password" id="regPassword" name="password" placeholder="••••••••" required minlength="8">
+                        <button type="button" class="toggle-password" aria-label="إظهار/إخفاء كلمة المرور">
+                            👁️
+                        </button>
+                        <div class="password-strength">
+                            <div class="strength-bar"><span></span></div>
+                            <span class="strength-text">قوة كلمة المرور</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="confirmPassword">تأكيد كلمة المرور</label>
+                        <input type="password" id="confirmPassword" name="confirmPassword" placeholder="••••••••" required>
+                        <span class="input-icon">🔒</span>
+                    </div>
+
+                    <button type="button" class="btn btn-primary btn-block btn-lg next-btn">
+                        <span>التالي</span>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+                            <polyline points="10 17 15 12 10 7"/>
+                            <line x1="15" y1="12" x2="3" y2="12"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Step 2: Restaurant Info -->
+                <div class="form-step" data-step="2">
+                    <div class="form-group">
+                        <label for="restaurantName">اسم المطعم</label>
+                        <input type="text" id="restaurantName" name="restaurantName" placeholder="مطعم الخليج" required>
+                        <span class="input-icon">🏪</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="restaurantSlug">رابط المطعم (اختياري)</label>
+                        <div class="input-prefix">
+                            <span>mezomenu.com/</span>
+                            <input type="text" id="restaurantSlug" name="slug" placeholder="al-khaleej">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cuisineType">نوع المطبخ</label>
+                        <select id="cuisineType" name="cuisineType" required>
+                            <option value="">اختر نوع المطبخ</option>
+                            <option value="egyptian">مصري</option>
+                            <option value="arabic">عربي / شرقي</option>
+                            <option value="grill">مشويات</option>
+                            <option value="seafood">مأكولات بحرية</option>
+                            <option value="italian">إيطالي</option>
+                            <option value="fastfood">وجبات سريعة</option>
+                            <option value="sweets">حلويات</option>
+                            <option value="drinks">مشروبات وعصائر</option>
+                            <option value="other">أخرى</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="address">العنوان</label>
+                        <textarea id="address" name="address" rows="2" placeholder="القاهرة، شارع العباس، بجوار..."></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="city">المدينة</label>
+                            <select id="city" name="city">
+                                <option value="">اختر المدينة</option>
+                                <option value="cairo">القاهرة</option>
+                                <option value="alexandria">الإسكندرية</option>
+                                <option value="giza">الجيزة</option>
+                                <option value="mansoura">المنصورة</option>
+                                <option value="asyut">أسيوط</option>
+                                <option value="other">أخرى</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="whatsappNumber">رقم واتساب الطلبات</label>
+                            <input type="tel" id="whatsappNumber" name="whatsappNumber" placeholder="+20 10X XXX XXXX">
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-outline prev-btn">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                                <polyline points="16 17 21 12 16 7"/>
+                                <line x1="21" y1="12" x2="9" y2="12"/>
+                            </svg>
+                            <span>السابق</span>
+                        </button>
+                        <button type="button" class="btn btn-primary btn-lg next-btn">
+                            <span>التالي</span>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+                                <polyline points="10 17 15 12 10 7"/>
+                                <line x1="15" y1="12" x2="3" y2="12"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 3: Plan Selection -->
+                <div class="form-step" data-step="3">
+                    <div class="plan-cards">
+                        <label class="plan-option">
+                            <input type="radio" name="plan" value="free" checked>
+                            <div class="plan-card-select">
+                                <div class="plan-header">
+                                    <span class="plan-name">مجاني</span>
+                                    <span class="plan-price">0 ج.م<span>/شهر</span></span>
+                                </div>
+                                <ul class="plan-benefits">
+                                    <li>✓ حتى 20 صنف</li>
+                                    <li>✓ قائمة أساسية</li>
+                                    <li>✓ طلبات واتساب</li>
+                                    <li>✗ بدون AI</li>
+                                </ul>
+                            </div>
+                        </label>
+
+                        <label class="plan-option featured">
+                            <input type="radio" name="plan" value="pro">
+                            <div class="plan-card-select recommended">
+                                <div class="recommended-badge">الأفضل قيمة</div>
+                                <div class="plan-header">
+                                    <span class="plan-name">احترافي</span>
+                                    <span class="plan-price">199 ج.م<span>/شهر</span></span>
+                                </div>
+                                <ul class="plan-benefits">
+                                    <li>✓ أصناف غير محدودة</li>
+                                    <li>✓ تحليل AI (100/شهر)</li>
+                                    <li>✓ توليد صور (50/شهر)</li>
+                                    <li>✓ تقارير متقدمة</li>
+                                </ul>
+                            </div>
+                        </label>
+
+                        <label class="plan-option">
+                            <input type="radio" name="plan" value="enterprise">
+                            <div class="plan-card-select">
+                                <div class="plan-header">
+                                    <span class="plan-name">مؤسسات</span>
+                                    <span class="plan-price">499 ج.م<span>/شهر</span></span>
+                                </div>
+                                <ul class="plan-benefits">
+                                    <li>✓ كل مميزات الاحترافي</li>
+                                    <li>✓ فروع غير محدودة</li>
+                                    <li>✓ API مخصص</li>
+                                    <li>✓ دعم 24/7</li>
+                                </ul>
+                            </div>
+                        </label>
+                    </div>
+
+                    <div class="form-group terms-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="terms" required>
+                            <span>أوافق على <a href="#">شروط الاستخدام</a> و<a href="#">سياسة الخصوصية</a></span>
+                        </label>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-outline prev-btn">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                                <polyline points="16 17 21 12 16 7"/>
+                                <line x1="21" y1="12" x2="9" y2="12"/>
+                            </svg>
+                            <span>السابق</span>
+                        </button>
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <span>إنشاء الحساب</span>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+                                <polyline points="10 17 15 12 10 7"/>
+                                <line x1="15" y1="12" x2="3" y2="12"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            <div class="auth-footer">
+                <p>لديك حساب بالفعل؟ <a href="login.html">سجّل دخولك</a></p>
+            </div>
+        </div>
+
+        <!-- Auth Illustration -->
+        <div class="auth-illustration">
+            <div class="illustration-content">
+                <div class="floating-elements">
+                    <div class="float-item item-1">🍕</div>
+                    <div class="float-item item-2">🍔</div>
+                    <div class="float-item item-3">🌮</div>
+                    <div class="float-item item-4">🍣</div>
+                    <div class="float-item item-5">🥗</div>
+                </div>
+                <div class="illustration-text">
+                    <h2>انضم لـ +500 مطعم</h2>
+                    <p>وحوّل قائمتك لتجربة رقمية مذهلة</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/auth.js"></script>
+</body>
+</html>
