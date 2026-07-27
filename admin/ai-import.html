@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>استيراد بالذكاء الاصطناعي - MezoMenu</title>
+    <link rel="icon" type="image/png" href="../assets/images/favicon.png">
+    <link rel="stylesheet" href="../assets/css/main.css">
+    <link rel="stylesheet" href="../assets/css/admin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <img src="../assets/images/logo.png" alt="MezoMenu" onerror="this.style.display='none'">
+                    <div>
+                        <h2>MezoMenu</h2>
+                        <small>لوحة التحكم</small>
+                    </div>
+                </div>
+                <div class="restaurant-selector">
+                    <select id="restaurantSelect">
+                        <option value="">مطعم المبروك</option>
+                    </select>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <span class="nav-section-title">الرئيسية</span>
+                    <a href="dashboard.html" class="nav-item">
+                        <i class="fas fa-chart-pie"></i>
+                        <span>لوحة الإحصائيات</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <span class="nav-section-title">القائمة</span>
+                    <a href="menu.html" class="nav-item">
+                        <i class="fas fa-utensils"></i>
+                        <span>إدارة القائمة</span>
+                    </a>
+                    <a href="ai-import.html" class="nav-item active">
+                        <i class="fas fa-wand-magic-sparkles"></i>
+                        <span>استيراد ذكي</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <span class="nav-section-title">الطلبات</span>
+                    <a href="orders.html" class="nav-item">
+                        <i class="fas fa-receipt"></i>
+                        <span>إدارة الطلبات</span>
+                        <span class="badge">5</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <span class="nav-section-title">الإعدادات</span>
+                    <a href="settings.html" class="nav-item">
+                        <i class="fas fa-cog"></i>
+                        <span>إعدادات المطعم</span>
+                    </a>
+                    <a href="#" class="nav-item">
+                        <i class="fas fa-bell"></i>
+                        <span>الإشعارات</span>
+                        <span class="badge">3</span>
+                    </a>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar">م</div>
+                    <div class="user-details">
+                        <h4>مدير المطعم</h4>
+                        <p>admin@mezo.com</p>
+                    </div>
+                    <button onclick="logout()" class="btn btn-sm btn-danger">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Header -->
+            <header class="top-header">
+                <div class="header-left">
+                    <button class="menu-toggle" onclick="toggleSidebar()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 class="page-title">استيراد القائمة بالذكاء الاصطناعي</h1>
+                </div>
+                <div class="header-right">
+                    <button class="header-btn" title="الإشعارات">
+                        <i class="fas fa-bell"></i>
+                        <span class="badge bg-danger">3</span>
+                    </button>
+                    <button class="header-btn" title="المساعدة">
+                        <i class="fas fa-question-circle"></i>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Page Content -->
+            <div class="page-content">
+                <!-- AI Import Section -->
+                <div class="ai-import-section">
+                    <div class="ai-import-icon">
+                        <i class="fas fa-wand-magic-sparkles"></i>
+                    </div>
+                    <h2 class="ai-import-title">استيراد قائمتك تلقائياً</h2>
+                    <p class="ai-import-subtitle">
+                        ارفع صورة أو ملف PDF لقائمتك، وسيتولى الذكاء الاصطناعي استخراج جميع الأصناف والأسعار تلقائياً
+                    </p>
+
+                    <!-- Upload Options -->
+                    <div class="upload-options-grid">
+                        <!-- Image Upload -->
+                        <div class="upload-option-card" id="imageUploadCard">
+                            <div class="upload-zone" id="imageUploadZone">
+                                <input type="file" id="imageInput" accept="image/*" hidden>
+                                <i class="fas fa-image"></i>
+                                <h4>رفع صورة</h4>
+                                <p>اسحب الصورة هنا أو انقر للاختيار</p>
+                                <div class="supported-formats">
+                                    <span class="format-badge">JPG</span>
+                                    <span class="format-badge">PNG</span>
+                                    <span class="format-badge">WEBP</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- PDF Upload -->
+                        <div class="upload-option-card" id="pdfUploadCard">
+                            <div class="upload-zone" id="pdfUploadZone">
+                                <input type="file" id="pdfInput" accept=".pdf" hidden>
+                                <i class="fas fa-file-pdf"></i>
+                                <h4>رفع ملف PDF</h4>
+                                <p>اسحب الملف هنا أو انقر للاختيار</p>
+                                <div class="supported-formats">
+                                    <span class="format-badge">PDF</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- URL Input -->
+                        <div class="upload-option-card" id="urlInputCard">
+                            <div class="url-input-area">
+                                <i class="fas fa-link"></i>
+                                <h4>أدخل رابط الصورة</h4>
+                                <div class="url-input-wrapper">
+                                    <input type="url" id="imageUrlInput" placeholder="https://example.com/menu.jpg" class="form-control">
+                                    <button onclick="analyzeFromUrl()" class="btn btn-primary">
+                                        <i class="fas fa-search"></i>
+                                        تحليل
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Processing Status -->
+                    <div class="processing-status" id="processingStatus" style="display: none;">
+                        <div class="spinner"></div>
+                        <h3>جاري تحليل القائمة...</h3>
+                        <p>يتم استخدام الذكاء الاصطناعي لاستخراج البيانات</p>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="analysisProgress" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Preview Results -->
+                    <div class="ai-preview-container" id="previewContainer" style="display: none;">
+                        <div class="preview-header">
+                            <h3><i class="fas fa-check-circle text-success"></i> تم التحليل بنجاح!</h3>
+                            <p>مراجعة النتائج قبل الحفظ</p>
+                        </div>
+
+                        <div class="preview-grid">
+                            <!-- Original Image Preview -->
+                            <div class="preview-original">
+                                <h4>الصورة الأصلية</h4>
+                                <img id="originalImagePreview" src="" alt="Original Menu">
+                            </div>
+
+                            <!-- Extracted Data Preview -->
+                            <div class="preview-extracted">
+                                <h4>البيانات المستخرجة</h4>
+                                
+                                <!-- Categories Tabs -->
+                                <div class="extracted-categories" id="extractedCategories">
+                                    <!-- Will be populated by JS -->
+                                </div>
+
+                                <!-- Summary Stats -->
+                                <div class="extraction-summary">
+                                    <div class="summary-stat">
+                                        <i class="fas fa-folder"></i>
+                                        <span id="totalCategories">0</span>
+                                        <small>تصنيفات</small>
+                                    </div>
+                                    <div class="summary-stat">
+                                        <i class="fas fa-utensils"></i>
+                                        <span id="totalItems">0</span>
+                                        <small>أصناف</small>
+                                    </div>
+                                    <div class="summary-stat">
+                                        <i class="fas fa-check-double"></i>
+                                        <span id="confidenceScore">95%</span>
+                                        <small>دقة التحويل</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="preview-actions">
+                            <button onclick="saveExtractedData()" class="btn btn-primary btn-lg">
+                                <i class="fas fa-save"></i>
+                                حفظ في قائمتي
+                            </button>
+                            <button onclick="editExtractedData()" class="btn btn-secondary btn-lg">
+                                <i class="fas fa-edit"></i>
+                                تعديل البيانات
+                            </button>
+                            <button onclick="resetImport()" class="btn btn-outline btn-lg">
+                                <i class="fas fa-redo"></i>
+                                استيراد جديد
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- History Section -->
+                <div class="import-history-section">
+                    <div class="section-header">
+                        <h3><i class="fas fa-history"></i> سجل الاستيرادات السابقة</h3>
+                    </div>
+                    
+                    <div class="history-list" id="importHistoryList">
+                        <div class="empty-state">
+                            <i class="fas fa-inbox"></i>
+                            <p>لا توجد استيرادات سابقة</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Sidebar Overlay for Mobile -->
+        <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+    </div>
+
+    <script src="../assets/js/main.js"></script>
+    <script src="../assets/js/ai-import.js"></script>
+</body>
+</html>

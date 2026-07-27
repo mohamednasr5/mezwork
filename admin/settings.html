@@ -3,527 +3,547 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>الإعدادات - MezoMenu</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="manifest" href="../manifest-admin.json">
-    <meta name="theme-color" content="#6366f1">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <link rel="stylesheet" href="../css/style.css">
-    <link rel="stylesheet" href="../css/admin.css">
+    <title>إعدادات المطعم - MezoMenu</title>
+    <link rel="icon" type="image/png" href="../assets/images/favicon.png">
+    <link rel="stylesheet" href="../assets/css/main.css">
+    <link rel="stylesheet" href="../assets/css/admin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="admin-body">
-    <!-- Sidebar -->
-    <aside class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <a href="dashboard.html" class="sidebar-logo"><span class="logo-icon">🍽️</span><span class="logo-text">MezoMenu</span></a>
-            <button class="sidebar-close" id="sidebarClose">✕</button>
-        </div>
-
-        <nav class="sidebar-nav">
-            <ul>
-                <li class="nav-item"><a href="dashboard.html" class="nav-link"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg><span>الرئيسية</span></a></li>
-                <li class="nav-item"><a href="menu-editor.html" class="nav-link"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h13"/></svg><span>القائمة</span></a></li>
-                <li class="nav-item"><a href="categories.html" class="nav-link"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg><span>الأقسام</span></a></li>
-                <li class="nav-item"><a href="orders.html" class="nav-link"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg><span>الطلبات</span></a></li>
-                <li class="nav-item"><a href="ai-analyze.html" class="nav-link"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a4 4 0 014 4v2a4 4 0 01-8 0V6a4 4 0 014-4z"/></svg><span>الذكاء الاصطناعي</span></a></li>
-                <li class="nav-item active"><a href="settings.html" class="nav-link"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/></svg><span>الإعدادات</span></a></li>
-            </ul>
-        </nav>
-
-        <div class="sidebar-footer">
-            <div class="user-info">
-                <div class="user-avatar">👨‍💼</div>
-                <div class="user-details"><span class="user-name">أحمد محمد</span><span class="user-role">صاحب مطعم</span></div>
-            </div>
-            <button onclick="handleLogout()" class="btn btn-outline btn-sm logout-btn">تسجيل الخروج</button>
-        </div>
-    </aside>
-
-    <!-- Main Content -->
-    <main class="main-content">
-        <header class="topbar">
-            <div class="topbar-right">
-                <button class="menu-toggle" id="menuToggle"><span></span><span></span><span></span></button>
-                <h1 class="page-title">الإعدادات</h1>
-            </div>
-            <div class="topbar-left">
-                <button onclick="saveSettings()" class="btn btn-primary btn-sm">حفظ التغييرات</button>
-            </div>
-        </header>
-
-        <!-- Settings Content -->
-        <div class="settings-content">
-            <!-- Settings Tabs -->
-            <div class="settings-tabs">
-                <button class="tab-btn active" onclick="showTab('restaurant')">معلومات المطعم</button>
-                <button class="tab-btn" onclick="showTab('appearance')">المظهر</button>
-                <button class="tab-btn" onclick="showTab('notifications')">الإشعارات</button>
-                <button class="tab-btn" onclick="showTab('account')">الحساب</button>
+<body>
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <img src="../assets/images/logo.png" alt="MezoMenu" onerror="this.style.display='none'">
+                    <div>
+                        <h2>MezoMenu</h2>
+                        <small>لوحة التحكم</small>
+                    </div>
+                </div>
+                <div class="restaurant-selector">
+                    <select id="restaurantSelect">
+                        <option value="">مطعم المبروك</option>
+                    </select>
+                </div>
             </div>
 
-            <!-- Restaurant Info Tab -->
-            <div class="settings-tab active" id="tab-restaurant">
-                <form id="restaurantForm" onsubmit="saveRestaurantInfo(event)">
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <span class="nav-section-title">الرئيسية</span>
+                    <a href="dashboard.html" class="nav-item">
+                        <i class="fas fa-chart-pie"></i>
+                        <span>لوحة الإحصائيات</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <span class="nav-section-title">القائمة</span>
+                    <a href="menu.html" class="nav-item">
+                        <i class="fas fa-utensils"></i>
+                        <span>إدارة القائمة</span>
+                    </a>
+                    <a href="ai-import.html" class="nav-item">
+                        <i class="fas fa-wand-magic-sparkles"></i>
+                        <span>استيراد ذكي</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <span class="nav-section-title">الطلبات</span>
+                    <a href="orders.html" class="nav-item">
+                        <i class="fas fa-receipt"></i>
+                        <span>إدارة الطلبات</span>
+                        <span class="badge">5</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <span class="nav-section-title">الإعدادات</span>
+                    <a href="settings.html" class="nav-item active">
+                        <i class="fas fa-cog"></i>
+                        <span>إعدادات المطعم</span>
+                    </a>
+                    <a href="notifications.html" class="nav-item">
+                        <i class="fas fa-bell"></i>
+                        <span>الإشعارات</span>
+                        <span class="badge">3</span>
+                    </a>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar">م</div>
+                    <div class="user-details">
+                        <h4>مدير المطعم</h4>
+                        <p>admin@mezo.com</p>
+                    </div>
+                    <button onclick="logout()" class="btn btn-sm btn-danger">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Header -->
+            <header class="top-header">
+                <div class="header-left">
+                    <button class="menu-toggle" onclick="toggleSidebar()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 class="page-title">إعدادات المطعم</h1>
+                </div>
+                <div class="header-right">
+                    <button class="btn btn-primary" onclick="saveAllSettings()">
+                        <i class="fas fa-save"></i>
+                        حفظ التغييرات
+                    </button>
+                </div>
+            </header>
+
+            <!-- Page Content -->
+            <div class="page-content">
+                <!-- Settings Tabs -->
+                <div class="settings-tabs">
+                    <button class="settings-tab active" data-tab="general">
+                        <i class="fas fa-store"></i> عام
+                    </button>
+                    <button class="settings-tab" data-tab="appearance">
+                        <i class="fas fa-palette"></i> المظهر
+                    </button>
+                    <button class="settings-tab" data-tab="notifications-settings">
+                        <i class="fas fa-bell"></i> الإشعارات
+                    </button>
+                    <button class="settings-tab" data-tab="whatsapp">
+                        <i class="fab fa-whatsapp"></i> واتساب
+                    </button>
+                    <button class="settings-tab" data-tab="subscription">
+                        <i class="fas fa-crown"></i> الاشتراك
+                    </button>
+                </div>
+
+                <!-- General Settings -->
+                <div class="settings-panel active" id="panel-general">
                     <div class="settings-section">
-                        <h3>معلومات المطعم الأساسية</h3>
-                        <div class="form-grid">
-                            <div class="form-group full-width">
-                                <label for="restaurantName">اسم المطعم *</label>
-                                <input type="text" id="restaurantName" value="مطعم الخليج" required>
+                        <h3 class="settings-section-title"><i class="fas fa-store"></i> معلومات المطعم</h3>
+                        
+                        <!-- Logo Upload -->
+                        <div class="logo-upload-section">
+                            <div class="logo-upload-area" id="logoUploadArea">
+                                <input type="file" id="logoInput" accept="image/*" hidden>
+                                <img id="logoPreview" src="" alt="" style="display: none;">
+                                <i class="fas fa-camera" id="logoIcon"></i>
+                                <span>شعار المطعم</span>
                             </div>
-                            
-                            <div class="form-group full-width">
-                                <label for="restaurantDescription">وصف المطعم</label>
-                                <textarea id="restaurantDescription" rows="3">مطعم شرقي أصيل يقدم أشهى المأكولات العربية والشرقية</textarea>
+                            <div class="logo-info">
+                                <p>يستخدم كأيقونة تطبيق العميل</p>
+                                <p class="text-muted">الحجم الموصى به: 512×512 بكسل</p>
                             </div>
+                        </div>
 
+                        <div class="settings-grid">
                             <div class="form-group">
-                                <label for="cuisineType">نوع المطبخ</label>
-                                <select id="cuisineType">
-                                    <option value="arabic" selected>عربي / شرقي</option>
-                                    <option value="egyptian">مصري</option>
+                                <label class="form-label">اسم المطعم *</label>
+                                <input type="text" class="form-control" id="restaurantName" value="مطعم المبروك" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">الرابط (Slug) *</label>
+                                <input type="text" class="form-control" dir="ltr" id="restaurantSlug" value="el-mabrouk" required>
+                                <small class="form-text">يستخدم في رابط القائمة: /r/el-mabrouk</small>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">الوصف</label>
+                                <textarea class="form-control" id="restaurantDescription" rows="3">أفضل مطعم مصري في المنصورة</textarea>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">نوع المطبخ</label>
+                                <select class="form-select" id="cuisineType">
+                                    <option value="egyptian" selected>مصري</option>
+                                    <option value="arabic">عربي</option>
                                     <option value="grill">مشويات</option>
                                     <option value="seafood">مأكولات بحرية</option>
-                                    <option value="italian">إيطالي</option>
-                                    <option value="fastfood">وجبات سريعة</option>
+                                    <option value="fast-food">وجبات سريعة</option>
                                     <option value="sweets">حلويات</option>
+                                    <option value="drinks">مشروبات</option>
                                     <option value="other">أخرى</option>
                                 </select>
                             </div>
-
                             <div class="form-group">
-                                <label for="restaurantLogo">شعار المطعم (إيموجي)</label>
-                                <input type="text" id="restaurantLogo" value="🍕" maxlength="2">
+                                <label class="form-label">المدينة</label>
+                                <input type="text" class="form-control" id="restaurantCity" value="المنصورة">
                             </div>
-                        </div>
-                    </div>
-
-                    <div class="settings-section">
-                        <h3>معلومات الاتصال</h3>
-                        <div class="form-grid">
                             <div class="form-group">
-                                <label for="phone">رقم الهاتف</label>
-                                <input type="tel" id="phone" value="+201234567890" dir="ltr">
+                                <label class="form-label">العنوان</label>
+                                <input type="text" class="form-control" id="restaurantAddress" value="شارع الجامعة، المنصورة">
                             </div>
-
                             <div class="form-group">
-                                <label for="whatsappNumber">رقم الواتساب</label>
-                                <input type="tel" id="whatsappNumber" value="+201234567890" dir="ltr">
+                                <label class="form-label">هاتف المطعم</label>
+                                <input type="tel" class="form-control" dir="ltr" id="restaurantPhone" value="+20 50 234 5678">
                             </div>
-
-                            <div class="form-group full-width">
-                                <label for="address">العنوان</label>
-                                <input type="text" id="address" value="القاهرة، شارع العباس">
-                            </div>
-
                             <div class="form-group">
-                                <label for="city">المدينة</label>
-                                <select id="city">
-                                    <option value="cairo" selected>القاهرة</option>
-                                    <option value="alexandria">الإسكندرية</option>
-                                    <option value="giza">الجيزة</option>
-                                    <option value="other">أخرى</option>
-                                </select>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="slug">رابط القائمة (Slug)</label>
-                                <div class="input-with-prefix">
-                                    <span class="prefix">mezomenu.com/</span>
-                                    <input type="text" id="slug" value="al-khaleej" dir="ltr">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="settings-section">
-                        <h3>الدفع والعملة</h3>
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label for="currency">العملة</label>
-                                <select id="currency">
+                                <label class="form-label">العملة</label>
+                                <select class="form-select" id="currency">
                                     <option value="EGP" selected>جنيه مصري (ج.م)</option>
+                                    <option value="USD">دولار أمريكي ($)</option>
                                     <option value="SAR">ريال سعودي (ر.س)</option>
                                     <option value="AED">درهم إماراتي (د.إ)</option>
-                                    <option value="USD">دولار أمريكي ($)</option>
+                                    <option value="KWD">دينار كويتي (د.ك)</option>
                                 </select>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Working Hours -->
+                    <div class="settings-section">
+                        <h3 class="settings-section-title"><i class="fas fa-clock"></i> مواعيد العمل</h3>
+                        
+                        <div class="working-hours-grid" id="workingHoursGrid">
+                            <div class="day-row">
+                                <span class="day-name">السبت</span>
+                                <div class="time-inputs">
+                                    <input type="time" class="form-control" value="10:00">
+                                    <span>إلى</span>
+                                    <input type="time" class="form-control" value="23:59">
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div class="day-row">
+                                <span class="day-name">الأحد</span>
+                                <div class="time-inputs">
+                                    <input type="time" class="form-control" value="10:00">
+                                    <span>إلى</span>
+                                    <input type="time" class="form-control" value="23:59">
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div class="day-row">
+                                <span class="day-name">الاثنين</span>
+                                <div class="time-inputs">
+                                    <input type="time" class="form-control" value="10:00">
+                                    <span>إلى</span>
+                                    <input type="time" class="form-control" value="23:59">
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div class="day-row">
+                                <span class="day-name">الثلاثاء</span>
+                                <div class="time-inputs">
+                                    <input type="time" class="form-control" value="10:00">
+                                    <span>إلى</span>
+                                    <input type="time" class="form-control" value="23:59">
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div class="day-row">
+                                <span class="day-name">الأربعاء</span>
+                                <div class="time-inputs">
+                                    <input type="time" class="form-control" value="10:00">
+                                    <span>إلى</span>
+                                    <input type="time" class="form-control" value="23:59">
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div class="day-row">
+                                <span class="day-name">الخميس</span>
+                                <div class="time-inputs">
+                                    <input type="time" class="form-control" value="10:00">
+                                    <span>إلى</span>
+                                    <input type="time" class="form-control" value="23:59">
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div class="day-row">
+                                <span class="day-name">الجمعة</span>
+                                <div class="time-inputs">
+                                    <input type="time" class="form-control" value="14:00">
+                                    <span>إلى</span>
+                                    <input type="time" class="form-control" value="23:59">
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Appearance Settings -->
+                <div class="settings-panel" id="panel-appearance">
+                    <div class="settings-section">
+                        <h3 class="settings-section-title"><i class="fas fa-palette"></i> تخصيص المظهر</h3>
+                        
+                        <div class="theme-color-picker">
+                            <label class="form-label">اللون الرئيسي</label>
+                            <div class="color-options">
+                                <button class="color-btn active" style="background: #ff6b35;" data-color="#ff6b35"></button>
+                                <button class="color-btn" style="background: #e74c3c;" data-color="#e74c3c"></button>
+                                <button class="color-btn" style="background: #3498db;" data-color="#3498db"></button>
+                                <button class="color-btn" style="background: #2ecc71;" data-color="#2ecc71"></button>
+                                <button class="color-btn" style="background: #9b59b6;" data-color="#9b59b6"></button>
+                                <button class="color-btn" style="background: #f39c12;" data-color="#f39c12"></button>
+                                <button class="color-btn" style="background: #1abc9c;" data-color="#1abc9c"></button>
+                                <button class="color-btn" style="background: #34495e;" data-color="#34495e"></button>
+                            </div>
+                            <div class="custom-color-input">
+                                <input type="color" id="customColorPicker" value="#ff6b35">
+                                <span>أو اختر لون مخصص</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group mt-4">
+                            <label class="form-label">معاينة القائمة للعملاء</label>
+                            <div class="preview-frame">
+                                <iframe id="customerPreviewFrame" src="../customer/index.html?preview=true" loading="lazy"></iframe>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notification Settings -->
+                <div class="settings-panel" id="panel-notifications-settings">
+                    <div class="settings-section">
+                        <h3 class="settings-section-title"><i class="fas fa-bell"></i> إعدادات الإشعارات</h3>
+                        
+                        <div class="notification-options">
+                            <div class="notification-option">
+                                <div class="option-info">
+                                    <h4>إشعارات الطلبات الجديدة</h4>
+                                    <p>استلام إشعار عند وصول طلب جديد</p>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div class="notification-option">
+                                <div class="option-info">
+                                    <h4>إشعارات واتساب</h4>
+                                    <p>إرسال إشعار عبر واتساب لكل طلب</p>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div class="notification-option">
+                                <div class="option-info">
+                                    <h4>إشعارات البريد الإلكتروني</h4>
+                                    <p>ملخص يومي بالطلبات والإحصائيات</p>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div class="notification-option">
+                                <div class="option-info">
+                                    <h4>صوت التنبيه</h4>
+                                    <p>تشغيل صوت عند وصول طلب جديد</p>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- WhatsApp Settings -->
+                <div class="settings-panel" id="panel-whatsapp">
+                    <div class="settings-section">
+                        <h3 class="settings-section-title"><i class="fab fa-whatsapp"></i> إعدادات واتساب</h3>
+                        
+                        <div class="whatsapp-config">
+                            <div class="form-group">
+                                <label class="form-label">رقم واتساب المطعم</label>
+                                <input type="tel" class="form-control" dir="ltr" id="whatsappNumber" placeholder="+20 127 993 4735" value="+201279934735">
+                                <small class="form-text">سيتم استخدام هذا الرقم لاستقبال الطلبات</small>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">رسالة ترحيب تلقائية</label>
+                                <textarea class="form-control" id="welcomeMessage" rows="3">مرحباً بك في مطعم المبروك! 🎉 تم استلام طلبك وسنقوم بالتواصل معك قريباً.</textarea>
+                            </div>
 
                             <div class="form-group">
-                                <label for="deliveryFee">رسوم التوصيل (ج.م)</label>
-                                <input type="number" id="deliveryFee" value="20" min="0">
-                            </div>
-                        </div>
-                    </div>
-                </form>
-            </div>
+                                <label class="form-label">قالب رسالة الطلب</label>
+                                <textarea class="form-control" id="orderMessageTemplate" rows="4">🆕 *طلب جديد #{order_id}*
 
-            <!-- Appearance Tab -->
-            <div class="settings-tab" id="tab-appearance">
-                <div class="settings-section">
-                    <h3>مظهر القائمة</h3>
-                    <div class="theme-options">
-                        <div class="theme-option active" onclick="selectTheme(this, 'default')">
-                            <div class="theme-preview default-theme"></div>
-                            <span>افتراضي</span>
-                        </div>
-                        <div class="theme-option" onclick="selectTheme(this, 'dark')">
-                            <div class="theme-preview dark-theme"></div>
-                            <span>داكن</span>
-                        </div>
-                        <div class="theme-option" onclick="selectTheme(this, 'colorful')">
-                            <div class="theme-preview colorful-theme"></div>
-                            <span>ملون</span>
-                        </div>
-                        <div class="theme-option" onclick="selectTheme(this, 'minimal')">
-                            <div class="theme-preview minimal-theme"></div>
-                            <span>بسيط</span>
+👤 *العميل:* {customer_name}
+📱 *الهاتف:* {customer_phone}
+
+🛒 *الأصناف:*
+{items}
+
+💰 *المجموع:* {total}
+⏰ *التاريخ:* {date}</textarea>
+                                <small class="form-text">يمكنك استخدام المتغيرات: {order_id}, {customer_name}, {items}, {total}, {date}</small>
+                            </div>
+
+                            <button onclick="testWhatsApp()" class="btn btn-success">
+                                <i class="fab fa-whatsapp"></i>
+                                إرسال رسالة تجريبية
+                            </button>
                         </div>
                     </div>
                 </div>
 
-                <div class="settings-section">
-                    <h3>الألوان المخصصة</h3>
-                    <div class="color-picker-grid">
-                        <div class="color-picker-item">
-                            <label>اللون الرئيسي</label>
-                            <input type="color" id="primaryColor" value="#6366f1">
-                        </div>
-                        <div class="color-picker-item">
-                            <label>لون الثانوي</label>
-                            <input type="color" id="secondaryColor" value="#8b5cf6">
-                        </div>
-                        <div class="color-picker-item">
-                            <label>لون الخلفية</label>
-                            <input type="color" id="backgroundColor" value="#ffffff">
-                        </div>
-                        <div class="color-picker-item">
-                            <label>لون النص</label>
-                            <input type="color" id="textColor" value="#111827">
+                <!-- Subscription Settings -->
+                <div class="settings-panel" id="panel-subscription">
+                    <div class="settings-section">
+                        <h3 class="settings-section-title"><i class="fas fa-crown"></i> الباقة الحالية</h3>
+                        
+                        <div class="current-plan-card">
+                            <div class="plan-header">
+                                <div class="plan-icon">⭐</div>
+                                <div class="plan-info">
+                                    <h3>الباقة المجانية</h3>
+                                    <p>متاح حتى: غير محدود</p>
+                                </div>
+                                <span class="plan-badge free">مجاني</span>
+                            </div>
+                            <div class="plan-features">
+                                <div class="feature-item available">
+                                    <i class="fas fa-check"></i>
+                                    <span>قائمة طعام غير محدودة</span>
+                                </div>
+                                <div class="feature-item available">
+                                    <i class="fas fa-check"></i>
+                                    <span>استيراد بالذكاء الاصطناعي</span>
+                                </div>
+                                <div class="feature-item available">
+                                    <i class="fas fa-check"></i>
+                                    <span>طلبات عبر واتساب</span>
+                                </div>
+                                <div class="feature-item unavailable">
+                                    <i class="fas fa-times"></i>
+                                    <span>تحليلات متقدمة</span>
+                                </div>
+                                <div class="feature-item unavailable">
+                                    <i class="fas fa-times"></i>
+                                    <span>دعم فني أولوية</span>
+                                </div>
+                            </div>
+                            <button onclick="showUpgradeModal()" class="btn btn-primary btn-lg btn-block">
+                                <i class="fas fa-arrow-up"></i>
+                                ترقية الباقة
+                            </button>
                         </div>
                     </div>
-                </div>
-            </div>
 
-            <!-- Notifications Tab -->
-            <div class="settings-tab" id="tab-notifications">
-                <div class="settings-section">
-                    <h3>إعدادات الإشعارات</h3>
-                    <div class="toggle-options">
-                        <div class="toggle-item">
-                            <div class="toggle-info">
-                                <strong>إشعارات الطلبات الجديدة</strong>
-                                <p>تلقي إشعار عند وصول طلب جديد</p>
+                    <div class="settings-section">
+                        <h3 class="settings-section-title"><i class="fas fa-gift"></i> الباقات المتاحة</h3>
+                        
+                        <div class="pricing-cards-grid">
+                            <!-- Free Plan -->
+                            <div class="pricing-card">
+                                <div class="pricing-card-header basic">
+                                    <h3>مجاني</h3>
+                                    <div class="price">
+                                        <span class="amount">0</span>
+                                        <span class="currency">ج.م/شهر</span>
+                                    </div>
+                                </div>
+                                <ul class="pricing-features">
+                                    <li><i class="fas fa-check"></i> قائمة طعام أساسية</li>
+                                    <li><i class="fas fa-check"></i> 50 صنف كحد أقصى</li>
+                                    <li><i class="fas fa-check"></i> طلبات واتساب</li>
+                                    <li class="disabled"><i class="fas fa-times"></i> بدون تحليلات</li>
+                                    <li class="disabled"><i class="fas fa-times"></i> بدون دعم فني</li>
+                                </ul>
+                                <button class="btn btn-outline btn-block" disabled>الباقة الحالية</button>
                             </div>
-                            <label class="toggle-switch">
-                                <input type="checkbox" id="newOrderNotif" checked>
-                                <span class="toggle-slider"></span>
-                            </label>
-                        </div>
 
-                        <div class="toggle-item">
-                            <div class="toggle-info">
-                                <strong>صوت التنبيه</strong>
-                                <p>تشغيل صوت عند طلب جديد</p>
+                            <!-- Pro Plan -->
+                            <div class="pricing-card featured">
+                                <div class="pricing-card-header pro">
+                                    <span class="popular-badge">الأكثر شعبية</span>
+                                    <h3>احترافي</h3>
+                                    <div class="price">
+                                        <span class="amount">199</span>
+                                        <span class="currency">ج.م/شهر</span>
+                                    </div>
+                                </div>
+                                <ul class="pricing-features">
+                                    <li><i class="fas fa-check"></i> قائمة طعام غير محدودة</li>
+                                    <li><i class="fas fa-check"></i> أصناف غير محدودة</li>
+                                    <li><i class="fas fa-check"></i> تحليلات متقدمة</li>
+                                    <li><i class="fas fa-check"></i> استيراد AI غير محدود</li>
+                                    <li><i class="fas fa-check"></i> دعم فني بالبريد</li>
+                                </ul>
+                                <button class="btn btn-primary btn-block">ترقية الآن</button>
                             </div>
-                            <label class="toggle-switch">
-                                <input type="checkbox" id="soundNotif" checked>
-                                <span class="toggle-slider"></span>
-                            </label>
-                        </div>
 
-                        <div class="toggle-item">
-                            <div class="toggle-info">
-                                <strong>إشعارات البريد الإلكتروني</strong>
-                                <p>تلقي ملخص يومي بالطلبات</p>
-                            </div>
-                            <label class="toggle-switch">
-                                <input type="checkbox" id="emailNotif">
-                                <span class="toggle-slider"></span>
-                            </label>
-                        </div>
-
-                        <div class="toggle-item">
-                            <div class="toggle-info">
-                                <strong>إشعارات واتساب</strong>
-                                <p>إرسال ملخص للواتساب</p>
-                            </div>
-                            <label class="toggle-switch">
-                                <input type="checkbox" id="whatsappNotif">
-                                <span class="toggle-slider"></span>
-                            </label>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Account Tab -->
-            <div class="settings-tab" id="tab-account">
-                <div class="settings-section">
-                    <h3>معلومات الحساب</h3>
-                    <div class="profile-card">
-                        <div class="profile-avatar">
-                            <span>👨‍💼</span>
-                            <button class="change-avatar-btn">تغيير</button>
-                        </div>
-                        <div class="profile-info">
-                            <div class="form-group">
-                                <label for="fullName">الاسم الكامل</label>
-                                <input type="text" id="fullName" value="أحمد محمد">
-                            </div>
-                            <div class="form-group">
-                                <label for="email">البريد الإلكتروني</label>
-                                <input type="email" id="email" value="ahmed@restaurant.com" disabled>
-                                <small>لا يمكن تغيير البريد الإلكتروني</small>
-                            </div>
-                            <div class="form-group">
-                                <label for="phoneAccount">رقم الهاتف</label>
-                                <input type="tel" id="phoneAccount" value="+201234567890" dir="ltr">
+                            <!-- Enterprise Plan -->
+                            <div class="pricing-card">
+                                <div class="pricing-card-header enterprise">
+                                    <h3>مؤسسات</h3>
+                                    <div class="price">
+                                        <span class="amount">499</span>
+                                        <span class="currency">ج.م/شهر</span>
+                                    </div>
+                                </div>
+                                <ul class="pricing-features">
+                                    <li><i class="fas fa-check"></i> كل مميزات الاحترافي</li>
+                                    <li><i class="fas fa-check"></i> فروع متعددة</li>
+                                    <li><i class="fas fa-check"></i> API مخصص</li>
+                                    <li><i class="fas fa-check"></i> دعم فني على مدار الساعة</li>
+                                    <li><i class="fas fa-check"></i> تخصيص كامل</li>
+                                </ul>
+                                <button class="btn btn-outline btn-block">تواصل معنا</button>
                             </div>
                         </div>
-                    </div>
-                </div>
-
-                <div class="settings-section">
-                    <h3>تغيير كلمة المرور</h3>
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label for="currentPassword">كلمة المرور الحالية</label>
-                            <input type="password" id="currentPassword" placeholder="••••••••">
-                        </div>
-                        <div class="form-group">
-                            <label for="newPassword">كلمة المرور الجديدة</label>
-                            <input type="password" id="newPassword" placeholder="••••••••">
-                        </div>
-                        <div class="form-group full-width">
-                            <label for="confirmNewPassword">تأكيد كلمة المرور الجديدة</label>
-                            <input type="password" id="confirmNewPassword" placeholder="••••••••">
-                        </div>
-                    </div>
-                    <button type="button" onclick="changePassword()" class="btn btn-outline">تحديث كلمة المرور</button>
-                </div>
-
-                <div class="settings-section danger-zone">
-                    <h3>منطقة الخطر</h3>
-                    <p>هذه الإجراءات لا يمكن التراجع عنها. كن حذراً.</p>
-                    <div class="danger-actions">
-                        <button onclick="exportData()" class="btn btn-outline">تصدير بياناتي</button>
-                        <button onclick="deleteAccount()" class="btn btn-danger">حذف الحساب</button>
                     </div>
                 </div>
             </div>
-        </div>
-    </main>
 
-    <!-- Mobile Overlay -->
-    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+            <!-- QR Code Section -->
+            <div class="qr-code-display mt-4">
+                <h3><i class="fas fa-qrcode"></i> رمز QR للقائمة</h3>
+                <p class="text-muted">اطبع هذا الكود وضعه على طاولات المطعم</p>
+                <div class="qr-code-image" id="qrCodeImage">
+                    <canvas id="qrCodeCanvas"></canvas>
+                </div>
+                <div class="qr-actions">
+                    <button onclick="downloadQRCode()" class="btn btn-secondary">
+                        <i class="fas fa-download"></i> تحميل PNG
+                    </button>
+                    <button onclick="printQRCode()" class="btn btn-secondary">
+                        <i class="fas fa-print"></i> طباعة
+                    </button>
+                </div>
+            </div>
+        </main>
 
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-    
-    <script src="../js/firebase-config.js"></script>
-    <script src="../js/admin.js"></script>
-    
-    <script>
-        function showTab(tabName) {
-            // Hide all tabs
-            document.querySelectorAll('.settings-tab').forEach(tab => tab.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            
-            // Show selected tab
-            document.getElementById('tab-' + tabName).classList.add('active');
-            event.target.classList.add('active');
-        }
-        
-        function selectTheme(element, theme) {
-            document.querySelectorAll('.theme-option').forEach(opt => opt.classList.remove('active'));
-            element.classList.add('active');
-            showToast(`تم اختيار السمة: ${theme}`, 'success');
-        }
-        
-        function saveSettings() {
-            const settings = {
-                restaurantName: document.getElementById('restaurantName').value,
-                description: document.getElementById('restaurantDescription').value,
-                cuisineType: document.getElementById('cuisineType').value,
-                logo: document.getElementById('restaurantLogo').value,
-                phone: document.getElementById('phone').value,
-                whatsappNumber: document.getElementById('whatsappNumber').value,
-                address: document.getElementById('address').value,
-                city: document.getElementById('city').value,
-                slug: document.getElementById('slug').value,
-                currency: document.getElementById('currency').value,
-                deliveryFee: document.getElementById('deliveryFee').value,
-                theme: document.querySelector('.theme-option.active')?.dataset.theme || 'default',
-                colors: {
-                    primary: document.getElementById('primaryColor').value,
-                    secondary: document.getElementById('secondaryColor').value,
-                    background: document.getElementById('backgroundColor').value,
-                    text: document.getElementById('textColor').value
-                },
-                notifications: {
-                    newOrders: document.getElementById('newOrderNotif').checked,
-                    sound: document.getElementById('soundNotif').checked,
-                    email: document.getElementById('emailNotif').checked,
-                    whatsapp: document.getElementById('whatsappNotif').checked
-                }
-            };
-            
-            console.log('Saving settings:', settings);
-            
-            // In production, save to Firebase
-            showToast('تم حفظ الإعدادات بنجاح!', 'success');
-        }
-        
-        function saveRestaurantInfo(e) {
-            e.preventDefault();
-            saveSettings();
-        }
-        
-        function changePassword() {
-            const current = document.getElementById('currentPassword').value;
-            const newPass = document.getElementById('newPassword').value;
-            const confirm = document.getElementById('confirmNewPassword').value;
-            
-            if (!current || !newPass || !confirm) {
-                showToast('يرجى ملء جميع الحقول', 'error');
-                return;
-            }
-            
-            if (newPass !== confirm) {
-                showToast('كلمات المرور غير متطابقة', 'error');
-                return;
-            }
-            
-            if (newPass.length < 8) {
-                showToast('كلمة المرور يجب أن تكون 8 أحرف على الأقل', 'error');
-                return;
-            }
-            
-            // In production, update password in Firebase Auth
-            showToast('تم تحديث كلمة المرور بنجاح', 'success');
-            
-            // Clear form
-            document.getElementById('currentPassword').value = '';
-            document.getElementById('newPassword').value = '';
-            document.getElementById('confirmNewPassword').value = '';
-        }
-        
-        function exportData() {
-            const data = {
-                restaurant: {
-                    name: document.getElementById('restaurantName').value,
-                    settings: {}
-                },
-                exportDate: new Date().toISOString()
-            };
-            
-            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `mezomenu-export-${Date.now()}.json`;
-            a.click();
-            
-            showToast('تم تصدير البيانات بنجاح', 'success');
-        }
-        
-        function deleteAccount() {
-            if (confirm('هل أنت متأكد من حذف حسابك؟ هذا الإجراء لا يمكن التراجع عنه!')) {
-                if (confirm('هل أنت متأكد حقاً؟ سيتم حذف جميع بياناتك نهائياً!')) {
-                    // In production, delete account from Firebase
-                    showToast('تم حذف الحساب بنجاح', 'success');
-                    setTimeout(() => {
-                        window.location.href = '../login.html';
-                    }, 2000);
-                }
-            }
-        }
-        
-        function showToast(message, type = 'success') {
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            toast.innerHTML = type === 'success' ? `✅ ${message}` : `❌ ${message}`;
-            toast.style.cssText = `position: fixed; bottom: 20px; right: 20px; background: ${type === 'success' ? '#10b981' : '#ef4444'}; color: white; padding: 16px 24px; border-radius: 12px; font-weight: 600; z-index: 9999; animation: slideIn 0.3s ease;`;
-            document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
-        }
-    </script>
-    
-    <style>
-        .settings-content { padding: 24px; max-width: 900px; margin: 0 auto; }
-        
-        .settings-tabs { display: flex; gap: 8px; margin-bottom: 32px; flex-wrap: wrap; }
-        .tab-btn { padding: 12px 24px; border: none; background: #f3f4f6; color: #6b7280; border-radius: 10px; cursor: pointer; font-family: inherit; font-weight: 500; transition: all 0.2s; }
-        .tab-btn:hover { background: #e5e7eb; }
-        .tab-btn.active { background: #6366f1; color: white; }
-        
-        .settings-tab { display: none; }
-        .settings-tab.active { display: block; }
-        
-        .settings-section { background: white; padding: 28px; border-radius: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 24px; }
-        .settings-section h3 { color: #111827; margin-bottom: 20px; font-size: 18px; }
-        
-        .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
-        .form-group.full-width { grid-column: 1 / -1; }
-        
-        .form-group label { display: block; color: #374151; font-weight: 500; margin-bottom: 8px; }
-        .form-group input, .form-group select, .form-group textarea {
-            width: 100%; padding: 12px 16px; border: 1px solid #d1d5db; border-radius: 10px; font-family: inherit; transition: border-color 0.2s;
-        }
-        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.1); }
-        .form-group small { color: #9ca3af; font-size: 12px; margin-top: 4px; display: block; }
-        
-        .input-with-prefix { display: flex; align-items: center; }
-        .prefix { background: #f3f4f6; padding: 12px 16px; border: 1px solid #d1d5db; border-left: none; border-radius: 10px 0 0 10px; color: #6b7280; white-space: nowrap; }
-        .input-with-prefix input { border-radius: 0 10px 10px 0; }
-        
-        /* Theme Options */
-        .theme-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 16px; }
-        .theme-option { text-align: center; cursor: pointer; padding: 16px; border: 2px solid transparent; border-radius: 12px; transition: all 0.2s; }
-        .theme-option:hover { background: #f9fafb; }
-        .theme-option.active { border-color: #6366f1; background: #eef2ff; }
-        
-        .theme-preview { width: 80px; height: 60px; border-radius: 8px; margin: 0 auto 8px; }
-        .default-theme { background: linear-gradient(135deg, #6366f1, #8b5cf6); }
-        .dark-theme { background: linear-gradient(135deg, #1f2937, #374151); }
-        .colorful-theme { background: linear-gradient(135deg, #ec4899, #f59e0b, #10b981); }
-        .minimal-theme { background: linear-gradient(135deg, #f3f4f6, #fff); border: 1px solid #d1d5db; }
-        
-        .color-picker-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; }
-        .color-picker-item label { display: block; color: #6b7280; font-size: 13px; margin-bottom: 8px; }
-        .color-picker-item input[type="color"] { width: 100%; height: 44px; border: none; border-radius: 8px; cursor: pointer; padding: 4px; }
-        
-        /* Toggle Switches */
-        .toggle-options { display: flex; flex-direction: column; gap: 20px; }
-        .toggle-item { display: flex; justify-content: space-between; align-items: center; padding: 16px; background: #f9fafb; border-radius: 12px; }
-        .toggle-info strong { display: block; color: #111827; margin-bottom: 4px; }
-        .toggle-info p { color: #6b7280; font-size: 14px; margin: 0; }
-        
-        .toggle-switch { position: relative; width: 52px; height: 28px; flex-shrink: 0; }
-        .toggle-switch input { opacity: 0; width: 0; height: 0; }
-        .toggle-slider { position: absolute; cursor: pointer; inset: 0; background: #d1d5db; border-radius: 28px; transition: 0.3s; }
-        .toggle-slider::before { position: absolute; content: ""; height: 22px; width: 22px; right: 3px; top: 3px; background: white; border-radius: 50%; transition: 0.3s; }
-        .toggle-switch input:checked + .toggle-slider { background: #6366f1; }
-        .toggle-switch input:checked + .toggle-slider::before { transform: translateX(-24px); }
-        
-        /* Profile Card */
-        .profile-card { display: flex; gap: 24px; align-items: flex-start; }
-        .profile-avatar { text-align: center; }
-        .profile-avatar span { font-size: 64px; display: block; margin-bottom: 8px; }
-        .change-avatar-btn { padding: 6px 16px; border: 1px solid #d1d5db; background: white; border-radius: 8px; cursor: pointer; font-size: 12px; }
-        .profile-info { flex: 1; display: flex; flex-direction: column; gap: 16px; }
-        
-        /* Danger Zone */
-        .danger-zone { border: 2px solid #fecaca; }
-        .danger-zone h3 { color: #dc2626; }
-        .danger-actions { display: flex; gap: 12px; margin-top: 16px; }
-        .btn-danger { background: #dc2626; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 500; }
-        .btn-danger:hover { background: #b91c1c; }
-    </style>
+        <!-- Sidebar Overlay for Mobile -->
+        <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+    </div>
+
+    <script src="../assets/js/main.js"></script>
+    <script src="../assets/js/settings.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 </body>
 </html>

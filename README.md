@@ -1,397 +1,331 @@
-# 🍽️ MezoMenu - نظام القوائم الذكية للمطاعم
+# 🍽️ MezoMenu SaaS - نظام القوائم الرقمية للمطاعم
 
 <div align="center">
 
-![MezoMenu Logo](https://img.shields.io/badge/MezoMenu-SaaS-6366f1?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0id2hpdGUiPjxwYXRoIGQ9Ik04IDEzSDJ2OWgydi05bTE1LTVM5IDMgOSAzaDR2MmEzIDMgMCAwIDAtMy0zeiIvPjwvc3ZnPg==)
-![Version](https://img.shields.io/badge/version-1.0.0-blue?style=flat-square)
-![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)
+![MezoMenu Logo](assets/images/logo.png)
 
-**منصة SaaS متعددة المستأجرين لإدارة قوائم الطعام الذكية**
+**منصة SaaS متكاملة لإدارة قوائم المطاعم الرقمية**
 
-[🌐 Live Demo](#) • [📖 Documentation](#) • [🚀 Getting Started](#getting-started) • [💬 Support](#)
+[🌐 موقع المعاينة](#) | [📖 التوثيق](docs/) | [🐛 الإبلاغ عن مشكلة](issues) | [💬 الدعم](#)
+
+[![License: MIT](https://img.shields.io/badge/LICENSE-MIT-green.svg)](LICENSE)
+[![Version](https://img.shields.io/badge/VERSION-3.0.0-blue.svg)](package.json)
+[![Cloudflare Workers](https://img.shields.io/badge/BACKEND-CLOUDFLARE_WORKERS-orange.svg)](worker/)
+[![Firebase](https://img.shields.io/badge/DATABASE-FIREBASE-yellow.svg)](firebase.json)
 
 </div>
 
 ---
 
-## ✨ المميزات الرئيسية
+## ✨ نظرة عامة
 
-### 🏪 **لأصحاب المطاعم**
-- **لوحة تحكم كاملة** - إدارة كاملة للمطعم من أي مكان
-- **قائمة طعام ذكية** - تفاعلية، سريعة، وجميلة
-- **إدارة الأقسام والأصناف** - تنظيم مرن للقائمة
-- **إدارة الطلبات** - تتبع الطلبات في الوقت الحقيقي
-- **تقارير متقدمة** - تحليلات المبيعات والإحصائيات
+MezoMenu هو نظام SaaS متكامل لإدارة قوائم المطاعم الرقمية، يتيح لأصحاب المطاعم إنشاء قوائم طعام رقمية احترافية وإدارتها بسهولة، مع إمكانية استيراد القائمة بالذكاء الاصطناعي واستقبال الطلبات عبر واتساب.
 
-### 🤖 **الذكاء الاصطناعي (NVIDIA AI)**
-- **تحليل القوائم بالصور** - ارفع صورة القائمة وسيقوم AI باستخراج كل شيء تلقائياً
-- **توليد صور الطعام** - أنشئ صوراً احترافية للأطباق باستخدام Stable Diffusion XL
-- **دعم اللغة العربية** - تحليل وتوليد محسّن للغة العربية
+### 🎯 الميزات الرئيسية
 
-### 📱 **PWA مزدوج لكل مطعم**
-- **PWA الإدارة** - لوحة تحكم تعمل بدون إنترنت
-- **PWA الزبون** - قائمة جميلة للعملاء مع إمكانية التثبيت
+#### 📱 تطبيقين PWA منفصلين:
+- **لوحة تحكم المدير (Admin PWA)**: لإدارة كامل المطعم
+- **تطبيق العميل (Customer PWA)**: لعرض القائمة وطلب الطعام
 
-### 🔒 **عزل تام بين المطاعم**
-- كل مطعم معزول تماماً عن الآخرين
-- بيانات آمنة ومشفرة
-- صلاحيات وصول دقيقة
+#### 🔧 ميزات لوحة التحكم:
+- ✅ تسجيل الدخول والتسجيل
+- ✅ إدارة بيانات المطعم (الشعار، الموقع، مواعيد العمل)
+- ✅ إدارة القائمة الكاملة (تصنيفات، أصناف، أسعار، أحجام، إضافات)
+- ✅ **استيراد ذكي بالذكاء الاصطناعي** (من صور أو PDF)
+- ✅ إدارة الطلبات مع تتبع الحالة
+- ✅ نظام إشعارات متقدم
+- ✅ رمز QR للقائمة
+- ✅ إحصائيات وتحليلات
+- ✅ إعدادات واتساب مخصصة
+- ✅ نظام اشتراكات (لصاحب المنصة)
+- ✅ تخصيص المظهر والألوان
 
-### 💬 **تكامل واتساب**
-- استقبال الطلبات مباشرة على واتساب
-- إشعارات فورية عند تغيير حالة الطلب
-- رسائل تلقائية للعملاء
+#### 👥 ميزات العميل:
+- ✅ عرض احترافي للقائمة
+- ✅ بحث وتصفية حسب التصنيف
+- ✅ سلة مشتريات
+- ✅ طلب عبر واتساب مع جميع التفاصيل
+- ✅ تتبع حالة الطلب
+- ✅ إشعارات فورية
+- ✅ دعم كامل للعربية (RTL)
 
 ---
 
 ## 🛠️ التقنيات المستخدمة
 
 | التقنية | الاستخدام |
-|---------|----------|
-| **HTML/CSS/JavaScript** | Frontend (Vanilla JS - بدون أطر عمل) |
-| **Cloudflare Workers** | Backend/API Serverless |
-| **Cloudflare R2** | تخزين الصور |
-| **Firebase Realtime Database** | قاعدة البيانات في الوقت الحقيقي |
-| **NVIDIA AI API** | تحليل القوائم + توليد الصور |
-| **PWA / Service Worker** | تطبيقات progressives |
+|---------|-----------|
+| **HTML5** | هيكل الصفحات |
+| **CSS3** | التصميم المتجاوب والرسوم المتحركة |
+| **JavaScript (Vanilla)** | المنطق والتفاعلية |
+| **Cloudflare Worker** | Backend API |
+| **R2 Storage** | تخزين الملفات والصور |
+| **Firebase Realtime Database** | قاعدة البيانات |
+| **Agnes AI / Nvidia AI** | الذكاء الاصطناعي لاستخراج القوائم |
+| **WhatsApp API** | إرسال الطلبات والإشعارات |
 
 ---
 
 ## 📁 هيكل المشروع
 
 ```
-mezomenu-saas/
-├── public/                      # Frontend Files
-│   ├── index.html               # Landing Page
-│   ├── login.html               # تسجيل الدخول
-│   ├── register.html            # التسجيل
-│   ├── admin/                   # PWA لوحة التحكم
-│   │   └── index.html           # Dashboard الرئيسي
-│   ├── menu/                    # PWA قائمة الزبون
-│   │   └── [slug]/index.html    # قائمة ديناميكية
-│   ├── css/                     # Stylesheets
-│   │   ├── style.css            # أنماط رئيسية
-│   │   ├── auth.css             # أنماط المصادقة
-│   │   └── admin.css            # أنماط لوحة التحكم
-│   ├── js/                      # JavaScript
-│   │   ├── app.js               # منطق التطبيق
-│   │   ├── auth.js              # المصادقة
-│   │   ├── admin.js             # لوحة التحكم
-│   │   ├── firebase-config.js   # إعداد Firebase
-│   │   └── nvidia-ai.js         # تكامل NVIDIA AI
-│   ├── manifest-admin.json      # PWA Admin Manifest
-│   ├── manifest-menu.json       # PWA Menu Manifest
-│   └── sw.js                    # Service Worker
-├── workers/                     # Cloudflare Workers
-│   ├── api/                     # API Endpoints
-│   │   ├── auth.worker.js       # المصادقة
-│   │   ├── menu.worker.js       # إدارة القوائم
-│   │   ├── orders.worker.js     # الطلبات
-│   │   ├── upload.worker.js     # رفع الصور (R2)
-│   │   └── ai.worker.js         # NVIDIA AI
-│   └── shared/                  # Shared Utilities
-│       ├── cors.js              # CORS Handling
-│       ├── firebase.js          # Firebase Helper
-│       └── r2.js                # R2 Storage Helper
-├── .env.example                 # متغيرات البيئة
-├── wrangler.toml                # Cloudflare Workers Config
-├── package.json                 # Dependencies
-└── README.md                    # هذا الملف
+menomenu-saas/
+├── index.html                 # الصفحة الرئيسية (Landing Page)
+├── README.md                  # هذا الملف
+├── LICENSE                    # رخصة MIT
+├── .gitignore                 # ملف Gitignore
+│
+├── admin/                     # لوحة تحكم المدير (Admin PWA)
+│   ├── login.html             # صفحة تسجيل الدخول
+│   ├── register.html          # صفحة التسجيل
+│   ├── dashboard.html         # لوحة الإحصائيات
+│   ├── menu.html              # إدارة القائمة
+│   ├── ai-import.html         # الاستيراد بالذكاء الاصطناعي
+│   ├── orders.html            # إدارة الطلبات
+│   ├── settings.html          # إعدادات المطعم
+│   ├── notifications.html     # الإشعارات
+│   ├── manifest.json          # PWA Manifest للـ Admin
+│   └── sw.js                  # Service Worker للـ Admin
+│
+├── customer/                  # تطبيق العميل (Customer PWA)
+│   ├── index.html             # صفحة عرض القائمة
+│   ├── manifest.json          # PWA Manifest للـ Customer
+│   └── sw.js                  # Service Worker للـ Customer
+│
+├── assets/                    # الملفات الثابتة
+│   ├── css/
+│   │   ├── main.css           # الأنماط الرئيسية
+│   │   ├── admin.css          # أنماط لوحة التحكم
+│   │   └── customer.css       # أنماط صفحة العميل
+│   ├── js/
+│   │   ├── main.js            # JavaScript الرئيسي
+│   │   ├── orders.js          # وظائف إدارة الطلبات
+│   │   ├── settings.js        # وظائف الإعدادات
+│   │   ├── ai-import.js       # وظائف الاستيراد الذكي
+│   │   └── notifications.js   # وظائف الإشعارات
+│   └── images/
+│       ├── logo.png           # شعار التطبيق
+│       ├── favicon.png        # أيقونة الموقع
+│       └── icon-*.png         # أيقونات PWA
+│
+├── worker/                    # Cloudflare Worker Backend
+│   └── index.js               # كود الـ Worker
+│
+└── docs/                      # التوثيق
+    └── (قريباً)
 ```
 
 ---
 
 ## 🚀 البدء السريع
 
-### المتطلبات الأساسية
+### 1. المتطلبات الأساسية
+- حساب على [Cloudflare](https://cloudflare.com)
+- مشروع على [Firebase Console](https://console.firebase.google.com)
+- مفتاح API من [Agnes AI](https://platform.agnes-ai.com) (اختياري للميزات الذكية)
 
-- Node.js 18+
-- حساب Cloudflare (Workers + R2)
-- حساب Firebase (Realtime Database)
-- حساب NVIDIA (AI API) - اختياري للـ AI features
-
-### 1. استنساخ المشروع
+### 2. إعداد Cloudflare Worker
 
 ```bash
-git clone https://github.com/yourusername/mezomenu-saas.git
-cd mezomenu-saas
+# 1. تثبيت Wrangler CLI
+npm install -g wrangler
+
+# 2. تسجيل الدخول
+wrangler login
+
+# 3. نشر الـ Worker
+cd worker
+wrangler deploy
+
+# 4. إضافة المتغيرات البيئية
+wrangler secret put AGNES_AI_API_KEY
+wrangler secret put FIREBASE_API_KEY
+wrangler secret put R2_BUCKET_NAME
 ```
 
-### 2. تثبيت التبعيات
+### 3. إعداد Firebase
+
+1. أنشئ مشروع جديد على Firebase Console
+2. فعّل Realtime Database
+3. أضف قواعد الأمان (انظر `firebase-rules.json`)
+4. انسخ إعدادات المشروع إلى `worker/index.js`
+
+### 4. تشغيل المشروع محلياً
 
 ```bash
-npm install
+# باستخدام أي خادم محلي
+cd menomenu-saas
+python -m http.server 8080
+
+# أو باستخدام Live Server في VS Code
 ```
 
-### 3. إعداد البيئة
+### 5. الوصول للتطبيق
 
-```bash
-cp .env.example .env
-# عدّل .env وأضف مفاتيحك الخاصة
-```
-
-### 4. إعداد Firebase
-
-1. أنشئ مشروع جديد على [Firebase Console](https://console.firebase.google.com/)
-2. فعّل **Realtime Database**
-3. انسخ الإعدادات إلى `.env`
-4. اضبط قواعد الأمان (انظر أدناه)
-
-### 5. إعداد Cloudflare Workers
-
-```bash
-# تسجيل الدخول
-npx wrangler login
-
-# نشر المشروع
-npx wrangler deploy
-```
-
-### 6. تشغيل محلياً
-
-```bash
-# تشغيل بيئة التطوير
-npm run dev
-
-# أو باستخدام Wrangler
-npx wrangler dev
-```
+- **الصفحة الرئيسية**: http://localhost:8080
+- **لوحة التحكم**: http://localhost:8080/admin/dashboard.html
+- **قائمة العميل**: http://localhost:8080/customer/index.html?slug=el-mabrouk
 
 ---
 
-## ⚙️ الإعدادات
+## ⚙️ الإعدادات والتهيئة
 
-### قواعد أمان Firebase
+### متغيرات البيئة المطلوبة
+
+| المتغير | الوصف | مثال |
+|---------|-------|------|
+| `AGNES_AI_API_KEY` | مفتاح Agnes AI API | `agnes-xxx...` |
+| `FIREBASE_API_KEY` | مفتاح Firebase API | `AIzaSyxxx...` |
+| `FIREBASE_PROJECT_ID` | معرف مشروع Firebase | `menu-b41e6` |
+| `R2_BUCKET_NAME` | اسم R2 Bucket | `mezomenu-uploads` |
+
+### إعدادات Firebase Rules
 
 ```json
 {
   "rules": {
-    "users": {
-      "$uid": {
-        ".read": "$uid === auth.uid",
-        ".write": "$uid === auth.uid"
-      }
-    },
+    ".read": true,
+    ".write": "auth != null",
     "restaurants": {
       "$restaurantId": {
-        ".read": "data.child('ownerId').val() === auth.uid || root.child('public_menus').child(data.child('slug').val()).exists()",
-        ".write": "data.child('ownerId').val() === auth.uid"
+        ".read": true,
+        ".write": "auth.uid == $restaurantId || root.child('admins').child(auth.uid).exists()"
       }
     },
-    "public_menus": {
-      "$slug": {
-        ".read": true,
-        ".write": false
+    "orders": {
+      "$orderId": {
+        ".read": "auth != null",
+        ".write": "auth != null"
       }
     }
   }
 }
 ```
 
-### متغيرات البيئة المطلوبة
-
-| المتغير | الوصف | مطلوب |
-|---------|-------|--------|
-| `FIREBASE_API_KEY` | مفتاح Firebase API | ✅ |
-| `FIREBASE_PROJECT_ID` | معرف المشروع | ✅ |
-| `FIREBASE_DATABASE_URL` | URL قاعدة البيانات | ✅ |
-| `NVIDIA_API_KEY` | مفتاح NVIDIA AI | ❌ (للميزات AI) |
-| `R2_BUCKET_NAME` | اسم bucket R2 | ✅ |
-| `WHATSAPP_API_TOKEN` | توكن واتساب | ❌ (للتكامل) |
-
 ---
 
-## 🎯 خطط الاشتراك
-
-| الخطة | السعر | الأصناف | تحليل AI | توليد صور |
-|-------|-------|---------|-----------|------------|
-| **مجاني** | 0 ج.م/شهر | 20 | ❌ | ❌ |
-| **احترافي** | 199 ج.م/شهر | ∞ | 100/شهر | 50/شهر |
-| **مؤسسات** | 499 ج.م/شهر | ∞ | ∞ | ∞ |
-
----
-
-## 📱 PWA Features
-
-### PWA الإدارة (لصاحب المطعم)
-- ✅ يعمل بدون إنترنت
-- ✅ يمكن تثبيته على الشاشة الرئيسية
-- ✅ إشعارات فورية للطلبات الجديدة
-- ✅ إدارة كاملة للقائمة والطلبات
-
-### PWA الزبون (للعملاء)
-- ✅ تصفح القائمة بسهولة
-- ✅ بحث وتصفية سريعة
-- ✅ طلب مباشر عبر واتساب
-- ✅ تصميم متجاوب لجميع الأجهزة
-
----
-
-## 🤖 الذكاء الاصطناعي
-
-### تحليل القوائم بالصور
-
-1. ارفع صورة قائمة مطبوعة أو ورقية
-2. سيقوم AI (Florence-2 من Microsoft/NVIDIA) بتحليلها
-3. يستخرج تلقائياً:
-   - اسم المطعم
-   - الأقسام والمجموعات
-   - الأصناف والأسعار
-   - الوصفات
-
-### توليد صور الطعام
-
-1. اكتب وصفاً للطبق
-2. سيقوم Stable Diffusion XL بتوليد صورة احترافية
-3. خيارات مخصصة:
-   - نمط التصوير
-   - الأبعاد
-   - جودة الصورة
-
----
-
-## 🔒 العزل بين المطاعم
-
-كل مطعم معزول تماماً:
-
-```
-restaurants/
-├── restaurant_123/           # مطعم A
-│   ├── menu/
-│   ├── orders/
-│   └── settings/
-├── restaurant_456/           # مطعم B
-│   ├── menu/
-│   ├── orders/
-│   └── settings/
-```
-
-**ضمانات العزل:**
-- ✅ لا يمكن لأي مطعم رؤية بيانات الآخر
-- ✅ كل API calls مُتحقق منها
-- ✅ مسارات قاعدة البيانات معزولة
-- ✅ ملفات R2 في مجلدات منفصلة
-
----
-
-## 📊 REST API Endpoints
+## 📊 نقاط النهاية API (Endpoints)
 
 ### المصادقة
-```
-POST   /api/auth/register      # إنشاء حساب جديد
-POST   /api/auth/login         # تسجيل الدخول
-POST   /api/auth/logout        # تسجيل الخروج
-GET    /api/auth/verify        # التحقق من التوكن
-```
+| Method | Endpoint | الوصف |
+|--------|----------|-------|
+| POST | `/api/auth/register` | تسجيل حساب جديد |
+| POST | `/api/auth/login` | تسجيل الدخول |
+| GET | `/api/auth/me` | جلب بيانات المستخدم |
 
-### القوائم
-```
-GET    /api/menu/items         # جلب الأصناف
-POST   /api/menu/items         # إضافة صنف
-PUT    /api/menu/items/:id     # تحديث صنف
-DELETE /api/menu/items/:id     # حذف صنف
-GET    /api/menu/categories    # جلب الأقسام
-POST   /api/menu/categories    # إضافة قسم
-```
+### القائمة
+| Method | Endpoint | الوصف |
+|--------|----------|-------|
+| GET | `/api/menu/:slug` | جلب قائمة مطعم |
+| POST | `/api/menu` | حفظ/تحديث القائمة |
+| POST | `/api/menu/import` | استيراد قائمة بالذكاء الاصطناعي |
 
 ### الطلبات
-```
-GET    /api/orders             # جلب الطلبات
-POST   /api/orders             # إنشاء طلب جديد
-PUT    /api/orders/:id/status  # تحديث حالة الطلب
-```
+| Method | Endpoint | الوصف |
+|--------|----------|-------|
+| GET | `/api/orders` | جلب طلبات المطعم |
+| POST | `/api/orders` | إنشاء طلب جديد |
+| PUT | `/api/orders/:id/status` | تحديث حالة الطلب |
+
+### الملفات
+| Method | Endpoint | الوصف |
+|--------|----------|-------|
+| POST | `/api/upload` | رفع ملف إلى R2 |
 
 ### الذكاء الاصطناعي
-```
-POST   /api/ai/analyze         # تحليل صورة قائمة
-POST   /api/ai/generate        # توليد صورة طعام
-GET    /api/ai/usage           # إحصائيات الاستخدام
-```
+| Method | Endpoint | الوصف |
+|--------|----------|-------|
+| POST | `/api/ai/analyze` | تحليل صورة القائمة |
+| GET | `/api/ai/status` | حالة خدمة AI |
 
-### رفع الملفات
-```
-POST   /api/upload             # رفع صورة
-DELETE /api/upload/:key         # حذف صورة
+---
+
+## 💰 نظام الاشتراكات
+
+### الباقات المتاحة
+
+| الباقة | السعر | المميزات |
+|--------|-------|---------|
+| **مجاني** | 0 ج.م | 50 صنف، طلبات واتساب، بدون تحليلات |
+| **احترافي** | 199 ج.م/شهر | أصناف غير محدودة، AI، تحليلات، دعم بريد |
+| **مؤسسات** | 499 ج.م/شهر | فروع متعددة، API مخصص، دعم 24/7 |
+
+---
+
+## 🎨 تخصيص المظهر
+
+يمكن تخصيص ألوان التطبيق من خلال:
+
+1. **CSS Variables** في `assets/css/main.css`
+2. **إعدادات المطعم** > تبويب "المظهر"
+3. **ألوان مخصصة** عبر Color Picker
+
+```css
+:root {
+    --primary-color: #ff6b35;    /* اللون الرئيسي */
+    --secondary-color: #f7931e;  /* اللون الثانوي */
+    --dark-color: #1a1a2e;       /* اللون الداكن */
+}
 ```
 
 ---
 
-## 🧪 الاختبار
+## 🌍 دعم اللغات
 
-```bash
-# تشغيل الاختبارات
-npm test
-
-# اختبار API endpoints
-npm run test:api
-
-# اختبار العزل بين المطاعم
-npm run test:isolation
-```
+التطبيق يدعم بشكل كامل:
+- ✅ **العربية** (RTL) - اللغة الافتراضية
+- ✅ **English** (LTR) - قيد التطوير
 
 ---
 
-## 🚀 النشر
+## 🤝 المساهمة في المشروع
 
-### إلى Cloudflare Workers
-
-```bash
-# بناء للإنتاج
-npm run build
-
-# نشر
-npx wrangler deploy
-
-# نشر لبيئة staging
-npx wrangler deploy --env staging
-```
-
-### إلى GitHub Pages (Frontend فقط)
-
-```bash
-# بناء
-npm run build:frontend
-
-# نشر إلى gh-pages
-npm run deploy:github
-```
-
----
-
-## 🤝 المساهمة
-
-نرحب بمساهماتكم! يرجى:
+نرحب بمساهماتكم! يرجى اتباع الخطوات التالية:
 
 1. Fork المشروع
-2. إنشاء فرع (`git checkout -b feature/amazing-feature`)
-3. Commit (`git commit -m 'Add amazing feature'`)
-4. Push (`git push origin feature/amazing-feature`)
-5. فتح Pull Request
+2. إنشاء فرع جديد (`git checkout -b feature/amazing-feature`)
+3. Commit التغييرات (`git commit -m 'Add amazing feature'`)
+4. Push إلى الفرع (`git push origin feature/amazing-feature`)
+3. فتح Pull Request
 
 ---
 
-## 📄 الرخصة
+## 📝 الترخيص
 
-هذا المشروع مرخص تحت رخصة MIT - راجع ملف [LICENSE](LICENSE) للتفاصيل.
+هذا المشروع مرخص تحت ترخيص [MIT License](LICENSE).
+
+```
+MIT License
+
+Copyright (c) 2026 MezoMenu Team
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+```
 
 ---
 
-## 👨‍💻 المؤلف
+## 👥 فريق العمل
 
-**MezoMenu** - صنع ب ❤️ لمجتمع المطاعم العربي
-
-<div align="center">
-Made with ☕ and 💻 in Egypt 🇪🇬
-</div>
+- **المطور الرئيسي**: MezoMenu Team
+- **التصميم**: UI/UX Team
 
 ---
 
-## 🆘 الدعم
+## 📞 الدعم والتواصل
 
-- 📧 Email: support@mezomenu.com
-- 💬 Discord: [Join our server](#)
-- 🐛 Issues: [GitHub Issues](https://github.com/yourusername/mezomenu-saas/issues)
-- 📖 Docs: [Documentation](#)
+هل لديك سؤال أو اقتراح؟ تواصل معنا:
+
+- 📧 البريد الإلكتروني: support@mezo.menu
+- 🌐 الموقع: https://mezo.menu
+- 💬 واتساب: +20 127 993 4735
 
 ---
 
@@ -399,6 +333,6 @@ Made with ☕ and 💻 in Egypt 🇪🇬
 
 **⭐ إذا أعجبك المشروع، لا تنسى إعطائه نجمة! ⭐**
 
-[🔝 Top](#--mezomenu----sistema-de-menús-inteligente-para-restaurantes)
+Made with ❤️ by [MezoMenu Team](https://github.com/mezomenu)
 
 </div>

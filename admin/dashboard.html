@@ -4,328 +4,1498 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>لوحة التحكم - MezoMenu</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="manifest" href="../manifest-admin.json">
-    <meta name="theme-color" content="#6366f1">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="stylesheet" href="../css/style.css">
-    <link rel="stylesheet" href="../css/admin.css">
+    <link rel="icon" type="image/png" href="../assets/images/favicon.png">
+    <link rel="stylesheet" href="../assets/css/main.css">
+    <link rel="stylesheet" href="../assets/css/admin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="admin-body">
-    <!-- Sidebar -->
-    <aside class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <a href="dashboard.html" class="sidebar-logo">
-                <span class="logo-icon">🍽️</span>
-                <span class="logo-text">MezoMenu</span>
-            </a>
-            <button class="sidebar-close" id="sidebarClose" aria-label="إغلاق القائمة">✕</button>
-        </div>
+<body>
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Sidebar Header -->
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <img src="../assets/images/logo.png" alt="MezoMenu" onerror="this.style.display='none'">
+                    <div>
+                        <h2>MezoMenu</h2>
+                        <small>لوحة التحكم</small>
+                    </div>
+                </div>
 
-        <nav class="sidebar-nav">
-            <ul>
-                <li class="nav-item active">
-                    <a href="dashboard.html" class="nav-link">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-                        <span>الرئيسية</span>
+                <div class="restaurant-selector">
+                    <select id="restaurantSelect">
+                        <option value="">مطعم المبروك</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <span class="nav-section-title">الرئيسية</span>
+                    <a href="#dashboard" class="nav-item active" data-page="dashboard">
+                        <i class="fas fa-chart-pie"></i>
+                        <span>لوحة الإحصائيات</span>
                     </a>
-                </li>
-                <li class="nav-item">
-                    <a href="menu-editor.html" class="nav-link">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h13"/></svg>
+                </div>
+
+                <div class="nav-section">
+                    <span class="nav-section-title">إدارة القائمة</span>
+                    <a href="#menu" class="nav-item" data-page="menu">
+                        <i class="fas fa-utensils"></i>
                         <span>القائمة</span>
                     </a>
-                </li>
-                <li class="nav-item">
-                    <a href="categories.html" class="nav-link">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+                    <a href="#categories" class="nav-item" data-page="categories">
+                        <i class="fas fa-folder"></i>
                         <span>الأقسام</span>
                     </a>
-                </li>
-                <li class="nav-item">
-                    <a href="orders.html" class="nav-link">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-                        <span>الطلبات</span>
-                        <span class="badge notification-badge">0</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="ai-analyze.html" class="nav-link">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a4 4 0 014 4v2a4 4 0 01-8 0V6a4 4 0 014-4z"/><path d="M16 14H8a4 4 0 00-4 4v2h16v-2a4 4 0 00-4-4z"/><circle cx="18" cy="8" r="2"/></svg>
-                        <span>الذكاء الاصطناعي</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="settings.html" class="nav-link">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
-                        <span>الإعدادات</span>
-                    </a>
-                </li>
-            </ul>
-        </nav>
-
-        <div class="sidebar-footer">
-            <div class="user-info">
-                <div class="user-avatar">👨‍💼</div>
-                <div class="user-details">
-                    <span class="user-name" id="userName">أحمد محمد</span>
-                    <span class="user-role">صاحب مطعم</span>
-                </div>
-            </div>
-            <button onclick="handleLogout()" class="btn btn-outline btn-sm logout-btn">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-                تسجيل الخروج
-            </button>
-        </div>
-    </aside>
-
-    <!-- Main Content -->
-    <main class="main-content">
-        <!-- Top Bar -->
-        <header class="topbar">
-            <div class="topbar-right">
-                <button class="menu-toggle" id="menuToggle" aria-label="القائمة">
-                    <span></span><span></span><span></span>
-                </button>
-                <div class="search-box">
-                    <input type="text" placeholder="ابحث في القائمة...">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-                </div>
-            </div>
-            <div class="topbar-left">
-                <button class="icon-btn notification-btn" aria-label="الإشعارات">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
-                    <span class="notification-badge">3</span>
-                </button>
-            </div>
-        </header>
-
-        <!-- Dashboard Content -->
-        <div class="dashboard-content">
-            <!-- Welcome Section -->
-            <section class="welcome-section">
-                <div class="welcome-text">
-                    <h1>مرحباً بك! 👋</h1>
-                    <p>هذه لوحة تحكم مطعمك. تابع أداء مطعمك من هنا.</p>
-                </div>
-                <div class="welcome-actions">
-                    <a href="menu-editor.html" class="btn btn-primary">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                        إضافة صنف جديد
+                    <a href="#ai-import" class="nav-item" data-page="ai-import">
+                        <i class="fas fa-magic"></i>
+                        <span>استيراد بالذكاء الاصطناعي</span>
+                        <span class="badge badge-primary">جديد</span>
                     </a>
                 </div>
-            </section>
 
-            <!-- Stats Cards -->
-            <section class="stats-grid">
-                <div class="stat-card revenue-card">
-                    <div class="stat-icon revenue-icon">💰</div>
-                    <div class="stat-content">
-                        <span class="stat-value" id="revenueValue">0 ج.م</span>
-                        <span class="stat-label">إيرادات اليوم</span>
-                    </div>
-                    <div class="stat-trend up">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>
-                        +12%
-                    </div>
+                <div class="nav-section">
+                    <span class="nav-section-title">الطلبات</span>
+                    <a href="#orders" class="nav-item" data-page="orders">
+                        <i class="fas fa-shopping-bag"></i>
+                        <span>جميع الطلبات</span>
+                        <span class="badge badge-danger" id="pendingOrdersCount">3</span>
+                    </a>
+                    <a href="#order-tracking" class="nav-item" data-page="order-tracking">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>تتبع الطلبات</span>
+                    </a>
                 </div>
 
-                <div class="stat-card orders-card">
-                    <div class="stat-icon orders-icon">📋</div>
-                    <div class="stat-content">
-                        <span class="stat-value" id="ordersValue">0</span>
-                        <span class="stat-label">طلبات اليوم</span>
-                    </div>
-                    <div class="stat-trend up">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>
-                        +8%
-                    </div>
+                <div class="nav-section">
+                    <span class="nav-section-title">الإعدادات</span>
+                    <a href="#settings" class="nav-item" data-page="settings">
+                        <i class="fas fa-cog"></i>
+                        <span>إعدادات المطعم</span>
+                    </a>
+                    <a href="#appearance" class="nav-item" data-page="appearance">
+                        <i class="fas fa-palette"></i>
+                        <span>المظهر والألوان</span>
+                    </a>
+                    <a href="#notifications-settings" class="nav-item" data-page="notifications-settings">
+                        <i class="fas fa-bell"></i>
+                        <span>الإشعارات</span>
+                    </a>
                 </div>
 
-                <div class="stat-card items-card">
-                    <div class="stat-icon items-icon">🍽️</div>
-                    <div class="stat-content">
-                        <span class="stat-value" id="itemsValue">0</span>
-                        <span class="stat-label">أصناف القائمة</span>
-                    </div>
-                    <div class="stat-trend neutral">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                        ثابت
+                <div class="nav-section">
+                    <span class="nav-section-title">الحساب</span>
+                    <a href="#profile" class="nav-item" data-page="profile">
+                        <i class="fas fa-user"></i>
+                        <span>الملف الشخصي</span>
+                    </a>
+                    <a href="#subscription" class="nav-item" data-page="subscription">
+                        <i class="fas fa-crown"></i>
+                        <span>الاشتراك</span>
+                        <span class="badge badge-warning">Pro</span>
+                    </a>
+                </div>
+            </nav>
+
+            <!-- Sidebar Footer -->
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar">م</div>
+                    <div class="user-details">
+                        <h4>مطعم المبروك</h4>
+                        <p>elfannanm@gmail.com</p>
                     </div>
                 </div>
-
-                <div class="stat-card views-card">
-                    <div class="stat-icon views-icon">👁️</div>
-                    <div class="stat-content">
-                        <span class="stat-value" id="viewsValue">0</span>
-                        <span class="stat-label">مشاهدات القائمة</span>
-                    </div>
-                    <div class="stat-trend up">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>
-                        +25%
-                    </div>
-                </div>
-            </section>
-
-            <!-- Main Grid -->
-            <div class="dashboard-grid">
-                <!-- Recent Orders -->
-                <section class="card recent-orders-card">
-                    <div class="card-header">
-                        <h3>آخر الطلبات</h3>
-                        <a href="orders.html" class="view-all">عرض الكل →</a>
-                    </div>
-                    <div class="card-body">
-                        <div class="orders-list" id="recentOrdersList">
-                            <div class="empty-state">
-                                <span>📋</span>
-                                <p>لا توجد طلبات بعد</p>
-                                <p class="sub-text">ستظهر هنا الطلبات الجديدة فور وصولها</p>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Popular Items -->
-                <section class="card popular-items-card">
-                    <div class="card-header">
-                        <h3>الأصناف الشائعة</h3>
-                        <a href="menu-editor.html" class="view-all">عرض الكل →</a>
-                    </div>
-                    <div class="card-body">
-                        <div class="popular-list" id="popularItemsList">
-                            <div class="empty-state">
-                                <span>⭐</span>
-                                <p>لا توجد أصناف بعد</p>
-                                <p class="sub-text">أضف أصناف لقائمتك لتراها هنا</p>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Quick Actions & Menu Link -->
-                <section class="card quick-actions-card">
-                    <div class="card-header">
-                        <h3>إجراءات سريعة</h3>
-                    </div>
-                    <div class="card-body">
-                        <div class="quick-actions-grid">
-                            <a href="menu-editor.html" class="quick-action-btn">
-                                <span class="action-icon">➕</span>
-                                <span>إضافة صنف</span>
-                            </a>
-                            <a href="categories.html" class="quick-action-btn">
-                                <span class="action-icon">📁</span>
-                                <span>قسم جديد</span>
-                            </a>
-                            <a href="ai-analyze.html" class="quick-action-btn">
-                                <span class="action-icon">🤖</span>
-                                <span>تحليل AI</span>
-                            </a>
-                            <a href="settings.html" class="quick-action-btn">
-                                <span class="action-icon">⚙️</span>
-                                <span>الإعدادات</span>
-                            </a>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Menu Link Share -->
-                <section class="card menu-link-card">
-                    <div class="card-header">
-                        <h3>رابط قائمتك</h3>
-                    </div>
-                    <div class="card-body">
-                        <div class="link-input-group">
-                            <input type="text" readonly value="mezomenu.com/your-restaurant" id="menuLinkInput">
-                            <button onclick="copyLink()" class="copy-btn btn btn-primary btn-sm">نسخ</button>
-                        </div>
-                        <div class="share-options">
-                            <span>شارك عبر:</span>
-                            <div class="share-buttons">
-                                <button class="share-btn whatsapp" title="واتساب">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-                                </button>
-                                <button class="share-btn facebook" title="فيسبوك">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-                                </button>
-                                <button class="share-btn twitter" title="تويتر">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/></svg>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="qr-code-preview">
-                            <div class="qr-placeholder">
-                                <span>📱</span>
-                                <span>QR Code للقائمة</span>
-                            </div>
-                        </div>
-                    </div>
-                </section>
             </div>
-        </div>
-    </main>
+        </aside>
 
-    <!-- Mobile Overlay -->
-    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+        <!-- Sidebar Overlay for Mobile -->
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-    
-    <script src="../js/firebase-config.js"></script>
-    <script src="../js/admin.js"></script>
-    
-    <!-- Service Worker Registration for PWA -->
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', function() {
-                navigator.serviceWorker.register('../sw.js')
-                    .then(function(registration) {
-                        console.log('[PWA] Service Worker registered successfully:', registration.scope);
-                    })
-                    .catch(function(error) {
-                        console.log('[PWA] Service Worker registration failed:', error);
-                    });
-            });
-            
-            // Handle PWA Install Prompt
-            let deferredPrompt;
-            window.addEventListener('beforeinstallprompt', function(e) {
-                e.preventDefault();
-                deferredPrompt = e;
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Header -->
+            <header class="top-header">
+                <div class="header-left">
+                    <button class="menu-toggle" id="menuToggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    
+                    <div class="search-box">
+                        <input type="text" placeholder="بحث...">
+                        <i class="fas fa-search"></i>
+                    </div>
+                </div>
+
+                <div class="header-right">
+                    <button class="header-btn" title="الإشعارات">
+                        <i class="fas fa-bell"></i>
+                        <span class="badge badge-danger">5</span>
+                    </button>
+                    
+                    <button class="header-btn" title="المساعدة">
+                        <i class="fas fa-question-circle"></i>
+                    </button>
+
+                    <span class="plan-badge">Pro ⭐</span>
+                </div>
+            </header>
+
+            <!-- Page Content -->
+            <div class="page-content">
                 
-                // Show install button/banner
-                const installBanner = document.getElementById('installBanner');
-                if (installBanner) {
-                    installBanner.style.display = 'block';
+                <!-- ==================== DASHBOARD PAGE ==================== -->
+                <section class="page-section active" id="page-dashboard">
+                    <div class="page-header">
+                        <div>
+                            <h1 class="page-title">مرحباً بك! 👋</h1>
+                            <p class="page-subtitle">إليك ملخص أداء مطعمك اليوم</p>
+                        </div>
+                        <div class="page-actions">
+                            <button class="btn btn-secondary" onclick="refreshDashboard()">
+                                <i class="fas fa-sync-alt"></i>
+                                تحديث
+                            </button>
+                            <a href="#menu" class="btn btn-primary" onclick="navigateTo('menu')">
+                                <i class="fas fa-plus"></i>
+                                إضافة صنف
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Alert Banner -->
+                    <div class="alert alert-info mb-4">
+                        <i class="fas fa-info-circle"></i>
+                        <div>
+                            <strong>ترحيب!</strong> لديك 3 طلبات جديدة قيد الانتظار. 
+                            <a href="#orders" onclick="navigateTo('orders')">عرض الطلبات ←</a>
+                        </div>
+                        <button class="btn-close"><i class="fas fa-times"></i></button>
+                    </div>
+
+                    <!-- Stats Grid -->
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon orange">
+                                <i class="fas fa-shopping-cart"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="totalOrders">127</h3>
+                                <p>إجمالي الطلبات</p>
+                                <div class="stat-change up">
+                                    <i class="fas fa-arrow-up"></i>
+                                    12% هذا الأسبوع
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-icon green">
+                                <i class="fas fa-dollar-sign"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="totalRevenue">15,420 ج.م</h3>
+                                <p>إجمالي المبيعات</p>
+                                <div class="stat-change up">
+                                    <i class="fas fa-arrow-up"></i>
+                                    8% هذا الشهر
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-icon blue">
+                                <i class="fas fa-eye"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="totalViews">2,456</h3>
+                                <p>مشاهدات القائمة</p>
+                                <div class="stat-change up">
+                                    <i class="fas fa-arrow-up"></i>
+                                    23% اليوم
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-icon red">
+                                <i class="fas fa-utensils"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="totalItems">48</h3>
+                                <p>أصناف في القائمة</p>
+                                <div class="stat-change down">
+                                    <i class="fas fa-minus"></i>
+                                    -2 من أمس
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions & Recent Orders -->
+                    <div class="grid grid-2 mt-4">
+                        <!-- Quick Actions -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h4><i class="fas fa-bolt"></i> إجراءات سريعة</h4>
+                            </div>
+                            <div class="card-body">
+                                <div class="quick-actions">
+                                    <div class="quick-action-card" onclick="navigateTo('ai-import')">
+                                        <i class="fas fa-magic"></i>
+                                        <h4>استيراد بالذكاء الاصطناعي</h4>
+                                    </div>
+                                    <div class="quick-action-card" onclick="navigateTo('menu')">
+                                        <i class="fas fa-plus-circle"></i>
+                                        <h4>إضافة صنف جديد</h4>
+                                    </div>
+                                    <div class="quick-action-card" onclick="showQRCode()">
+                                        <i class="fas fa-qrcode"></i>
+                                        <h4>عرض QR Code</h4>
+                                    </div>
+                                    <div class="quick-action-card" onclick="navigateTo('settings')">
+                                        <i class="fas fa-share-alt"></i>
+                                        <h4>مشاركة الرابط</h4>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Recent Orders -->
+                        <div class="card">
+                            <div class="card-header d-flex justify-between align-center">
+                                <h4><i class="fas fa-clock"></i> آخر الطلبات</h4>
+                                <a href="#orders" onclick="navigateTo('orders')" class="btn btn-sm btn-secondary">عرض الكل</a>
+                            </div>
+                            <div class="card-body p-0">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>الزبون</th>
+                                            <th>المبلغ</th>
+                                            <th>الحالة</th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="recentOrdersTable">
+                                        <tr>
+                                            <td>#1234</td>
+                                            <td>أحمد محمد</td>
+                                            <td><strong>١٨٥ ج.م</strong></td>
+                                            <td><span class="status-badge status-preparing">قيد التحضير</span></td>
+                                            <td>
+                                                <button class="table-action-btn view" title="عرض">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>#1233</td>
+                                            <td>سارة علي</td>
+                                            <td><strong>٣٢٠ ج.م</strong></td>
+                                            <td><span class="status-badge status-confirmed">تم التأكيد</span></td>
+                                            <td>
+                                                <button class="table-action-btn view" title="عرض">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>#1232</td>
+                                            <td>محمد حسن</td>
+                                            <td><strong>٩٥ ج.م</strong></td>
+                                            <td><span class="status-badge status-new">جديد</span></td>
+                                            <td>
+                                                <button class="table-action-btn view" title="عرض">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Menu Link & QR Code -->
+                    <div class="grid grid-2 mt-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h4><i class="fas fa-link"></i> رابط قائمتك</h4>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-flex gap-2 align-center">
+                                    <input type="text" class="form-control flex-1" readonly 
+                                           value="https://menu.mezomenu.com/el-mabrouk" id="menuUrlInput">
+                                    <button class="btn btn-primary" onclick="copyMenuUrl()">
+                                        <i class="fas fa-copy"></i>
+                                        نسخ
+                                    </button>
+                                    <button class="btn btn-success" onclick="openMenuPreview()">
+                                        <i class="fas fa-external-link-alt"></i>
+                                        فتح
+                                    </button>
+                                </div>
+                                <p class="mt-2 text-muted" style="font-size: 0.85rem;">
+                                    <i class="fas fa-info-circle"></i>
+                                    شارك هذا الرابط مع زبائنك للوصول لقائمتك مباشرة
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="qr-code-display card">
+                            <div class="card-header">
+                                <h4><i class="fas fa-qrcode"></i> QR Code</h4>
+                            </div>
+                            <div class="card-body text-center">
+                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://menu.mezomenu.com/el-mabrouk" 
+                                     alt="QR Code" class="qr-code-image mx-auto">
+                                <button class="btn btn-secondary btn-sm mt-2" onclick="downloadQRCode()">
+                                    <i class="fas fa-download"></i>
+                                    تحميل QR Code
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ==================== MENU PAGE ==================== -->
+                <section class="page-section" id="page-menu">
+                    <div class="page-header">
+                        <div>
+                            <h1 class="page-title">إدارة القائمة</h1>
+                            <p class="page-subtitle">أضف وعدل أصناف مطعمك هنا</p>
+                        </div>
+                        <div class="page-actions">
+                            <button class="btn btn-secondary" onclick="exportMenu()">
+                                <i class="fas fa-download"></i>
+                                تصدير
+                            </button>
+                            <button class="btn btn-primary" onclick="openAddItemModal()">
+                                <i class="fas fa-plus"></i>
+                                إضافة صنف جديد
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Categories Filter -->
+                    <div class="category-tabs mb-4">
+                        <button class="category-tab active" onclick="filterByCategory('all')">كل الأصناف (48)</button>
+                        <button class="category-tab" onclick="filterByCategory('appetizers')">المقبلات (8)</button>
+                        <button class="category-tab" onclick="filterByCategory('mains')">الأطباق الرئيسية (20)</button>
+                        <button class="category-tab" onclick="filterByCategory('drinks')">المشروبات (12)</button>
+                        <button class="category-tab" onclick="filterByCategory('desserts')">الحلويات (8)</button>
+                    </div>
+
+                    <!-- Menu Items Grid -->
+                    <div class="menu-grid" id="menuItemsGrid">
+                        <!-- Sample Item 1 -->
+                        <div class="menu-item-card">
+                            <div style="position: relative;">
+                                <img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400" 
+                                     alt="بيتزا مارغريتا" class="menu-item-image">
+                                <div class="menu-card-badges">
+                                    <span class="item-badge badge-popular">⭐ رائج</span>
+                                </div>
+                            </div>
+                            <div class="menu-item-body">
+                                <div class="d-flex justify-between align-start mb-2">
+                                    <h3 class="menu-item-name">بيتزا مارغريتا</h3>
+                                    <span class="menu-item-price">١٢٠ ج.م</span>
+                                </div>
+                                <p class="menu-item-description">صلصة طماطم طازجة، جبنة موزاريلا، ريحان، زيت زيتون</p>
+                                <div class="menu-item-tags">
+                                    <span class="badge badge-info">بيتزا</span>
+                                    <span class="badge badge-success">نباتي</span>
+                                </div>
+                                <div class="d-flex justify-between mt-3">
+                                    <span class="text-muted" style="font-size: 0.85rem;">
+                                        <i class="fas fa-fire"></i> يُطلب 45 مرة
+                                    </span>
+                                    <div class="d-flex gap-2">
+                                        <button class="btn btn-sm btn-outline edit" onclick="editItem(1)">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline delete" onclick="deleteItem(1)">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sample Item 2 -->
+                        <div class="menu-item-card">
+                            <div style="position: relative;">
+                                <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400" 
+                                     alt="سلطة كيزر" class="menu-item-image">
+                                <div class="menu-card-badges">
+                                    <span class="item-badge badge-new">جديد</span>
+                                </div>
+                            </div>
+                            <div class="menu-item-body">
+                                <div class="d-flex justify-between align-start mb-2">
+                                    <h3 class="menu-item-name">سلطة كيزر</h3>
+                                    <span class="menu-item-price">٦٥ ج.م</span>
+                                </div>
+                                <p class="menu-item-description">خس، خيار، طماطم، جبنة بارميزان، صوص كيزر خاص</p>
+                                <div class="menu-item-tags">
+                                    <span class="badge badge-info">سلطات</span>
+                                    <span class="badge badge-success">نباتي</span>
+                                </div>
+                                <div class="d-flex justify-between mt-3">
+                                    <span class="text-muted" style="font-size: 0.85rem;">
+                                        <i class="fas fa-fire"></i> يُطلب 32 مرة
+                                    </span>
+                                    <div class="d-flex gap-2">
+                                        <button class="btn btn-sm btn-outline edit" onclick="editItem(2)">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline delete" onclick="deleteItem(2)">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sample Item 3 -->
+                        <div class="menu-item-card">
+                            <div style="position: relative;">
+                                <img src="https://images.unsplash.com/photo-1563379926898-05f4575a45d8?w=400" 
+                                     alt="شيش طاووق" class="menu-item-image">
+                                <div class="menu-card-badges">
+                                    <span class="item-badge badge-spicy">🌶️ حار</span>
+                                </div>
+                            </div>
+                            <div class="menu-item-body">
+                                <div class="d-flex justify-between align-start mb-2">
+                                    <h3 class="menu-item-name">شيش طاووق</h3>
+                                    <span class="menu-item-price">٩٥ ج.م</span>
+                                </div>
+                                <p class="menu-item-description">دجاج مشوي على الفحم، أرز بسمتي، سلطة، تومية</p>
+                                <div class="menu-item-tags">
+                                    <span class="badge badge-warning">مشويات</span>
+                                </div>
+                                <div class="d-flex justify-between mt-3">
+                                    <span class="text-muted" style="font-size: 0.85rem;">
+                                        <i class="fas fa-fire"></i> يُطلب 67 مرة
+                                    </span>
+                                    <div class="d-flex gap-2">
+                                        <button class="btn btn-sm btn-outline edit" onclick="editItem(3)">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline delete" onclick="deleteItem(3)">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Add More Card -->
+                        <div class="menu-item-card" style="border: 2px dashed var(--gray-300); display: flex; align-items: center; justify-content: center; min-height: 300px; cursor: pointer;" onclick="openAddItemModal()">
+                            <div class="text-center">
+                                <i class="fas fa-plus-circle" style="font-size: 3rem; color: var(--gray-400); margin-bottom: 12px;"></i>
+                                <h4 style="color: var(--gray-600);">إضافة صنف جديد</h4>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ==================== AI IMPORT PAGE ==================== -->
+                <section class="page-section" id="page-ai-import">
+                    <div class="page-header">
+                        <div>
+                            <h1 class="page-title">🤖 استيراد بالذكاء الاصطناعي</h1>
+                            <p class="page-subtitle">ارفع صورة أو ملف قائمتك وسنحللها تلقائياً وننشئ لك قائمة رقمية كاملة</p>
+                        </div>
+                    </div>
+
+                    <!-- AI Import Section -->
+                    <div class="ai-import-section">
+                        <div class="ai-import-icon">✨</div>
+                        <h2 class="ai-import-title">تحويل ذكي للقائمة</h2>
+                        <p class="ai-import-subtitle">
+                            ارفع صورة القائمة أو ملف PDF/Excel/Word وسيقوم الذكاء الاصطناعي باستخراج:
+                        </p>
+                        
+                        <div class="supported-formats">
+                            <span class="format-badge">✅ أسماء الأصناف</span>
+                            <span class="format-badge">✅ الأسعار</span>
+                            <span class="format-badge">✅ الأقسام تلقائياً</span>
+                            <span class="format-badge">✅ الوصف والتفاصيل</span>
+                        </div>
+
+                        <!-- Upload Zone -->
+                        <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p><strong>اسحب الملف هنا أو اضغط للاختيار</strong></p>
+                            <p class="text-muted">PNG, JPG, PDF, Word, Excel — حتى 10MB</p>
+                            <input type="file" id="fileInput" accept=".png,.jpg,.jpeg,.pdf,.doc,.docx,.xls,.xlsx" hidden onchange="handleFileUpload(event)">
+                        </div>
+
+                        <!-- Or Import from URL -->
+                        <div class="mt-4 text-center">
+                            <p class="text-muted mb-2">أو استورد من:</p>
+                            <div class="d-flex justify-center gap-2">
+                                <button class="btn btn-secondary" onclick="importFromGoogleSheets()">
+                                    <i class="fab fa-google"></i>
+                                    Google Sheets
+                                </button>
+                                <button class="btn btn-secondary" onclick="importFromURL()">
+                                    <i class="fas fa-link"></i>
+                                    رابط مباشر
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Processing Status -->
+                        <div id="aiProcessingStatus" style="display:none; margin-top: 24px;">
+                            <div class="alert alert-info">
+                                <div class="spinner" style="margin-left: 16px;"></div>
+                                <div>
+                                    <strong>جاري تحليل القائمة...</strong>
+                                    <p class="mb-0" id="processingStatusText">يتم استخراج البيانات بالذكاء الاصطناعي</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Results Preview -->
+                        <div id="aiResultsPreview" style="display:none; margin-top: 24px;">
+                            <h3 class="mb-3">نتيجة التحليل:</h3>
+                            <div class="card">
+                                <div class="card-body">
+                                    <div id="aiResultsContent"></div>
+                                    <div class="d-flex gap-2 mt-4">
+                                        <button class="btn btn-primary" onclick="importAIMenu()">
+                                            <i class="fas fa-check"></i>
+                                            استيراد إلى قائمتي
+                                        </button>
+                                        <button class="btn btn-secondary" onclick="editAIResults()">
+                                            <i class="fas fa-edit"></i>
+                                            تعديل قبل الاستيراد
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ==================== ORDERS PAGE ==================== -->
+                <section class="page-section" id="page-orders">
+                    <div class="page-header">
+                        <div>
+                            <h1 class="page-title">إدارة الطلبات</h1>
+                            <p class="page-subtitle">تابع وأدر جميع الطلبات الواردة</p>
+                        </div>
+                        <div class="page-actions">
+                            <button class="btn btn-secondary" onclick="exportOrders()">
+                                <i class="fas fa-download"></i>
+                                تصدير Excel
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Orders Stats -->
+                    <div class="stats-grid mb-4" style="grid-template-columns: repeat(5, 1fr);">
+                        <div class="stat-card" style="padding: 16px;">
+                            <div class="stat-info">
+                                <h3 style="font-size: 1.25rem;">12</h3>
+                                <p style="font-size: 0.8rem;">جديد</p>
+                            </div>
+                        </div>
+                        <div class="stat-card" style="padding: 16px;">
+                            <div class="stat-info">
+                                <h3 style="font-size: 1.25rem;">8</h3>
+                                <p style="font-size: 0.8rem;">مؤكد</p>
+                            </div>
+                        </div>
+                        <div class="stat-card" style="padding: 16px;">
+                            <div class="stat-info">
+                                <h3 style="font-size: 1.25rem;">5</h3>
+                                <p style="font-size: 0.8rem;">قيد التحضير</p>
+                            </div>
+                        </div>
+                        <div class="stat-card" style="padding: 16px;">
+                            <div class="stat-info">
+                                <h3 style="font-size: 1.25rem;">3</h3>
+                                <p style="font-size: 0.8rem;">جاهز</p>
+                            </div>
+                        </div>
+                        <div class="stat-card" style="padding: 16px;">
+                            <div class="stat-info">
+                                <h3 style="font-size: 1.25rem;">98</h3>
+                                <p style="font-size: 0.8rem;">تم التوصيل</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Orders Table -->
+                    <div class="data-table-container">
+                        <div class="table-toolbar">
+                            <div class="table-search">
+                                <input type="text" placeholder="بحث برقم الطلب أو اسم الزبون...">
+                                <i class="fas fa-search"></i>
+                            </div>
+                            <div class="table-filters">
+                                <select class="form-control" style="width: auto;">
+                                    <option value="">كل الحالات</option>
+                                    <option value="pending">جديد</option>
+                                    <option value="confirmed">مؤكد</option>
+                                    <option value="preparing">قيد التحضير</option>
+                                    <option value="ready">جاهز</option>
+                                    <option value="delivered">تم التوصيل</option>
+                                </select>
+                                <select class="form-control" style="width: auto;">
+                                    <option value="">اليوم</option>
+                                    <option value="yesterday">أمس</option>
+                                    <option value="week">هذا الأسبوع</option>
+                                    <option value="month">هذا الشهر</option>
+                                </select>
+                            </div>
+                        </div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>رقم الطلب</th>
+                                    <th>الزبون</th>
+                                    <th>الهاتف</th>
+                                    <th>العناصر</th>
+                                    <th>المبلغ</th>
+                                    <th>الحالة</th>
+                                    <th>الوقت</th>
+                                    <th>إجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ordersTableBody">
+                                <tr>
+                                    <td><strong>#1234</strong></td>
+                                    <td>أحمد محمد</td>
+                                    <td dir="ltr">+201234567890</td>
+                                    <td>3 عناصر</td>
+                                    <td><strong>١٨٥ ج.م</strong></td>
+                                    <td><span class="status-badge status-preparing">قيد التحضير</span></td>
+                                    <td>منذ 15 دقيقة</td>
+                                    <td>
+                                        <div class="table-actions">
+                                            <button class="table-action-btn view" onclick="viewOrder(1234)" title="عرض">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="table-action-btn edit" onclick="updateOrderStatus(1234, 'ready')" title="تغيير الحالة">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>#1233</strong></td>
+                                    <td>سارة علي</td>
+                                    <td dir="ltr">+201987654321</td>
+                                    <td>5 عناصر</td>
+                                    <td><strong>٣٢٠ ج.م</strong></td>
+                                    <td><span class="status-badge status-confirmed">تم التأكيد</span></td>
+                                    <td>منذ 30 دقيقة</td>
+                                    <td>
+                                        <div class="table-actions">
+                                            <button class="table-action-btn view" onclick="viewOrder(1233)" title="عرض">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="table-action-btn edit" onclick="updateOrderStatus(1233, 'preparing')" title="تغيير الحالة">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>#1232</strong></td>
+                                    <td>محمد حسن</td>
+                                    <td dir="ltr">+201555123456</td>
+                                    <td>1 عنصر</td>
+                                    <td><strong>٩٥ ج.م</strong></td>
+                                    <td><span class="status-badge status-pending">جديد</span></td>
+                                    <td>منذ 5 دقائق</td>
+                                    <td>
+                                        <div class="table-actions">
+                                            <button class="table-action-btn view" onclick="viewOrder(1232)" title="عرض">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="table-action-btn edit" onclick="updateOrderStatus(1232, 'confirmed')" title="تأكيد">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- ==================== SETTINGS PAGE ==================== -->
+                <section class="page-section" id="page-settings">
+                    <div class="page-header">
+                        <div>
+                            <h1 class="page-title">إعدادات المطعم</h1>
+                            <p class="page-subtitle">حدّث معلومات ومظهر مطعمك</p>
+                        </div>
+                        <div class="page-actions">
+                            <button class="btn btn-primary" onclick="saveSettings()">
+                                <i class="fas fa-save"></i>
+                                حفظ التغييرات
+                            </button>
+                        </div>
+                    </div>
+
+                    <form id="settingsForm">
+                        <!-- Basic Info -->
+                        <div class="settings-section">
+                            <h3 class="settings-section-title">
+                                <i class="fas fa-store"></i>
+                                المعلومات الأساسية
+                            </h3>
+                            
+                            <div class="d-flex gap-4 mb-4">
+                                <div class="logo-upload-area" onclick="document.getElementById('logoInput').click()" id="logoUploadArea">
+                                    <i class="fas fa-camera"></i>
+                                    <span>رفع الشعار</span>
+                                    <input type="file" id="logoInput" accept="image/*" hidden onchange="previewLogo(this)">
+                                </div>
+                                
+                                <div class="flex-1">
+                                    <div class="settings-grid">
+                                        <div class="form-group">
+                                            <label class="form-label">اسم المطعم (عربي) *</label>
+                                            <input type="text" class="form-control" value="مطعم المبروك" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="form-label">Restaurant Name (English)</label>
+                                            <input type="text" class="form-control" value="El Mabrouk Restaurant">
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="form-label">رقم الهاتف</label>
+                                            <input type="tel" class="form-control" value="+201279934735">
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="form-label">رقم واتساب *</label>
+                                            <input type="tel" class="form-control" value="+201279934735" required>
+                                        </div>
+                                        <div class="form-group" style="grid-column: span 2;">
+                                            <label class="form-label">العنوان</label>
+                                            <input type="text" class="form-control" value="المنزلة - الدقهلية">
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="form-label">المدينة</label>
+                                            <select class="form-control">
+                                                <option selected>المنصورة</option>
+                                                <option>القاهرة</option>
+                                                <option>الإسكندرية</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="form-label">نوع المطبخ</label>
+                                            <select class="form-control">
+                                                <option selected>مصري</option>
+                                                <option>عربي</option>
+                                                <option>إيطالي</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Social Media -->
+                        <div class="settings-section">
+                            <h3 class="settings-section-title">
+                                <i class="fas fa-share-alt"></i>
+                                وسائل التواصل الاجتماعي
+                            </h3>
+                            <div class="settings-grid">
+                                <div class="form-group">
+                                    <label class="form-label"><i class="fab fa-instagram"></i> Instagram</label>
+                                    <input type="url" class="form-control" placeholder="@restaurant_name">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label"><i class="fab fa-facebook"></i> Facebook</label>
+                                    <input type="url" class="form-control" placeholder="facebook.com/page">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label"><i class="fab fa-tiktok"></i> TikTok</label>
+                                    <input type="url" class="form-control" placeholder="@restaurant_name">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label"><i class="fas fa-globe"></i> الموقع الإلكتروني</label>
+                                    <input type="url" class="form-control" placeholder="https://">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Order Settings -->
+                        <div class="settings-section">
+                            <h3 class="settings-section-title">
+                                <i class="fas fa-shopping-cart"></i>
+                                إعدادات الطلبات
+                            </h3>
+                            <div class="settings-grid">
+                                <div class="form-group">
+                                    <label class="form-label">العملة</label>
+                                    <select class="form-control">
+                                        <option selected>ج.م مصري (EGP)</option>
+                                        <option>$ دولار أمريكي (USD)</option>
+                                        <option>ر.س سعودي (SAR)</option>
+                                        <option>د.إ إماراتي (AED)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">متوسط وقت التحضير (دقيقة)</label>
+                                    <input type="number" class="form-control" value="30" min="5" max="120">
+                                </div>
+                                <div class="form-group">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" checked>
+                                        <span>تفعيل الطلبات عبر واتساب</span>
+                                    </label>
+                                </div>
+                                <div class="form-group">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox">
+                                        <span>تفعيل خدمة التوصيل</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </section>
+
+                <!-- Other pages placeholders -->
+                <section class="page-section" id="page-categories">
+                    <div class="page-header">
+                        <h1 class="page-title">إدارة الأقسام</h1>
+                        <button class="btn btn-primary" onclick="openAddCategoryModal()">
+                            <i class="fas fa-plus"></i>
+                            إضافة قسم جديد
+                        </button>
+                    </div>
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        يمكنك تنظيم قائتك إلى أقسام مثل: المقبلات، الأطباق الرئيسية، المشروبات...
+                    </div>
+                    <!-- Categories list would go here -->
+                </section>
+
+                <section class="page-section" id="page-order-tracking">
+                    <div class="page-header">
+                        <h1 class="page-title">تتبع الطلبات</h1>
+                    </div>
+                    <div class="empty-state">
+                        <i class="fas fa-map-marked-alt empty-state-icon"></i>
+                        <h3>تتبع الطلبات مباشرة</h3>
+                        <p>يمكنك متابعة حالة الطلبات النشطة هنا</p>
+                    </div>
+                </section>
+
+                <section class="page-section" id="page-appearance">
+                    <div class="page-header">
+                        <h1 class="page-title">المظهر والألوان</h1>
+                    </div>
+                    <div class="settings-section">
+                        <h3 class="settings-section-title">اختر اللون الرئيسي</h3>
+                        <div class="d-flex gap-2 flex-wrap">
+                            <button class="color-option" style="background: #ff6b35;" onclick="setThemeColor('#ff6b35')"></button>
+                            <button class="color-option" style="background: #e74c3c;" onclick="setThemeColor('#e74c3c')"></button>
+                            <button class="color-option" style="background: #3498db;" onclick="setThemeColor('#3498db')"></button>
+                            <button class="color-option" style="background: #27ae60;" onclick="setThemeColor('#27ae60')"></button>
+                            <button class="color-option" style="background: #9b59b6;" onclick="setThemeColor('#9b59b6')"></button>
+                            <button class="color-option" style="background: #f39c12;" onclick="setThemeColor('#f39c12')"></button>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="page-section" id="page-notifications-settings">
+                    <div class="page-header">
+                        <h1 class="page-title">إعدادات الإشعارات</h1>
+                    </div>
+                    <div class="settings-section">
+                        <h3 class="settings-section-title">إشعارات الطلبات</h3>
+                        <div class="d-flex flex-column gap-3">
+                            <label class="checkbox-label">
+                                <input type="checkbox" checked>
+                                <span>إشعار عند وصول طلب جديد</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" checked>
+                                <span>إشعار عند تغيير حالة الطلب</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox">
+                                <span>ملخص يومي بالمبيعات</span>
+                            </label>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="page-section" id="page-profile">
+                    <div class="page-header">
+                        <h1 class="page-title">الملف الشخصي</h1>
+                    </div>
+                    <div class="settings-section">
+                        <h3 class="settings-section-title">معلومات الحساب</h3>
+                        <div class="settings-grid">
+                            <div class="form-group">
+                                <label class="form-label">الاسم الكامل</label>
+                                <input type="text" class="form-control" value="مطعم المبروك">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">البريد الإلكتروني</label>
+                                <input type="email" class="form-control" value="elfannanm@gmail.com">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">رقم الهاتف</label>
+                                <input type="tel" class="form-control" value="+201279934735">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">كلمة المرور الجديدة</label>
+                                <input type="password" class="form-control" placeholder="اتركه فارغاً للإبقاء على الحالية">
+                            </div>
+                        </div>
+                        <button class="btn btn-primary mt-3">تحديث الملف الشخصي</button>
+                    </div>
+                </section>
+
+                <section class="page-section" id="page-subscription">
+                    <div class="page-header">
+                        <h1 class="page-title">الاشتراك</h1>
+                    </div>
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <div class="plan-current" style="padding: 24px; background: linear-gradient(135deg, rgba(255,107,53,0.1), rgba(247,147,30,0.1)); border-radius: var(--radius-lg); margin-bottom: 24px;">
+                                <span class="badge badge-warning mb-2" style="font-size: 1rem; padding: 8px 20px;">خطتك الحالية</span>
+                                <h2 style="font-size: 2rem; margin: 12px 0;">Pro ⭐</h2>
+                                <p style="font-size: 1.25rem; color: var(--primary-color); font-weight: 800;">199 ج.م / شهر</p>
+                            </div>
+                            <div class="d-flex justify-center gap-3">
+                                <button class="btn btn-secondary">تغيير الخطة</button>
+                                <button class="btn btn-danger">إلغاء الاشتراك</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+            </div><!-- End Page Content -->
+        </main><!-- End Main Content -->
+    </div><!-- End Admin Layout -->
+
+    <!-- Add/Edit Item Modal -->
+    <div class="modal-overlay" id="itemModal">
+        <div class="modal" style="max-width: 650px;">
+            <div class="modal-header">
+                <h3 class="modal-title" id="itemModalTitle">إضافة صنف جديد</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="itemForm">
+                    <div class="form-group">
+                        <label class="form-label">اسم الصنف (عربي) *</label>
+                        <input type="text" class="form-control" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Item Name (English)</label>
+                        <input type="text" class="form-control" name="nameEn">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">السعر *</label>
+                            <input type="number" class="form-control" name="price" required min="0" step="0.01">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">القسم</label>
+                            <select class="form-control" name="categoryId">
+                                <option value="">اختر القسم</option>
+                                <option value="1">المقبلات</option>
+                                <option value="2">الأطباق الرئيسية</option>
+                                <option value="3">المشروبات</option>
+                                <option value="4">الحلويات</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">الوصف</label>
+                        <textarea class="form-control" name="description" rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">صورة الصنف</label>
+                        <div class="upload-zone" style="min-height: 120px;" onclick="document.getElementById('itemImageInput').click()">
+                            <i class="fas fa-image"></i>
+                            <p>اضغط لرفع الصورة</p>
+                            <input type="file" id="itemImageInput" accept="image/*" hidden onchange="previewItemImage(this)">
+                        </div>
+                        <img id="itemImagePreview" style="max-width: 100%; height: 150px; object-fit: cover; border-radius: var(--radius-md); margin-top: 10px; display: none;">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="isPopular">
+                                <span>⭐ صنف رائج</span>
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="isNew">
+                                <span>🆕 صنف جديد</span>
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="isSpicy">
+                                <span>🌶️ حار</span>
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="isVegetarian">
+                                <span>🥬 نباتي</span>
+                            </label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="MezoMenu.Modal.hide('itemModal')">إلغاء</button>
+                <button class="btn btn-primary" onclick="saveItem()">حفظ الصنف</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Details Modal -->
+    <div class="modal-overlay" id="orderModal">
+        <div class="modal" style="max-width: 550px;">
+            <div class="modal-header">
+                <h3 class="modal-title">تفاصيل الطلب #<span id="orderDetailNumber">1234</span></h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body" id="orderDetailContent">
+                <!-- Populated dynamically -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="MezoMenu.Modal.hide('orderModal')">إغلاق</button>
+                <button class="btn btn-success" onclick="contactCustomerViaWhatsApp()">
+                    <i class="fab fa-whatsapp"></i>
+                    تواصل عبر واتساب
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../assets/js/main.js"></script>
+    <script>
+        // ==========================================
+        // Dashboard JavaScript
+        // ==========================================
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', () => {
+            initSidebar();
+            loadUserData();
+            checkAuth();
+            
+            // Show dashboard by default
+            navigateTo('dashboard');
+        });
+
+        // Check authentication
+        function checkAuth() {
+            const user = MezoMenu.Storage.get('user_data');
+            if (!user && window.location.pathname.includes('admin')) {
+                // Redirect to login if not authenticated (for production)
+                // window.location.href = 'login.html';
+            }
+        }
+
+        // Load user data
+        function loadUserData() {
+            const user = MezoMenu.Storage.get('user_data');
+            if (user) {
+                // Update UI with user info
+                const userAvatar = document.querySelector('.user-avatar');
+                if (userAvatar && user.displayName) {
+                    userAvatar.textContent = user.displayName.charAt(0).toUpperCase();
                 }
+                
+                const userName = document.querySelector('.user-details h4');
+                if (userName && user.displayName) {
+                    userName.textContent = user.displayName;
+                }
+                
+                const userEmail = document.querySelector('.user-details p');
+                if (userEmail && user.email) {
+                    userEmail.textContent = user.email;
+                }
+            }
+        }
+
+        // Initialize sidebar navigation
+        function initSidebar() {
+            // Mobile menu toggle
+            const menuToggle = document.getElementById('menuToggle');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+
+            if (menuToggle) {
+                menuToggle.addEventListener('click', () => {
+                    sidebar.classList.toggle('active');
+                    overlay.classList.toggle('active');
+                });
+            }
+
+            if (overlay) {
+                overlay.addEventListener('click', () => {
+                    sidebar.classList.remove('active');
+                    overlay.classList.remove('active');
+                });
+            }
+
+            // Nav item clicks
+            document.querySelectorAll('.nav-item[data-page]').forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const page = item.dataset.page;
+                    navigateTo(page);
+                    
+                    // Close mobile menu
+                    sidebar.classList.remove('active');
+                    overlay.classList.remove('active');
+                });
             });
+
+            // Close mobile menu on nav click
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                    item.classList.add('active');
+                });
+            });
+        }
+
+        // Navigate to page
+        function navigateTo(pageName) {
+            // Hide all sections
+            document.querySelectorAll('.page-section').forEach(section => {
+                section.classList.remove('active');
+            });
+
+            // Show target section
+            const targetPage = document.getElementById(`page-${pageName}`);
+            if (targetPage) {
+                targetPage.classList.add('active');
+            }
+
+            // Update nav active state
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.toggle('active', item.dataset.page === pageName);
+            });
+
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Refresh dashboard data
+        async function refreshDashboard() {
+            MezoMenu.Toast.info('جاري تحديث البيانات...');
             
-            // Install PWA function
-            window.installPWA = function() {
-                if (deferredPrompt) {
-                    deferredPrompt.prompt();
-                    deferredPrompt.userChoice.then(function(choiceResult) {
-                        if (choiceResult.outcome === 'accepted') {
-                            console.log('[PWA] User accepted the install prompt');
-                        }
-                        deferredPrompt = null;
-                    });
-                }
+            // Simulate refresh
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            MezoMenu.Toast.success('تم تحديث البيانات');
+        }
+
+        // Copy menu URL
+        function copyMenuUrl() {
+            const input = document.getElementById('menuUrlInput');
+            input.select();
+            document.execCommand('copy');
+            MezoMenu.Toast.success('تم نسخ الرابط!');
+        }
+
+        // Open menu preview
+        function openMenuPreview() {
+            window.open('../customer/index.html?slug=el-mabrouk', '_blank');
+        }
+
+        // Download QR Code
+        function downloadQRCode() {
+            const link = document.createElement('a');
+            link.href = document.querySelector('.qr-code-image').src;
+            link.download = 'qrcode-menumenu.png';
+            link.click();
+            MezoMenu.Toast.success('جاري تحميل QR Code...');
+        }
+
+        // Show QR Code modal
+        function showQRCode() {
+            MezoMenu.Toast.info('QR Code موجود في لوحة الإحصائيات');
+        }
+
+        // Filter menu by category
+        function filterByCategory(category) {
+            document.querySelectorAll('.category-tab').forEach(tab => {
+                tab.classList.toggle('active', tab.textContent.includes(category === 'all' ? 'كل' : category));
+            });
+            MezoMenu.Toast.info(`عرض: ${category === 'all' ? 'كل الأصناف' : category}`);
+        }
+
+        // Open add item modal
+        function openAddItemModal() {
+            document.getElementById('itemModalTitle').textContent = 'إضافة صنف جديد';
+            document.getElementById('itemForm').reset();
+            document.getElementById('itemImagePreview').style.display = 'none';
+            MezoMenu.Modal.show('itemModal');
+        }
+
+        // Edit item
+        function editItem(id) {
+            document.getElementById('itemModalTitle').textContent = 'تعديل الصنف';
+            // Load item data and populate form
+            MezoMenu.Modal.show('itemModal');
+            MezoMenu.Toast.info('جاري تحميل بيانات الصنف...');
+        }
+
+        // Delete item
+        function deleteItem(id) {
+            if (confirm('هل أنت متأكد من حذف هذا الصنف؟')) {
+                MezoMenu.Toast.success('تم حذف الصنف بنجاح');
+            }
+        }
+
+        // Save item
+        function saveItem() {
+            const form = document.getElementById('itemForm');
+            if (form.checkValidity()) {
+                MezoMenu.Modal.hide('itemModal');
+                MezoMenu.Toast.success('تم حفظ الصنف بنجاح!');
+            } else {
+                MezoMenu.Toast.warning('يرجى ملء جميع الحقول المطلوبة');
+            }
+        }
+
+        // Preview item image
+        function previewItemImage(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const preview = document.getElementById('itemImagePreview');
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        // Export menu
+        function exportMenu() {
+            MezoMenu.Toast.info('جاري تصدير القائمة...');
+            setTimeout(() => MezoMenu.Toast.success('تم تصدير القائمة!'), 1500);
+        }
+
+        // AI Import functions
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                processAIImport(file);
+            }
+        }
+
+        async function processAIImport(file) {
+            const statusDiv = document.getElementById('aiProcessingStatus');
+            const resultsDiv = document.getElementById('aiResultsPreview');
+            
+            statusDiv.style.display = 'block';
+            resultsDiv.style.display = 'none';
+
+            try {
+                // Convert to base64
+                const base64 = await MezoMenu.ImageUpload.handleUpload(file);
+                
+                // Update status
+                document.getElementById('processingStatusText').textContent = 'جاري تحليل الصورة بالذكاء الاصطناعي...';
+
+                // Simulate AI processing
+                await new Promise(resolve => setTimeout(resolve, 3000));
+
+                // Mock result
+                const mockResult = {
+                    categories: [
+                        { name: 'المقبلات', items: ['سلطة', 'شوربة'] },
+                        { name: 'الأطباق الرئيسية', items: ['فراخ', 'لحم'] },
+                        { name: 'المشروبات', items: ['عصائر', 'مشروبات غازية'] }
+                    ],
+                    totalItems: 15,
+                    confidence: 0.92
+                };
+
+                // Show results
+                document.getElementById('aiResultsContent').innerHTML = `
+                    <div class="alert alert-success mb-3">
+                        <i class="fas fa-check-circle"></i>
+                        تم تحليل القائمة بنجاح! دقة: ${Math.round(mockResult.confidence * 100)}%
+                    </div>
+                    <p><strong>عدد الأقسام المستخرجة:</strong> ${mockResult.categories.length}</p>
+                    <p><strong>عدد الأصناف المستخرجة:</strong> ${mockResult.totalItems}</p>
+                    <hr>
+                    <h4>الأقسام المكتشفة:</h4>
+                    ${mockResult.categories.map(cat => `
+                        <div class="mb-2">
+                            <strong>${cat.name}</strong>: ${cat.items.join(', ')}
+                        </div>
+                    `).join('')}
+                `;
+
+                statusDiv.style.display = 'none';
+                resultsDiv.style.display = 'block';
+
+            } catch (error) {
+                statusDiv.style.display = 'none';
+                MezoMenu.Toast.error('فشل في تحليل الملف: ' + error.message);
+            }
+        }
+
+        function importFromGoogleSheets() {
+            MezoMenu.Toast.info('استيراد من Google Sheets قريباً...');
+        }
+
+        function importFromURL() {
+            const url = prompt('أدخل رابط الملف:');
+            if (url) {
+                MezoMenu.Toast.info('جاري استيراد من الرابط...');
+            }
+        }
+
+        function importAIMenu() {
+            MezoMenu.Toast.success('تم استيراد القائمة بنجاح!');
+            navigateTo('menu');
+        }
+
+        function editAIResults() {
+            MezoMenu.Toast.info='فتح محرر التعديل...';
+        }
+
+        // Orders management
+        function viewOrder(orderId) {
+            document.getElementById('orderDetailNumber').textContent = orderId;
+            
+            // Populate order details (mock)
+            document.getElementById('orderDetailContent').innerHTML = `
+                <div class="order-timeline">
+                    <div class="timeline-step completed">
+                        <div class="timeline-dot"><i class="fas fa-check"></i></div>
+                        <div class="timeline-content">
+                            <h4>تم الاستلام</h4>
+                            <p>10:30 AM</p>
+                        </div>
+                    </div>
+                    <div class="timeline-step completed">
+                        <div class="timeline-dot"><i class="fas fa-check"></i></div>
+                        <div class="timeline-content">
+                            <h4>تم التأكيد</h4>
+                            <p>10:32 AM</p>
+                        </div>
+                    </div>
+                    <div class="timeline-step active">
+                        <div class="timeline-dot"><i class="fas fa-fire"></i></div>
+                        <div class="timeline-content">
+                            <h4>قيد التحضير</h4>
+                            <p>الآن</p>
+                        </div>
+                    </div>
+                    <div class="timeline-step">
+                        <div class="timeline-dot"><i class="fas fa-box"></i></div>
+                        <div class="timeline-content">
+                            <h4>جاهز للتوصيل</h4>
+                            <p>—</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-4">
+                    <h4>عناصر الطلب:</h4>
+                    <table class="data-table mt-2">
+                        <tbody>
+                            <tr>
+                                <td>بيتزا مارغريتا (كبيرة)</td>
+                                <td>x2</td>
+                                <td>240 ج.م</td>
+                            </tr>
+                            <tr>
+                                <td>سلطة كيزر</td>
+                                <td>x1</td>
+                                <td>65 ج.م</td>
+                            </tr>
+                            <tr>
+                                <td>مشروب غازي</td>
+                                <td>x3</td>
+                                <td>30 ج.م</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="d-flex justify-between mt-3 pt-3 border-top">
+                        <strong>الإجمالي:</strong>
+                        <strong style="font-size: 1.25rem; color: var(--primary-color);">335 ج.م</strong>
+                    </div>
+                </div>
+            `;
+            
+            MezoMenu.Modal.show('orderModal');
+        }
+
+        function updateOrderStatus(orderId, newStatus) {
+            const statusLabels = {
+                'pending': 'جديد',
+                'confirmed': 'مؤكد',
+                'preparing': 'قيد التحضير',
+                'ready': 'جاهز',
+                'delivered': 'تم التوصيل'
             };
             
-            // Dismiss install banner
-            window.dismissInstallBanner = function() {
-                const banner = document.getElementById('installBanner');
-                if (banner) {
-                    banner.style.display = 'none';
-                }
-            };
+            MezoMenu.Toast.success(`تم تحديث حالة الطلب ${orderId} إلى "${statusLabels[newStatus]}"`);
+        }
+
+        function contactCustomerViaWhatsApp() {
+            MezoMenu.WhatsApp.openChat('+201234567890', 'مرحباً، بخصوص طلبكم #1234');
+        }
+
+        function exportOrders() {
+            MezoMenu.Toast.info('جاري تصدير الطلبات...');
+        }
+
+        // Settings functions
+        function saveSettings() {
+            MezoMenu.Toast.success('تم حفظ الإعدادات بنجاح!');
+        }
+
+        function previewLogo(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const area = document.getElementById('logoUploadArea');
+                    area.innerHTML = `<img src="${e.target.result}" style="width: 100%; height: 100%; object-fit: cover; border-radius: inherit;">`;
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function setThemeColor(color) {
+            document.documentElement.style.setProperty('--primary-color', color);
+            MezoMenu.Toast.success('تم تغيير اللون!');
+        }
+
+        // Category functions
+        function openAddCategoryModal() {
+            MezoMenu.Toast.info='فتح نافذة إضافة قسم...';
         }
     </script>
 </body>

@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إنشاء حساب - MezoMenu</title>
+    <link rel="icon" type="image/png" href="../assets/images/favicon.png">
+    <link rel="stylesheet" href="assets/css/main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="auth-page">
+    <div class="auth-container">
+        <!-- Auth Card -->
+        <div class="auth-card">
+            <!-- Logo -->
+            <div class="auth-logo">
+                <span class="logo-icon">🍽️</span>
+                <h1>Mezo<span>Menu</span></h1>
+            </div>
+
+            <!-- Header -->
+            <div class="auth-header">
+                <h2>إنشاء حساب جديد</h2>
+                <p>ابدأ رحلتك معنا في بناء قائمة رقمية احترافية</p>
+            </div>
+
+            <!-- Progress Steps -->
+            <div class="progress-steps">
+                <div class="step active" data-step="1">
+                    <span class="step-number">١</span>
+                    <span class="step-label">الحساب</span>
+                </div>
+                <div class="step-line"></div>
+                <div class="step" data-step="2">
+                    <span class="step-number">٢</span>
+                    <span class="step-label">المطعم</span>
+                </div>
+                <div class="step-line"></div>
+                <div class="step" data-step="3">
+                    <span class="step-number">٣</span>
+                    <span class="step-label">التأكيد</span>
+                </div>
+            </div>
+
+            <!-- Registration Form -->
+            <form id="registerForm" class="auth-form">
+                <!-- Step 1: Account Info -->
+                <div class="form-step active" id="step1">
+                    <div class="form-group">
+                        <label for="fullName" class="form-label">الاسم الكامل</label>
+                        <div class="input-group">
+                            <i class="fas fa-user input-icon"></i>
+                            <input type="text" id="fullName" name="fullName" class="form-control" 
+                                   placeholder="أحمد محمد" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email" class="form-label">البريد الإلكتروني</label>
+                        <div class="input-group">
+                            <i class="fas fa-envelope input-icon"></i>
+                            <input type="email" id="email" name="email" class="form-control" 
+                                   placeholder="example@restaurant.com" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="phone" class="form-label">رقم الهاتف (مع رمز الدولة)</label>
+                        <div class="input-group">
+                            <i class="fas fa-phone input-icon"></i>
+                            <input type="tel" id="phone" name="phone" class="form-control" 
+                                   placeholder="+201234567890" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password" class="form-label">كلمة المرور</label>
+                        <div class="input-group">
+                            <i class="fas fa-lock input-icon"></i>
+                            <input type="password" id="password" name="password" class="form-control" 
+                                   placeholder="••••••••" required minlength="8">
+                            <button type="button" class="toggle-password" onclick="togglePassword('password')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <div class="password-strength" id="passwordStrength"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="confirmPassword" class="form-label">تأكيد كلمة المرور</label>
+                        <div class="input-group">
+                            <i class="fas fa-lock input-icon"></i>
+                            <input type="password" id="confirmPassword" name="confirmPassword" 
+                                   class="form-control" placeholder="••••••••" required>
+                            <button type="button" class="toggle-password" onclick="togglePassword('confirmPassword')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn btn-primary btn-lg w-100" onclick="nextStep(2)">
+                        التالي: بيانات المطعم
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                </div>
+
+                <!-- Step 2: Restaurant Info -->
+                <div class="form-step" id="step2">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <span>يمكنك تعديل هذه البيانات لاحقاً من الإعدادات</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="restaurantName" class="form-label">اسم المطعم *</label>
+                        <div class="input-group">
+                            <i class="fas fa-store input-icon"></i>
+                            <input type="text" id="restaurantName" name="restaurantName" 
+                                   class="form-control" placeholder="مطعم السعادة" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="restaurantNameEn" class="form-label">Restaurant Name (English)</label>
+                        <div class="input-group">
+                            <i class="fas fa-store input-icon"></i>
+                            <input type="text" id="restaurantNameEn" name="restaurantNameEn" 
+                                   class="form-control" placeholder="Al Saada Restaurant">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group flex-1">
+                            <label for="city" class="form-label">المدينة</label>
+                            <select id="city" name="city" class="form-control">
+                                <option value="">اختر المدينة</option>
+                                <option value="cairo">القاهرة</option>
+                                <option value="alexandria">الإسكندرية</option>
+                                <option value="giza">الجيزة</option>
+                                <option value="mansoura">المنصورة</option>
+                                <option value="tanta">طنطا</option>
+                                <option value="riyadh">الرياض</option>
+                                <option value="jeddah">جدة</option>
+                                <option value="dammam">الدمام</option>
+                                <option value="other">أخرى</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group flex-1">
+                            <label for="cuisineType" class="form-label">نوع المطبخ</label>
+                            <select id="cuisineType" name="cuisineType" class="form-control">
+                                <option value="">اختر النوع</option>
+                                <option value="egyptian">مصري</option>
+                                <option value="arabic">عربي</option>
+                                <option value="italian">إيطالي</option>
+                                <option value="chinese">صيني</option>
+                                <option value="indian">هندي</option>
+                                <option value="american">أمريكي</option>
+                                <option value="mexican">مكسيكي</option>
+                                <option value="japanese">ياباني</option>
+                                <option value="seafood">مأكولات بحرية</option>
+                                <option value="grill">مشويات</option>
+                                <option value="sweets">حلويات</option>
+                                <option value="cafe">كافيه</option>
+                                <option value="other">أخرى</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="whatsappNumber" class="form-label">رقم واتساب لاستقبال الطلبات *</label>
+                        <div class="input-group">
+                            <i class="fab fa-whatsapp input-icon" style="color: #25D366;"></i>
+                            <input type="tel" id="whatsappNumber" name="whatsappNumber" 
+                                   class="form-control" placeholder="+201234567890" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="address" class="form-label">العنوان</label>
+                        <div class="input-group">
+                            <i class="fas fa-map-marker-alt input-icon"></i>
+                            <input type="text" id="address" name="address" class="form-control" 
+                                   placeholder="شارع التحرير، وسط البلد">
+                        </div>
+                    </div>
+
+                    <div class="form-actions-row">
+                        <button type="button" class="btn btn-secondary" onclick="nextStep(1)">
+                            <i class="fas fa-arrow-right"></i>
+                            السابق
+                        </button>
+                        <button type="button" class="btn btn-primary btn-lg" onclick="nextStep(3)">
+                            التالي: المراجعة
+                            <i class="fas fa-arrow-left"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 3: Review & Confirm -->
+                <div class="form-step" id="step3">
+                    <div class="review-card">
+                        <h4><i class="fas fa-user"></i> بيانات الحساب</h4>
+                        <div class="review-item">
+                            <span>الاسم:</span>
+                            <strong id="reviewName">-</strong>
+                        </div>
+                        <div class="review-item">
+                            <span>البريد:</span>
+                            <strong id="reviewEmail">-</strong>
+                        </div>
+                        <div class="review-item">
+                            <span>الهاتف:</span>
+                            <strong id="reviewPhone">-</strong>
+                        </div>
+                    </div>
+
+                    <div class="review-card">
+                        <h4><i class="fas fa-store"></i> بيانات المطعم</h4>
+                        <div class="review-item">
+                            <span>اسم المطعم:</span>
+                            <strong id="reviewRestaurant">-</strong>
+                        </div>
+                        <div class="review-item">
+                            <span>المدينة:</span>
+                            <strong id="reviewCity">-</strong>
+                        </div>
+                        <div class="review-item">
+                            <span>نوع المطبخ:</span>
+                            <strong id="reviewCuisine">-</strong>
+                        </div>
+                        <div class="review-item">
+                            <span>واتساب:</span>
+                            <strong id="reviewWhatsapp">-</strong>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="agreeTerms" required>
+                            <span>أوافق على <a href="#" target="_blank">الشروط والأحكام</a> و<a href="#" target="_blank">سياسة الخصوصية</a></span>
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="newsletterCheck">
+                            <span>أرغب في استلام العروض والتحديثات عبر البريد الإلكتروني</span>
+                        </label>
+                    </div>
+
+                    <div class="plan-selection">
+                        <p class="plan-label">اختر خطتك:</p>
+                        <div class="plan-options">
+                            <label class="plan-option selected">
+                                <input type="radio" name="plan" value="free" checked>
+                                <div class="plan-info">
+                                    <strong>مجاني</strong>
+                                    <span>للبداية</span>
+                                </div>
+                            </label>
+                            <label class="plan-option popular">
+                                <input type="radio" name="plan" value="pro">
+                                <div class="plan-info">
+                                    <strong>احترافي</strong>
+                                    <span>199 ج.م/شهر</span>
+                                    <small>الأكثر شعبية</small>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-actions-row">
+                        <button type="button" class="btn btn-secondary" onclick="nextStep(2)">
+                            <i class="fas fa-arrow-right"></i>
+                            السابق
+                        </button>
+                        <button type="submit" class="btn btn-success btn-lg" id="submitBtn">
+                            <i class="fas fa-check-circle"></i>
+                            إنشاء الحساب
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            <!-- Footer -->
+            <div class="auth-footer">
+                <p>لديك حساب بالفعل؟ <a href="login.html">تسجيل الدخول</a></p>
+            </div>
+        </div>
+
+        <!-- Side Illustration -->
+        <div class="auth-illustration register-illustration">
+            <div class="illustration-content">
+                <div class="feature-list-visual">
+                    <div class="feature-item-v">
+                        <i class="fas fa-check-circle"></i>
+                        <span>قائمة رقمية احترافية</span>
+                    </div>
+                    <div class="feature-item-v">
+                        <i class="fas fa-check-circle"></i>
+                        <span>طلبات via WhatsApp</span>
+                    </div>
+                    <div class="feature-item-v">
+                        <i class="fas fa-check-circle"></i>
+                        <span>تحليلات ومتابعة</span>
+                    </div>
+                    <div class="feature-item-v">
+                        <i class="fas fa-check-circle"></i>
+                        <span>دعم فني 24/7</span>
+                    </div>
+                </div>
+                
+                <div class="trial-badge">
+                    <i class="fas fa-gift"></i>
+                    <div>
+                        <strong>تجربة مجانية 14 يوم</strong>
+                        <span>بدون حاجة لبطاقة ائتمان</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="assets/js/main.js"></script>
+    <script>
+        let currentStep = 1;
+
+        // Toggle password visibility
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            const icon = event.target.closest('.toggle-password').querySelector('i');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
+        // Password strength checker
+        document.getElementById('password').addEventListener('input', (e) => {
+            const password = e.target.value;
+            const strengthEl = document.getElementById('passwordStrength');
+            
+            let strength = 0;
+            if (password.length >= 8) strength++;
+            if (/[A-Z]/.test(password)) strength++;
+            if (/[0-9]/.test(password)) strength++;
+            if (/[^A-Za-z0-9]/.test(password)) strength++;
+
+            const levels = ['ضعيفة جداً', 'ضعيفة', 'متوسطة', 'قوية', 'قوية جداً'];
+            const colors = ['#dc3545', '#fd7e14', '#ffc107', '#28a745', '#20c997'];
+            
+            if (password.length > 0) {
+                strengthEl.innerHTML = `<span style="color: ${colors[strength]}">${levels[strength]}</span>`;
+            } else {
+                strengthEl.innerHTML = '';
+            }
+        });
+
+        // Navigation between steps
+        function nextStep(step) {
+            // Validate current step before proceeding
+            if (step > currentStep && !validateStep(currentStep)) {
+                return;
+            }
+
+            currentStep = step;
+            
+            // Update UI
+            document.querySelectorAll('.form-step').forEach(el => el.classList.remove('active'));
+            document.getElementById(`step${step}`).classList.add('active');
+
+            document.querySelectorAll('.progress-steps .step').forEach((el, index) => {
+                el.classList.toggle('active', index + 1 <= step);
+                el.classList.toggle('completed', index + 1 < step);
+            });
+
+            // If going to step 3, populate review
+            if (step === 3) {
+                populateReview();
+            }
+
+            // Scroll to top of form
+            document.querySelector('.auth-card').scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Validate step
+        function validateStep(step) {
+            const form = document.getElementById(`step${step}`);
+            const requiredFields = form.querySelectorAll('[required]');
+            let isValid = true;
+
+            requiredFields.forEach(field => {
+                if (!field.value.trim()) {
+                    field.style.borderColor = 'var(--danger)';
+                    isValid = false;
+                    
+                    // Shake animation
+                    field.style.animation = 'shake 0.5s';
+                    setTimeout(() => field.style.animation = '', 500);
+                } else {
+                    field.style.borderColor = '';
+                }
+            });
+
+            // Special validation for passwords in step 1
+            if (step === 1) {
+                const password = document.getElementById('password').value;
+                const confirmPassword = document.getElementById('confirmPassword').value;
+
+                if (password !== confirmPassword) {
+                    MezoMenu.Toast.error('كلمتا المرور غير متطابقتين');
+                    return false;
+                }
+
+                if (password.length < 8) {
+                    MezoMenu.Toast.error('كلمة المرور يجب أن تكون 8 أحرف على الأقل');
+                    return false;
+                }
+            }
+
+            if (!isValid) {
+                MezoMenu.Toast.warning('يرجى ملء جميع الحقول المطلوبة');
+            }
+
+            return isValid;
+        }
+
+        // Populate review section
+        function populateReview() {
+            document.getElementById('reviewName').textContent = document.getElementById('fullName').value;
+            document.getElementById('reviewEmail').textContent = document.getElementById('email').value;
+            document.getElementById('reviewPhone').textContent = document.getElementById('phone').value;
+            document.getElementById('reviewRestaurant').textContent = document.getElementById('restaurantName').value;
+            document.getElementById('reviewCity').textContent = document.getElementById('city').options[document.getElementById('city').selectedIndex]?.text || '-';
+            document.getElementById('reviewCuisine').textContent = document.getElementById('cuisineType').options[document.getElementById('cuisineType').selectedIndex]?.text || '-';
+            document.getElementById('reviewWhatsapp').textContent = document.getElementById('whatsappNumber').value;
+        }
+
+        // Handle form submission
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // Final validation
+            if (!document.getElementById('agreeTerms').checked) {
+                MezoMenu.Toast.warning('يجب الموافقة على الشروط والأحكام');
+                return;
+            }
+
+            const btn = document.getElementById('submitBtn');
+            const originalText = btn.innerHTML;
+            
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري إنشاء الحساب...';
+
+            try {
+                // Collect form data
+                const userData = {
+                    fullName: document.getElementById('fullName').value,
+                    email: document.getElementById('email').value,
+                    phone: document.getElementById('phone').value,
+                    password: document.getElementById('password').value,
+                    restaurant: {
+                        name: document.getElementById('restaurantName').value,
+                        nameEn: document.getElementById('restaurantNameEn').value,
+                        city: document.getElementById('city').value,
+                        cuisineType: document.getElementById('cuisineType').value,
+                        whatsappNumber: document.getElementById('whatsappNumber').value,
+                        address: document.getElementById('address').value,
+                        slug: MezoMenu.slugify(document.getElementById('restaurantName').value)
+                    },
+                    plan: document.querySelector('input[name="plan"]:checked').value,
+                    newsletter: document.getElementById('newsletterCheck').checked,
+                    createdAt: new Date().toISOString()
+                };
+
+                // Simulate API call
+                await new Promise(resolve => setTimeout(resolve, 2000));
+
+                // Save to Firebase (or local storage for demo)
+                try {
+                    await MezoMenu.Firebase.register(userData);
+                } catch (error) {
+                    // For demo, save locally
+                    MezoMenu.Storage.set('user_data', {
+                        id: 'new_user',
+                        ...userData,
+                        displayName: userData.fullName
+                    });
+                }
+
+                MezoMenu.Toast.success('تم إنشاء حسابك بنجاح! مرحباً بك 🎉');
+
+                // Redirect to dashboard after delay
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 1500);
+
+            } catch (error) {
+                MezoMenu.Toast.error(error.message || 'حدث خطأ أثناء إنشاء الحساب');
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        });
+
+        // Plan selection UI
+        document.querySelectorAll('.plan-option input').forEach(radio => {
+            radio.addEventListener('change', () => {
+                document.querySelectorAll('.plan-option').forEach(opt => opt.classList.remove('selected'));
+                radio.closest('.plan-option').classList.add('selected');
+            });
+        });
+
+        // Check URL params for pre-selected plan
+        document.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            const plan = params.get('plan');
+            if (plan) {
+                const radio = document.querySelector(`input[name="plan"][value="${plan}"]`);
+                if (radio) {
+                    radio.checked = true;
+                    radio.dispatchEvent(new Event('change'));
+                }
+            }
+        });
+    </script>
+
+    <style>
+        /* Reuse auth page styles */
+        .auth-page {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #fff9f5 0%, #f0f7ff 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .auth-container {
+            display: grid;
+            grid-template-columns: 520px 1fr;
+            max-width: 1150px;
+            width: 100%;
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-xl);
+            overflow: hidden;
+            min-height: 750px;
+        }
+
+        .auth-card {
+            padding: 40px;
+            overflow-y: auto;
+            max-height: 90vh;
+        }
+
+        .auth-logo { margin-bottom: 20px; }
+        .auth-logo h1 { font-size: 1.5rem; }
+        
+        .auth-header { margin-bottom: 24px; }
+        .auth-header h2 { font-size: 1.5rem; margin-bottom: 8px; }
+
+        /* Progress Steps */
+        .progress-steps {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 28px;
+            padding: 16px;
+            background: var(--gray-50);
+            border-radius: var(--radius-lg);
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--gray-500);
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .step.active { color: var(--primary-color); }
+        .step.completed { color: var(--success); }
+
+        .step-number {
+            width: 26px; height: 26px;
+            border-radius: var(--radius-full);
+            background: var(--gray-300);
+            color: var(--white);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+
+        .step.active .step-number { background: var(--primary-color); }
+        .step.completed .step-number { background: var(--success); }
+
+        .step-line {
+            width: 30px;
+            height: 2px;
+            background: var(--gray-300);
+        }
+
+        /* Form Steps */
+        .form-step { display: none; }
+        .form-step.active { display: block; animation: fadeIn 0.3s ease; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .flex-1 { flex: 1; }
+
+        .password-strength {
+            margin-top: 4px;
+            font-size: 0.85rem;
+            min-height: 20px;
+        }
+
+        .form-actions-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        /* Review Cards */
+        .review-card {
+            background: var(--gray-50);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .review-card h4 {
+            font-size: 1rem;
+            color: var(--dark-color);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .review-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--gray-200);
+            font-size: 0.9rem;
+        }
+
+        .review-item:last-child { border-bottom: none; }
+        .review-item span { color: var(--gray-600); }
+
+        /* Plan Selection */
+        .plan-selection {
+            background: var(--gray-50);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+
+        .plan-label {
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: var(--dark-color);
+        }
+
+        .plan-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .plan-option {
+            cursor: pointer;
+            padding: 16px;
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-md);
+            transition: var(--transition-fast);
+        }
+
+        .plan-option:hover { border-color: var(--primary-color); }
+        .plan-option.selected { border-color: var(--primary-color); background: rgba(255,107,53,0.05); }
+        .plan-option.popular { position: relative; }
+
+        .plan-option input { display: none; }
+
+        .plan-info strong { display: block; color: var(--dark-color); }
+        .plan-info span { font-size: 0.9rem; color: var(--gray-600); }
+        .plan-info small { font-size: 0.75rem; color: var(--primary-color); font-weight: 600; }
+
+        /* Register Illustration */
+        .register-illustration {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .feature-list-visual {
+            text-align: right;
+            margin-bottom: 32px;
+        }
+
+        .feature-item-v {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 20px;
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+            border-radius: var(--radius-md);
+            margin-bottom: 12px;
+            color: var(--white);
+            font-weight: 600;
+        }
+
+        .feature-item-v i { color: #4ade80; }
+
+        .trial-badge {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+            padding: 20px 24px;
+            border-radius: var(--radius-lg);
+            text-align: right;
+        }
+
+        .trial-badge i { font-size: 2.5rem; }
+        .trial-badge strong { display: block; font-size: 1.1rem; margin-bottom: 4px; }
+        .trial-badge span { opacity: 0.9; font-size: 0.9rem; }
+
+        .auth-footer { margin-top: 20px; }
+
+        @media (max-width: 1000px) {
+            .auth-container { grid-template-columns: 1fr; max-width: 520px; }
+            .register-illustration { display: none; }
+            .auth-card { max-height: none; overflow-y: visible; }
+            .form-row { grid-template-columns: 1fr; }
+        }
+    </style>
+</body>
+</html>

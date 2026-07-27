@@ -1,1873 +1,1552 @@
-```html
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Digital Menu Hub - القوائم الرقمية للمطاعم</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/cairo@4.5.0/index.min.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<style>
-  * { font-family: 'Cairo', sans-serif; }
-  html { scroll-behavior: smooth; }
-  .gradient-bg { background: linear-gradient(135deg, #ff6b35 0%, #f7931e 50%, #ffb627 100%); }
-  .gradient-text { background: linear-gradient(135deg, #ff6b35, #f7931e); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-  .card-hover { transition: all 0.3s ease; }
-  .card-hover:hover { transform: translateY(-5px); box-shadow: 0 15px 35px rgba(255,107,53,0.12); }
-  .btn-primary { background: linear-gradient(135deg, #ff6b35, #f7931e); transition: all 0.3s; }
-  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(255,107,53,0.4); }
-  .page { display: none; }
-  .page.active { display: block; }
-  .sidebar-item { transition: all 0.2s; }
-  .sidebar-item:hover, .sidebar-item.active { background: linear-gradient(135deg, #ff6b35, #f7931e); color: white; }
-  .sidebar-item:hover i, .sidebar-item.active i { color: white; }
-  .fade-in { animation: fadeIn 0.4s ease-in; }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-  .menu-item-card { transition: all 0.3s; }
-  .menu-item-card:hover { border-color: #ff6b35; }
-  .modal-overlay { transition: opacity 0.3s; }
-  .modal-content { transition: transform 0.3s; }
-  .stat-card { position: relative; overflow: hidden; }
-  .stat-card::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%); }
-  .toggle-switch { width: 44px; height: 24px; background: #ddd; border-radius: 12px; position: relative; cursor: pointer; transition: 0.3s; }
-  .toggle-switch.active { background: #ff6b35; }
-  .toggle-switch::after { content: ''; position: absolute; width: 20px; height: 20px; background: white; border-radius: 50%; top: 2px; right: 2px; transition: 0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-  .toggle-switch.active::after { right: 22px; }
-  .progress-bar { height: 8px; border-radius: 4px; background: #f0f0f0; overflow: hidden; }
-  .progress-fill { height: 100%; border-radius: 4px; background: linear-gradient(135deg, #ff6b35, #f7931e); transition: width 0.5s; }
-  .notification-badge { position: absolute; top: -4px; left: -4px; width: 18px; height: 18px; background: #ef4444; border-radius: 50%; font-size: 10px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; }
-  ::-webkit-scrollbar { width: 6px; }
-  ::-webkit-scrollbar-track { background: #f1f1f1; }
-  ::-webkit-scrollbar-thumb { background: #ff6b35; border-radius: 3px; }
-  .drag-handle { cursor: grab; }
-  .drag-handle:active { cursor: grabbing; }
-  .tab-btn { transition: all 0.3s; }
-  .tab-btn.active { color: #ff6b35; border-bottom: 3px solid #ff6b35; }
-  .faq-item { transition: all 0.3s; }
-  .faq-answer { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
-  .faq-item.open .faq-answer { max-height: 200px; }
-  .faq-item.open .faq-icon { transform: rotate(180deg); }
-  .faq-icon { transition: transform 0.3s; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MezoMenu - نظام القوائم الرقمية للمطاعم</title>
+    <meta name="description" content="أنشئ قائمة طعام رقمية احترافية لمطعمك في دقائق. إدارة ذكية، طلبات عبر واتساب، تحليلات متقدمة.">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="assets/images/favicon.png">
+    <link rel="apple-touch-icon" href="assets/images/icon-192.png">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="assets/css/main.css">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- PWA Meta -->
+    <meta name="theme-color" content="#ff6b35">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 </head>
-<body class="bg-gray-50 text-gray-800">
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container nav-container">
+            <a href="#" class="logo">
+                <span class="logo-icon">🍽️</span>
+                <span class="logo-text">Mezo<span>Menu</span></span>
+            </a>
+            
+            <div class="nav-links">
+                <a href="#features">المميزات</a>
+                <a href="#how-it-works">كيف يعمل</a>
+                <a href="#pricing">الأسعار</a>
+                <a href="#testimonials">آراء العملاء</a>
+            </div>
+            
+            <div class="nav-actions">
+                <a href="admin/login.html" class="btn btn-secondary btn-sm">تسجيل الدخول</a>
+                <a href="admin/register.html" class="btn btn-primary btn-sm">ابدأ مجاناً</a>
+            </div>
 
-<!-- ==================== PUBLIC NAVBAR ==================== -->
-<nav id="publicNav" class="fixed top-0 w-full bg-white/95 backdrop-blur-md z-50 shadow-sm">
-  <div class="container mx-auto px-6 py-4 flex items-center justify-between">
-    <div class="flex items-center gap-2 cursor-pointer" onclick="navigateTo('home')">
-      <div class="w-10 h-10 gradient-bg rounded-xl flex items-center justify-center">
-        <i class="fas fa-utensils text-white text-lg"></i>
-      </div>
-      <span class="text-xl font-bold">Digital<span class="gradient-text">Menu</span>Hub</span>
-    </div>
-    <div class="hidden md:flex items-center gap-8">
-      <a onclick="navigateTo('home')" class="cursor-pointer hover:text-orange-500 transition">الرئيسية</a>
-      <a onclick="navigateTo('templates-page')" class="cursor-pointer hover:text-orange-500 transition">القوالب</a>
-      <a onclick="navigateTo('pricing-page')" class="cursor-pointer hover:text-orange-500 transition">الأسعار</a>
-      <a onclick="navigateTo('about-page')" class="cursor-pointer hover:text-orange-500 transition">من نحن</a>
-      <a onclick="navigateTo('blog-page')" class="cursor-pointer hover:text-orange-500 transition">المدونة</a>
-      <a onclick="navigateTo('faq-page')" class="cursor-pointer hover:text-orange-500 transition">الأسئلة الشائعة</a>
-    </div>
-    <div class="flex items-center gap-3">
-      <button onclick="navigateTo('login')" class="hidden sm:block text-gray-700 hover:text-orange-500 transition">تسجيل الدخول</button>
-      <button onclick="navigateTo('register')" class="btn-primary text-white px-5 py-2 rounded-full font-semibold">ابدأ مجاناً</button>
-      <button class="md:hidden text-2xl" onclick="toggleMobileMenu()"><i class="fas fa-bars"></i></button>
-    </div>
-  </div>
-  <!-- Mobile Menu -->
-  <div id="mobileMenu" class="hidden md:hidden bg-white border-t px-6 py-4 space-y-3">
-    <a onclick="navigateTo('home'); toggleMobileMenu()" class="block cursor-pointer hover:text-orange-500">الرئيسية</a>
-    <a onclick="navigateTo('templates-page'); toggleMobileMenu()" class="block cursor-pointer hover:text-orange-500">القوالب</a>
-    <a onclick="navigateTo('pricing-page'); toggleMobileMenu()" class="block cursor-pointer hover:text-orange-500">الأسعار</a>
-    <a onclick="navigateTo('about-page'); toggleMobileMenu()" class="block cursor-pointer hover:text-orange-500">من نحن</a>
-    <a onclick="navigateTo('blog-page'); toggleMobileMenu()" class="block cursor-pointer hover:text-orange-500">المدونة</a>
-    <a onclick="navigateTo('faq-page'); toggleMobileMenu()" class="block cursor-pointer hover:text-orange-500">الأسئلة الشائعة</a>
-    <a onclick="navigateTo('login'); toggleMobileMenu()" class="block cursor-pointer hover:text-orange-500">تسجيل الدخول</a>
-  </div>
-</nav>
-
-<!-- ==================== DASHBOARD NAVBAR ==================== -->
-<nav id="dashboardNav" class="hidden fixed top-0 w-full bg-white/95 backdrop-blur-md z-50 shadow-sm">
-  <div class="container mx-auto px-6 py-3 flex items-center justify-between">
-    <div class="flex items-center gap-4">
-      <button onclick="toggleSidebar()" class="text-xl text-gray-600 hover:text-orange-500"><i class="fas fa-bars"></i></button>
-      <div class="flex items-center gap-2 cursor-pointer" onclick="navigateTo('dashboard')">
-        <div class="w-9 h-9 gradient-bg rounded-xl flex items-center justify-center">
-          <i class="fas fa-utensils text-white text-sm"></i>
-        </div>
-        <span class="text-lg font-bold hidden sm:block">Digital<span class="gradient-text">Menu</span>Hub</span>
-      </div>
-    </div>
-    <div class="flex-1 max-w-md mx-6 hidden md:block">
-      <div class="relative">
-        <input type="text" placeholder="بحث..." class="w-full px-4 py-2 pr-10 rounded-xl border border-gray-200 focus:border-orange-500 focus:outline-none text-sm">
-        <i class="fas fa-search absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-      </div>
-    </div>
-    <div class="flex items-center gap-4">
-      <button class="relative text-gray-600 hover:text-orange-500">
-        <i class="fas fa-bell text-xl"></i>
-        <span class="notification-badge">3</span>
-      </button>
-      <div class="flex items-center gap-2 cursor-pointer" onclick="navigateTo('settings')">
-        <div class="w-9 h-9 gradient-bg rounded-full flex items-center justify-center text-white font-bold text-sm">أم</div>
-        <span class="hidden sm:block font-semibold text-sm">أحمد محمد</span>
-      </div>
-    </div>
-  </div>
-</nav>
-
-<!-- ==================== DASHBOARD SIDEBAR ==================== -->
-<aside id="sidebar" class="hidden fixed right-0 top-16 w-64 h-[calc(100vh-4rem)] bg-white shadow-lg z-40 overflow-y-auto transition-all">
-  <div class="p-4 space-y-1">
-    <div class="px-3 py-2 text-xs text-gray-400 font-semibold uppercase">القائمة الرئيسية</div>
-    <div onclick="navigateTo('dashboard')" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer" data-page="dashboard">
-      <i class="fas fa-home text-orange-500 w-5"></i><span>لوحة التحكم</span>
-    </div>
-    <div onclick="navigateTo('my-menus')" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer" data-page="my-menus">
-      <i class="fas fa-book-open text-orange-500 w-5"></i><span>قوائمي</span>
-    </div>
-    <div onclick="navigateTo('menu-builder')" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer" data-page="menu-builder">
-      <i class="fas fa-plus-circle text-orange-500 w-5"></i><span>إنشاء قائمة</span>
-    </div>
-    <div onclick="navigateTo('qr-codes')" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer" data-page="qr-codes">
-      <i class="fas fa-qrcode text-orange-500 w-5"></i><span>رموز QR</span>
-    </div>
-    
-    <div class="px-3 py-2 text-xs text-gray-400 font-semibold uppercase mt-4">التحليلات</div>
-    <div onclick="navigateTo('analytics')" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer" data-page="analytics">
-      <i class="fas fa-chart-bar text-orange-500 w-5"></i><span>التقارير</span>
-    </div>
-    <div onclick="navigateTo('orders')" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer" data-page="orders">
-      <i class="fas fa-receipt text-orange-500 w-5"></i><span>الطلبات</span>
-      <span class="mr-auto bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">5</span>
-    </div>
-    
-    <div class="px-3 py-2 text-xs text-gray-400 font-semibold uppercase mt-4">الإعدادات</div>
-    <div onclick="navigateTo('settings')" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer" data-page="settings">
-      <i class="fas fa-cog text-orange-500 w-5"></i><span>الإعدادات</span>
-    </div>
-    <div onclick="navigateTo('subscription')" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer" data-page="subscription">
-      <i class="fas fa-crown text-orange-500 w-5"></i><span>الاشتراك</span>
-    </div>
-    <div onclick="navigateTo('home')" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer text-red-500">
-      <i class="fas fa-sign-out-alt w-5"></i><span>تسجيل الخروج</span>
-    </div>
-  </div>
-</aside>
-
-<!-- ==================== MAIN CONTENT AREA ==================== -->
-<main id="mainContent" class="pt-16">
-
-<!-- ==================== HOME PAGE ==================== -->
-<div id="page-home" class="page active">
-  <!-- Hero -->
-  <section class="relative pt-20 pb-16 overflow-hidden bg-gradient-to-br from-orange-50 to-yellow-50">
-    <div class="container mx-auto px-6">
-      <div class="grid md:grid-cols-2 gap-12 items-center">
-        <div class="fade-in">
-          <span class="inline-block bg-orange-100 text-orange-600 px-4 py-2 rounded-full text-sm font-semibold mb-6">
-            <i class="fas fa-star text-yellow-500"></i> الحل الأمثل للمطاعم الحديثة
-          </span>
-          <h1 class="text-4xl md:text-6xl font-extrabold leading-tight mb-6">
-            حوّل قائمتك إلى <span class="gradient-text">تجربة رقمية</span> مذهلة
-          </h1>
-          <p class="text-lg text-gray-600 mb-8 leading-relaxed">
-            أنشئ قائمة رقمية تفاعلية لمطعمك في دقائق. بدون تطبيقات، بدون تعقيد. فقط QR code واحد يفتح عالمًا من النكهات.
-          </p>
-          <div class="flex flex-wrap gap-4 mb-8">
-            <button onclick="navigateTo('register')" class="btn-primary text-white px-8 py-4 rounded-full font-bold text-lg flex items-center gap-2">
-              <i class="fas fa-rocket"></i> ابدأ تجربتك المجانية
+            <button class="mobile-menu-toggle" id="mobileMenuToggle">
+                <i class="fas fa-bars"></i>
             </button>
-            <button class="bg-white border-2 border-gray-200 hover:border-orange-500 px-8 py-4 rounded-full font-bold text-lg flex items-center gap-2 transition">
-              <i class="fas fa-play-circle text-orange-500"></i> شاهد العرض
-            </button>
-          </div>
-          <div class="flex items-center gap-6">
-            <div class="flex -space-x-3 space-x-reverse">
-              <div class="w-10 h-10 rounded-full bg-orange-400 border-2 border-white"></div>
-              <div class="w-10 h-10 rounded-full bg-yellow-400 border-2 border-white"></div>
-              <div class="w-10 h-10 rounded-full bg-red-400 border-2 border-white"></div>
-              <div class="w-10 h-10 rounded-full bg-pink-400 border-2 border-white"></div>
-            </div>
-            <div>
-              <div class="flex text-yellow-400 mb-1"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
-              <p class="text-sm text-gray-600"><span class="font-bold">+2,500</span> مطعم يثق بنا</p>
-            </div>
-          </div>
         </div>
-        <div class="relative fade-in">
-          <div class="bg-white rounded-3xl shadow-2xl p-6">
-            <div class="flex items-center justify-between mb-4">
-              <div><h3 class="font-bold text-xl">مطعم الأصالة</h3><p class="text-sm text-gray-500">القائمة الرئيسية</p></div>
-              <div class="w-12 h-12 gradient-bg rounded-full flex items-center justify-center"><i class="fas fa-qrcode text-white text-xl"></i></div>
-            </div>
-            <div class="space-y-3">
-              <div class="flex items-center gap-3 bg-gray-50 p-3 rounded-xl">
-                <div class="w-16 h-16 rounded-lg bg-orange-100 flex items-center justify-center text-3xl">🍕</div>
-                <div class="flex-1"><h4 class="font-bold">بيتزا مارغريتا</h4><p class="text-xs text-gray-500">جبن موزاريلا، طماطم، ريحان</p></div>
-                <span class="font-bold text-orange-500">45 ر.س</span>
-              </div>
-              <div class="flex items-center gap-3 bg-gray-50 p-3 rounded-xl">
-                <div class="w-16 h-16 rounded-lg bg-yellow-100 flex items-center justify-center text-3xl">🍔</div>
-                <div class="flex-1"><h4 class="font-bold">برجر كلاسيك</h4><p class="text-xs text-gray-500">لحم بقري، جبنة شيدر</p></div>
-                <span class="font-bold text-orange-500">38 ر.س</span>
-              </div>
-              <div class="flex items-center gap-3 bg-gray-50 p-3 rounded-xl">
-                <div class="w-16 h-16 rounded-lg bg-green-100 flex items-center justify-center text-3xl">🥗</div>
-                <div class="flex-1"><h4 class="font-bold">سلطة صحية</h4><p class="text-xs text-gray-500">خضروات طازجة، صلصة خاصة</p></div>
-                <span class="font-bold text-orange-500">28 ر.س</span>
-              </div>
-            </div>
-          </div>
-          <div class="absolute -top-4 -left-4 bg-white rounded-2xl shadow-xl p-3 flex items-center gap-2">
-            <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center"><i class="fas fa-chart-line text-green-500"></i></div>
-            <div><p class="text-xs text-gray-500">المبيعات</p><p class="font-bold text-green-500 text-sm">+127%</p></div>
-          </div>
-          <div class="absolute -bottom-4 -right-4 bg-white rounded-2xl shadow-xl p-3 flex items-center gap-2">
-            <div class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center"><i class="fas fa-mobile-alt text-orange-500"></i></div>
-            <div><p class="text-xs text-gray-500">المسح</p><p class="font-bold text-sm">1,248</p></div>
-          </div>
+        
+        <!-- Mobile Menu -->
+        <div class="mobile-menu" id="mobileMenu">
+            <a href="#features">المميزات</a>
+            <a href="#how-it-works">كيف يعمل</a>
+            <a href="#pricing">الأسعار</a>
+            <a href="#testimonials">آراء العملاء</a>
+            <hr>
+            <a href="admin/login.html" class="btn btn-secondary btn-sm w-100 mb-2">تسجيل الدخول</a>
+            <a href="admin/register.html" class="btn btn-primary btn-sm w-100">ابدأ مجاناً</a>
         </div>
-      </div>
-    </div>
-  </section>
+    </nav>
 
-  <!-- Stats -->
-  <section class="py-12 bg-white">
-    <div class="container mx-auto px-6">
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
-        <div class="text-center"><div class="text-4xl font-extrabold gradient-text mb-1">2,500+</div><p class="text-gray-600 text-sm">مطعم نشط</p></div>
-        <div class="text-center"><div class="text-4xl font-extrabold gradient-text mb-1">50K+</div><p class="text-gray-600 text-sm">قائمة تم إنشاؤها</p></div>
-        <div class="text-center"><div class="text-4xl font-extrabold gradient-text mb-1">1M+</div><p class="text-gray-600 text-sm">مسح شهرياً</p></div>
-        <div class="text-center"><div class="text-4xl font-extrabold gradient-text mb-1">4.9/5</div><p class="text-gray-600 text-sm">تقييم العملاء</p></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Features -->
-  <section class="py-16">
-    <div class="container mx-auto px-6">
-      <div class="text-center mb-12">
-        <span class="inline-block bg-orange-100 text-orange-600 px-4 py-2 rounded-full text-sm font-semibold mb-4">المميزات</span>
-        <h2 class="text-3xl md:text-4xl font-extrabold mb-3">كل ما تحتاجه في <span class="gradient-text">مكان واحد</span></h2>
-      </div>
-      <div class="grid md:grid-cols-3 gap-6">
-        <div class="card-hover bg-white p-6 rounded-2xl border border-gray-100">
-          <div class="w-14 h-14 gradient-bg rounded-2xl flex items-center justify-center mb-4"><i class="fas fa-qrcode text-white text-xl"></i></div>
-          <h3 class="text-xl font-bold mb-2">QR Code ذكي</h3>
-          <p class="text-gray-600 text-sm">أنشئ رموز QR مخصصة لكل طاولة مع تتبع تفاعلي.</p>
-        </div>
-        <div class="card-hover bg-white p-6 rounded-2xl border border-gray-100">
-          <div class="w-14 h-14 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center mb-4"><i class="fas fa-palette text-white text-xl"></i></div>
-          <h3 class="text-xl font-bold mb-2">تصاميم احترافية</h3>
-          <p class="text-gray-600 text-sm">قوالب جاهزة أو صمم قائمتك بألوان علامتك التجارية.</p>
-        </div>
-        <div class="card-hover bg-white p-6 rounded-2xl border border-gray-100">
-          <div class="w-14 h-14 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center mb-4"><i class="fas fa-language text-white text-xl"></i></div>
-          <h3 class="text-xl font-bold mb-2">متعدد اللغات</h3>
-          <p class="text-gray-600 text-sm">دعم كامل للعربية والإنجليزية وأكثر من 20 لغة.</p>
-        </div>
-        <div class="card-hover bg-white p-6 rounded-2xl border border-gray-100">
-          <div class="w-14 h-14 bg-gradient-to-br from-green-500 to-emerald-500 rounded-2xl flex items-center justify-center mb-4"><i class="fas fa-chart-bar text-white text-xl"></i></div>
-          <h3 class="text-xl font-bold mb-2">تحليلات متقدمة</h3>
-          <p class="text-gray-600 text-sm">تابع أداء قائمتك والأطباق الأكثر طلباً.</p>
-        </div>
-        <div class="card-hover bg-white p-6 rounded-2xl border border-gray-100">
-          <div class="w-14 h-14 bg-gradient-to-br from-red-500 to-orange-500 rounded-2xl flex items-center justify-center mb-4"><i class="fas fa-bolt text-white text-xl"></i></div>
-          <h3 class="text-xl font-bold mb-2">تحديث فوري</h3>
-          <p class="text-gray-600 text-sm">غيّر الأسعار وأضف أطباقاً بضغطة زر واحدة.</p>
-        </div>
-        <div class="card-hover bg-white p-6 rounded-2xl border border-gray-100">
-          <div class="w-14 h-14 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-2xl flex items-center justify-center mb-4"><i class="fas fa-shield-alt text-white text-xl"></i></div>
-          <h3 class="text-xl font-bold mb-2">آمن وموثوق</h3>
-          <p class="text-gray-600 text-sm">حماية SSL ونسخ احتياطية تلقائية 24/7.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- CTA -->
-  <section class="py-16">
-    <div class="container mx-auto px-6">
-      <div class="gradient-bg rounded-3xl p-10 md:p-16 text-center text-white relative overflow-hidden">
-        <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-32 translate-x-32"></div>
-        <div class="absolute bottom-0 left-0 w-64 h-64 bg-white/10 rounded-full translate-y-32 -translate-x-32"></div>
-        <div class="relative z-10">
-          <h2 class="text-3xl md:text-4xl font-extrabold mb-4">جاهز لتحويل مطعمك؟</h2>
-          <p class="text-lg text-white/90 mb-8 max-w-2xl mx-auto">انضم إلى آلاف المطاعم. ابدأ تجربتك المجانية اليوم.</p>
-          <button onclick="navigateTo('register')" class="bg-white text-orange-500 px-8 py-4 rounded-full font-bold text-lg hover:bg-gray-100 transition">
-            <i class="fas fa-rocket ml-2"></i> ابدأ مجاناً الآن
-          </button>
-        </div>
-      </div>
-    </div>
-  </section>
-</div>
-
-<!-- ==================== LOGIN PAGE ==================== -->
-<div id="page-login" class="page">
-  <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 to-yellow-50 py-20 px-6">
-    <div class="w-full max-w-md">
-      <div class="bg-white rounded-3xl shadow-xl p-8">
-        <div class="text-center mb-8">
-          <div class="w-16 h-16 gradient-bg rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <i class="fas fa-utensils text-white text-2xl"></i>
-          </div>
-          <h2 class="text-2xl font-extrabold">مرحباً بعودتك!</h2>
-          <p class="text-gray-500 text-sm mt-1">سجل دخولك للوصول إلى لوحة التحكم</p>
-        </div>
-        <form onsubmit="event.preventDefault(); navigateTo('dashboard');" class="space-y-4">
-          <div>
-            <label class="block text-sm font-semibold mb-2">البريد الإلكتروني</label>
-            <div class="relative">
-              <input type="email" value="admin@restaurant.com" class="w-full px-4 py-3 pr-10 rounded-xl border border-gray-200 focus:border-orange-500 focus:outline-none" placeholder="example@email.com">
-              <i class="fas fa-envelope absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-            </div>
-          </div>
-          <div>
-            <label class="block text-sm font-semibold mb-2">كلمة المرور</label>
-            <div class="relative">
-              <input type="password" value="123456" class="w-full px-4 py-3 pr-10 rounded-xl border border-gray-200 focus:border-orange-500 focus:outline-none" placeholder="••••••••">
-              <i class="fas fa-lock absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-              <button type="button" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-orange-500"><i class="fas fa-eye"></i></button>
-            </div>
-          </div>
-          <div class="flex items-center justify-between">
-            <label class="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" checked class="w-4 h-4 accent-orange-500">
-              <span class="text-sm">تذكرني</span>
-            </label>
-            <a href="#" class="text-sm text-orange-500 hover:underline">نسيت كلمة المرور؟</a>
-          </div>
-          <button type="submit" class="btn-primary w-full text-white py-3 rounded-xl font-bold text-lg">تسجيل الدخول</button>
-        </form>
-        <div class="mt-6">
-          <div class="relative text-center"><span class="bg-white px-4 text-sm text-gray-400 relative z-10">أو سجل دخولك بـ</span><div class="absolute top-1/2 left-0 right-0 border-t"></div></div>
-          <div class="grid grid-cols-2 gap-3 mt-4">
-            <button class="flex items-center justify-center gap-2 py-3 rounded-xl border border-gray-200 hover:border-orange-500 transition"><i class="fab fa-google text-red-500"></i><span class="text-sm">Google</span></button>
-            <button class="flex items-center justify-center gap-2 py-3 rounded-xl border border-gray-200 hover:border-orange-500 transition"><i class="fab fa-apple text-gray-800"></i><span class="text-sm">Apple</span></button>
-          </div>
-        </div>
-        <p class="text-center text-sm text-gray-500 mt-6">ليس لديك حساب؟ <a onclick="navigateTo('register')" class="text-orange-500 font-semibold cursor-pointer hover:underline">أنشئ حساباً جديداً</a></p>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ==================== REGISTER PAGE ==================== -->
-<div id="page-register" class="page">
-  <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 to-yellow-50 py-20 px-6">
-    <div class="w-full max-w-md">
-      <div class="bg-white rounded-3xl shadow-xl p-8">
-        <div class="text-center mb-8">
-          <div class="w-16 h-16 gradient-bg rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <i class="fas fa-user-plus text-white text-2xl"></i>
-          </div>
-          <h2 class="text-2xl font-extrabold">أنشئ حسابك</h2>
-          <p class="text-gray-500 text-sm mt-1">ابدأ تجربتك المجانية الآن</p>
-        </div>
-        <form onsubmit="event.preventDefault(); navigateTo('dashboard');" class="space-y-4">
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block text-sm font-semibold mb-2">الاسم الأول</label>
-              <input type="text" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-orange-500 focus:outline-none" placeholder="أحمد">
-            </div>
-            <div>
-              <label class="block text-sm font-semibold mb-2">الاسم الأخير</label>
-              <input type="text" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-orange-500 focus:outline-none" placeholder="محمد">
-            </div>
-          </div>
-          <div>
-            <label class="block text-sm font-semibold mb-2">اسم المطعم</label>
-            <input type="text" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-orange-500 focus:outline-none" placeholder="مطعم الأصالة">
-          </div>
-          <div>
-            <label class="block text-sm font-semibold mb-2">البريد الإلكتروني</label>
-            <input type="email" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-orange-500 focus:outline-none" placeholder="example@email.com">
-          </div>
-          <div>
-            <label class="block text-sm font-semibold mb-2">كلمة المرور</label>
-            <input type="password" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-orange-500 focus:outline-none" placeholder="••••••••">
-            <div class="flex gap-1 mt-2">
-              <div class="h-1 flex-1 bg-orange-500 rounded"></div>
-              <div class="h-1 flex-1 bg-orange-500 rounded"></div>
-              <div class="h-1 flex-1 bg-orange-500 rounded"></div>
-              <div class="h-1 flex-1 bg-gray-200 rounded"></div>
-            </div>
-            <p class="text-xs text-gray-400 mt-1">قوة كلمة المرور: جيدة</p>
-          </div>
-          <label class="flex items-start gap-2 cursor-pointer">
-            <input type="checkbox" class="w-4 h-4 accent-orange-500 mt-1">
-            <span class="text-sm text-gray-600">أوافق على <a href="#" class="text-orange-500 hover:underline">الشروط والأحكام</a> و<a href="#" class="text-orange-500 hover:underline">سياسة الخصوصية</a></span>
-          </label>
-          <button type="submit" class="btn-primary w-full text-white py-3 rounded-xl font-bold text-lg">إنشاء الحساب</button>
-        </form>
-        <p class="text-center text-sm text-gray-500 mt-6">لديك حساب بالفعل؟ <a onclick="navigateTo('login')" class="text-orange-500 font-semibold cursor-pointer hover:underline">سجل دخولك</a></p>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ==================== DASHBOARD PAGE ==================== -->
-<div id="page-dashboard" class="page">
-  <div class="p-6 fade-in">
-    <div class="flex flex-col md:flex-row md:items-center justify-between mb-8">
-      <div>
-        <h1 class="text-2xl font-extrabold">مرحباً، أحمد 👋</h1>
-        <p class="text-gray-500">إليك ملخص أداء مطعمك اليوم</p>
-      </div>
-      <div class="flex gap-3 mt-4 md:mt-0">
-        <select class="px-4 py-2 rounded-xl border border-gray-200 focus:border-orange-500 focus:outline-none text-sm">
-          <option>آخر 7 أيام</option>
-          <option>آخر 30 يوم</option>
-          <option>هذا الشهر</option>
-        </select>
-        <button onclick="navigateTo('menu-builder')" class="btn-primary text-white px-4 py-2 rounded-xl font-semibold text-sm flex items-center gap-2">
-          <i class="fas fa-plus"></i> إضافة طبق
-        </button>
-      </div>
-    </div>
-
-    <!-- Stats Cards -->
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-      <div class="stat-card bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl p-5 text-white">
-        <div class="flex items-center justify-between mb-3">
-          <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center"><i class="fas fa-eye"></i></div>
-          <span class="text-xs bg-white/20 px-2 py-1 rounded-full">+12%</span>
-        </div>
-        <div class="text-2xl font-extrabold">3,847</div>
-        <p class="text-white/80 text-sm">مشاهدة القائمة</p>
-      </div>
-      <div class="stat-card bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl p-5 text-white">
-        <div class="flex items-center justify-between mb-3">
-          <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center"><i class="fas fa-qrcode"></i></div>
-          <span class="text-xs bg-white/20 px-2 py-1 rounded-full">+8%</span>
-        </div>
-        <div class="text-2xl font-extrabold">1,248</div>
-        <p class="text-white/80 text-sm">عمليات المسح</p>
-      </div>
-      <div class="stat-card bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl p-5 text-white">
-        <div class="flex items-center justify-between mb-3">
-          <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center"><i class="fas fa-receipt"></i></div>
-          <span class="text-xs bg-white/20 px-2 py-1 rounded-full">+23%</span>
-        </div>
-        <div class="text-2xl font-extrabold">156</div>
-        <p class="text-white/80 text-sm">طلب اليوم</p>
-      </div>
-      <div class="stat-card bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl p-5 text-white">
-        <div class="flex items-center justify-between mb-3">
-          <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center"><i class="fas fa-star"></i></div>
-          <span class="text-xs bg-white/20 px-2 py-1 rounded-full">ممتاز</span>
-        </div>
-        <div class="text-2xl font-extrabold">4.8</div>
-        <p class="text-white/80 text-sm">تقييم العملاء</p>
-      </div>
-    </div>
-
-    <div class="grid lg:grid-cols-3 gap-6">
-      <!-- Chart Area -->
-      <div class="lg:col-span-2 bg-white rounded-2xl p-6 shadow-sm">
-        <div class="flex items-center justify-between mb-6">
-          <h3 class="font-bold text-lg">إحصائيات المشاهدات</h3>
-          <div class="flex gap-2">
-            <button class="tab-btn active px-3 py-1 text-sm rounded-lg">أسبوعي</button>
-            <button class="tab-btn px-3 py-1 text-sm rounded-lg text-gray-400">شهري</button>
-          </div>
-        </div>
-        <div class="flex items-end gap-3 h-48">
-          <div class="flex-1 flex flex-col items-center gap-2">
-            <div class="w-full bg-orange-200 rounded-t-lg" style="height: 60%"></div>
-            <span class="text-xs text-gray-500">سبت</span>
-          </div>
-          <div class="flex-1 flex flex-col items-center gap-2">
-            <div class="w-full bg-orange-300 rounded-t-lg" style="height: 80%"></div>
-            <span class="text-xs text-gray-500">أحد</span>
-          </div>
-          <div class="flex-1 flex flex-col items-center gap-2">
-            <div class="w-full bg-orange-400 rounded-t-lg" style="height: 45%"></div>
-            <span class="text-xs text-gray-500">اثنين</span>
-          </div>
-          <div class="flex-1 flex flex-col items-center gap-2">
-            <div class="w-full bg-orange-500 rounded-t-lg" style="height: 90%"></div>
-            <span class="text-xs text-gray-500">ثلاثاء</span>
-          </div>
-          <div class="flex-1 flex flex-col items-center gap-2">
-            <div class="w-full gradient-bg rounded-t-lg" style="height: 100%"></div>
-            <span class="text-xs text-gray-500">أربعاء</span>
-          </div>
-          <div class="flex-1 flex flex-col items-center gap-2">
-            <div class="w-full bg-orange-400 rounded-t-lg" style="height: 70%"></div>
-            <span class="text-xs text-gray-500">خميس</span>
-          </div>
-          <div class="flex-1 flex flex-col items-center gap-2">
-            <div class="w-full bg-orange-300 rounded-t-lg" style="height: 85%"></div>
-            <span class="text-xs text-gray-500">جمعة</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Popular Items -->
-      <div class="bg-white rounded-2xl p-6 shadow-sm">
-        <h3 class="font-bold text-lg mb-4">الأطباق الأكثر طلباً</h3>
-        <div class="space-y-4">
-          <div class="flex items-center gap-3">
-            <span class="text-2xl">🍕</span>
-            <div class="flex-1">
-              <div class="flex justify-between mb-1"><span class="font-semibold text-sm">بيتزا مارغريتا</span><span class="text-sm text-orange-500 font-bold">42</span></div>
-              <div class="progress-bar"><div class="progress-fill" style="width: 85%"></div></div>
-            </div>
-          </div>
-          <div class="flex items-center gap-3">
-            <span class="text-2xl">🍔</span>
-            <div class="flex-1">
-              <div class="flex justify-between mb-1"><span class="font-semibold text-sm">برجر كلاسيك</span><span class="text-sm text-orange-500 font-bold">38</span></div>
-              <div class="progress-bar"><div class="progress-fill" style="width: 75%"></div></div>
-            </div>
-          </div>
-          <div class="flex items-center gap-3">
-            <span class="text-2xl">🥤</span>
-            <div class="flex-1">
-              <div class="flex justify-between mb-1"><span class="font-semibold text-sm">عصير طازج</span><span class="text-sm text-orange-500 font-bold">31</span></div>
-              <div class="progress-bar"><div class="progress-fill" style="width: 62%"></div></div>
-            </div>
-          </div>
-          <div class="flex items-center gap-3">
-            <span class="text-2xl">🍰</span>
-            <div class="flex-1">
-              <div class="flex justify-between mb-1"><span class="font-semibold text-sm">تشيز كيك</span><span class="text-sm text-orange-500 font-bold">24</span></div>
-              <div class="progress-bar"><div class="progress-fill" style="width: 48%"></div></div>
-            </div>
-          </div>
-          <div class="flex items-center gap-3">
-            <span class="text-2xl">🥗</span>
-            <div class="flex-1">
-              <div class="flex justify-between mb-1"><span class="font-semibold text-sm">سلطة سيزر</span><span class="text-sm text-orange-500 font-bold">19</span></div>
-              <div class="progress-bar"><div class="progress-fill" style="width: 38%"></div></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Recent Orders -->
-    <div class="bg-white rounded-2xl p-6 shadow-sm mt-6">
-      <div class="flex items-center justify-between mb-4">
-        <h3 class="font-bold text-lg">آخر الطلبات</h3>
-        <a onclick="navigateTo('orders')" class="text-orange-500 text-sm font-semibold cursor-pointer hover:underline">عرض الكل</a>
-      </div>
-      <div class="overflow-x-auto">
-        <table class="w-full text-sm">
-          <thead>
-            <tr class="text-gray-500 border-b">
-              <th class="text-right pb-3 font-semibold">رقم الطلب</th>
-              <th class="text-right pb-3 font-semibold">الطاولة</th>
-              <th class="text-right pb-3 font-semibold">الأصناف</th>
-              <th class="text-right pb-3 font-semibold">المبلغ</th>
-              <th class="text-right pb-3 font-semibold">الحالة</th>
-              <th class="text-right pb-3 font-semibold">الوقت</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr class="border-b hover:bg-gray-50">
-              <td class="py-3 font-bold">#1042</td>
-              <td class="py-3">طاولة 5</td>
-              <td class="py-3">بيتزا، عصير</td>
-              <td class="py-3 font-bold">83 ر.س</td>
-              <td class="py-3"><span class="bg-green-100 text-green-600 px-2 py-1 rounded-full text-xs">مكتمل</span></td>
-              <td class="py-3 text-gray-500">منذ 5 دقائق</td>
-            </tr>
-            <tr class="border-b hover:bg-gray-50">
-              <td class="py-3 font-bold">#1041</td>
-              <td class="py-3">طاولة 12</td>
-              <td class="py-3">برجر، بطاطس، كولا</td>
-              <td class="py-3 font-bold">95 ر.س</td>
-              <td class="py-3"><span class="bg-yellow-100 text-yellow-600 px-2 py-1 rounded-full text-xs">قيد التحضير</span></td>
-              <td class="py-3 text-gray-500">منذ 12 دقيقة</td>
-            </tr>
-            <tr class="border-b hover:bg-gray-50">
-              <td class="py-3 font-bold">#1040</td>
-              <td class="py-3">طاولة 3</td>
-              <td class="py-3">سلطة سيزر</td>
-              <td class="py-3 font-bold">35 ر.س</td>
-              <td class="py-3"><span class="bg-blue-100 text-blue-600 px-2 py-1 rounded-full text-xs">جديد</span></td>
-              <td class="py-3 text-gray-500">منذ 18 دقيقة</td>
-            </tr>
-            <tr class="hover:bg-gray-50">
-              <td class="py-3 font-bold">#1039</td>
-              <td class="py-3">طاولة 8</td>
-              <td class="py-3">باستا، تيراميسو</td>
-              <td class="py-3 font-bold">120 ر.س</td>
-              <td class="py-3"><span class="bg-green-100 text-green-600 px-2 py-1 rounded-full text-xs">مكتمل</span></td>
-              <td class="py-3 text-gray-500">منذ 25 دقيقة</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ==================== MY MENUS PAGE ==================== -->
-<div id="page-my-menus" class="page">
-  <div class="p-6 fade-in">
-    <div class="flex flex-col md:flex-row md:items-center justify-between mb-8">
-      <div><h1 class="text-2xl font-extrabold">قوائمي</h1><p class="text-gray-500">إدارة جميع قوائم مطعمك</p></div>
-      <button onclick="navigateTo('menu-builder')" class="btn-primary text-white px-5 py-3 rounded-xl font-semibold flex items-center gap-2 mt-4 md:mt-0">
-        <i class="fas fa-plus"></i> إنشاء قائمة جديدة
-      </button>
-    </div>
-
-    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <div class="card-hover bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100">
-        <div class="h-40 gradient-bg flex items-center justify-center relative">
-          <div class="bg-white/95 rounded-xl p-4 w-3/4 shadow-lg">
-            <div class="flex justify-between items-center mb-2"><span class="font-bold text-sm">🍕 القائمة الرئيسية</span><span class="text-xs bg-green-100 text-green-600 px-2 py-0.5 rounded-full">نشطة</span></div>
-            <div class="text-xs text-gray-500">12 طبق • 4 أقسام</div>
-          </div>
-        </div>
-        <div class="p-5">
-          <div class="flex items-center justify-between mb-3">
-            <h3 class="font-bold">القائمة الرئيسية</h3>
-            <span class="text-xs text-gray-400">آخر تعديل: اليوم</span>
-          </div>
-          <div class="flex items-center gap-4 text-sm text-gray-500 mb-4">
-            <span><i class="fas fa-eye ml-1"></i> 1,248 مشاهدة</span>
-            <span><i class="fas fa-qrcode ml-1"></i> 3 رموز</span>
-          </div>
-          <div class="flex gap-2">
-            <button class="flex-1 bg-orange-50 text-orange-500 py-2 rounded-lg text-sm font-semibold hover:bg-orange-100 transition"><i class="fas fa-edit ml-1"></i> تعديل</button>
-            <button class="flex-1 bg-gray-50 text-gray-600 py-2 rounded-lg text-sm font-semibold hover:bg-gray-100 transition"><i class="fas fa-share ml-1"></i> مشاركة</button>
-            <button class="bg-red-50 text-red-500 py-2 px-3 rounded-lg text-sm hover:bg-red-100 transition"><i class="fas fa-trash"></i></button>
-          </div>
-        </div>
-      </div>
-
-      <div class="card-hover bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100">
-        <div class="h-40 bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center relative">
-          <div class="bg-white/95 rounded-xl p-4 w-3/4 shadow-lg">
-            <div class="flex justify-between items-center mb-2"><span class="font-bold text-sm">🍰 قائمة الحلويات</span><span class="text-xs bg-green-100 text-green-600 px-2 py-0.5 rounded-full">نشطة</span></div>
-            <div class="text-xs text-gray-500">8 أطباق • قسم واحد</div>
-          </div>
-        </div>
-        <div class="p-5">
-          <div class="flex items-center justify-between mb-3">
-            <h3 class="font-bold">قائمة الحلويات</h3>
-            <span class="text-xs text-gray-400">آخر تعديل: أمس</span>
-          </div>
-          <div class="flex items-center gap-4 text-sm text-gray-500 mb-4">
-            <span><i class="fas fa-eye ml-1"></i> 856 مشاهدة</span>
-            <span><i class="fas fa-qrcode ml-1"></i> 2 رمز</span>
-          </div>
-          <div class="flex gap-2">
-            <button class="flex-1 bg-orange-50 text-orange-500 py-2 rounded-lg text-sm font-semibold hover:bg-orange-100 transition"><i class="fas fa-edit ml-1"></i> تعديل</button>
-            <button class="flex-1 bg-gray-50 text-gray-600 py-2 rounded-lg text-sm font-semibold hover:bg-gray-100 transition"><i class="fas fa-share ml-1"></i> مشاركة</button>
-            <button class="bg-red-50 text-red-500 py-2 px-3 rounded-lg text-sm hover:bg-red-100 transition"><i class="fas fa-trash"></i></button>
-          </div>
-        </div>
-      </div>
-
-      <div class="card-hover bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100">
-        <div class="h-40 bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center relative">
-          <div class="bg-white/95 rounded-xl p-4 w-3/4 shadow-lg">
-            <div class="flex justify-between items-center mb-2"><span class="font-bold text-sm">🥤 قائمة المشروبات</span><span class="text-xs bg-yellow-100 text-yellow-600 px-2 py-0.5 rounded-full">مسودة</span></div>
-            <div class="text-xs text-gray-500">5 أطباق • قسم واحد</div>
-          </div>
-        </div>
-        <div class="p-5">
-          <div class="flex items-center justify-between mb-3">
-            <h3 class="font-bold">قائمة المشروبات</h3>
-            <span class="text-xs text-gray-400">آخر تعديل: قبل 3 أيام</span>
-          </div>
-          <div class="flex items-center gap-4 text-sm text-gray-500 mb-4">
-            <span><i class="fas fa-eye ml-1"></i> 0 مشاهدة</span>
-            <span><i class="fas fa-qrcode ml-1"></i> 0 رمز</span>
-          </div>
-          <div class="flex gap-2">
-            <button onclick="navigateTo('menu-builder')" class="flex-1 bg-orange-50 text-orange-500 py-2 rounded-lg text-sm font-semibold hover:bg-orange-100 transition"><i class="fas fa-edit ml-1"></i> تعديل</button>
-            <button class="flex-1 bg-gray-50 text-gray-600 py-2 rounded-lg text-sm font-semibold hover:bg-gray-100 transition"><i class="fas fa-share ml-1"></i> مشاركة</button>
-            <button class="bg-red-50 text-red-500 py-2 px-3 rounded-lg text-sm hover:bg-red-100 transition"><i class="fas fa-trash"></i></button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Add New Card -->
-      <div onclick="navigateTo('menu-builder')" class="card-hover bg-white rounded-2xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center p-8 cursor-pointer hover:border-orange-500 min-h-[320px]">
-        <div class="w-16 h-16 bg-orange-50 rounded-full flex items-center justify-center mb-4">
-          <i class="fas fa-plus text-orange-500 text-2xl"></i>
-        </div>
-        <h3 class="font-bold text-lg mb-1">إنشاء قائمة جديدة</h3>
-        <p class="text-gray-400 text-sm text-center">ابدأ بإنشاء قائمة رقمية جديدة لمطعمك</p>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ==================== MENU BUILDER PAGE ==================== -->
-<div id="page-menu-builder" class="page">
-  <div class="p-6 fade-in">
-    <div class="flex flex-col md:flex-row md:items-center justify-between mb-8">
-      <div>
-        <h1 class="text-2xl font-extrabold">منشئ القائمة</h1>
-        <p class="text-gray-500">أضف وعدّل أطباق قائمتك</p>
-      </div>
-      <div class="flex gap-3 mt-4 md:mt-0">
-        <button class="bg-white border border-gray-200 px-4 py-2 rounded-xl text-sm font-semibold hover:border-orange-500 transition"><i class="fas fa-eye ml-1"></i> معاينة</button>
-        <button class="btn-primary text-white px-5 py-2 rounded-xl font-semibold text-sm"><i class="fas fa-save ml-1"></i> حفظ ونشر</button>
-      </div>
-    </div>
-
-    <div class="grid lg:grid-cols-3 gap-6">
-      <!-- Menu Editor -->
-      <div class="lg:col-span-2 space-y-6">
-        <!-- Restaurant Info -->
-        <div class="bg-white rounded-2xl p-6 shadow-sm">
-          <h3 class="font-bold text-lg mb-4">معلومات المطعم</h3>
-          <div class="grid md:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-semibold mb-2">اسم المطعم</label>
-              <input type="text" value="مطعم الأصالة" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-orange-500 focus:outline-none">
-            </div>
-            <div>
-              <label class="block text-sm font-semibold mb-2">وصف المطعم</label>
-              <input type="text" value="مأكولات شرقية أصيلة" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-orange-500 focus:outline-none">
-            </div>
-            <div>
-              <label class="block text-sm font-semibold mb-2">اللغة الأساسية</label>
-              <select class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-orange-500 focus:outline-none">
-                <option selected>العربية</option>
-                <option>English</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-sm font-semibold mb-2">العملة</label>
-              <select class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-orange-500 focus:outline-none">
-                <option selected>ريال سعودي (ر.س)</option>
-                <option>درهم إماراتي (د.إ)</option>
-                <option>دينار كويتي (د.ك)</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <!-- Categories -->
-        <div class="bg-white rounded-2xl p-6 shadow-sm">
-          <div class="flex items-center justify-between mb-4">
-            <h3 class="font-bold text-lg">الأقسام</h3>
-            <button onclick="addCategory()" class="text-orange-500 text-sm font-semibold hover:underline"><i class="fas fa-plus ml-1"></i> إضافة قسم</button>
-          </div>
-          <div id="categoriesList" class="flex flex-wrap gap-2">
-            <span class="bg-orange-500 text-white px-4 py-2 rounded-full text-sm font-semibold cursor-pointer">المقبلات 🥗</span>
-            <span class="bg-gray-100 text-gray-600 px-4 py-2 rounded-full text-sm font-semibold cursor-pointer hover:bg-gray-200">الأطباق الرئيسية 🍖</span>
-            <span class="bg-gray-100 text-gray-600 px-4 py-2 rounded-full text-sm font-semibold cursor-pointer hover:bg-gray-200">البيتزا 🍕</span>
-            <span class="bg-gray-100 text-gray-600 px-4 py-2 rounded-full text-sm font-semibold cursor-pointer hover:bg-gray-200">المشروبات 🥤</span>
-            <span class="bg-gray-100 text-gray-600 px-4 py-2 rounded-full text-sm font-semibold cursor-pointer hover:bg-gray-200">الحلويات 🍰</span>
-          </div>
-        </div>
-
-        <!-- Menu Items -->
-        <div class="bg-white rounded-2xl p-6 shadow-sm">
-          <div class="flex items-center justify-between mb-4">
-            <h3 class="font-bold text-lg">الأطباق - المقبلات 🥗</h3>
-            <button onclick="openAddItemModal()" class="btn-primary text-white px-4 py-2 rounded-xl text-sm font-semibold"><i class="fas fa-plus ml-1"></i> إضافة طبق</button>
-          </div>
-          
-          <div id="menuItemsList" class="space-y-3">
-            <div class="menu-item-card flex items-center gap-4 p-4 rounded-xl border border-gray-100 hover:border-orange-300">
-              <div class="drag-handle text-gray-300 hover:text-gray-500"><i class="fas fa-grip-vertical"></i></div>
-              <div class="w-16 h-16 bg-orange-50 rounded-xl flex items-center justify-center text-3xl">🥗</div>
-              <div class="flex-1">
-                <h4 class="font-bold">سلطة سيزر</h4>
-                <p class="text-xs text-gray-500">خس روميني، كروتون، صلصة سيزر، جبنة بارميزان</p>
-                <div class="flex items-center gap-2 mt-1">
-                  <span class="text-orange-500 font-bold text-sm">35 ر.س</span>
-                  <span class="bg-green-100 text-green-600 text-xs px-2 py-0.5 rounded-full">متوفر</span>
-                  <span class="bg-red-100 text-red-600 text-xs px-2 py-0.5 rounded-full">حار 🌶️</span>
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-bg"></div>
+        <div class="container hero-container">
+            <div class="hero-content fade-in">
+                <div class="hero-badge">
+                    <i class="fas fa-star"></i>
+                    المنصة الأولى للقوائم الرقمية في الشرق الأوسط
                 </div>
-              </div>
-              <div class="flex gap-2">
-                <button class="w-8 h-8 bg-gray-50 rounded-lg flex items-center justify-center hover:bg-orange-50 hover:text-orange-500 transition"><i class="fas fa-edit text-xs"></i></button>
-                <button class="w-8 h-8 bg-gray-50 rounded-lg flex items-center justify-center hover:bg-red-50 hover:text-red-500 transition"><i class="fas fa-trash text-xs"></i></button>
-              </div>
-            </div>
-
-            <div class="menu-item-card flex items-center gap-4 p-4 rounded-xl border border-gray-100 hover:border-orange-300">
-              <div class="drag-handle text-gray-300 hover:text-gray-500"><i class="fas fa-grip-vertical"></i></div>
-              <div class="w-16 h-16 bg-yellow-50 rounded-xl flex items-center justify-center text-3xl">🧆</div>
-              <div class="flex-1">
-                <h4 class="font-bold">حمص بالطحينة</h4>
-                <p class="text-xs text-gray-500">حمص مطحون، طحينة، زيت زيتون، ليمون</p>
-                <div class="flex items-center gap-2 mt-1">
-                  <span class="text-orange-500 font-bold text-sm">18 ر.س</span>
-                  <span class="bg-green-100 text-green-600 text-xs px-2 py-0.5 rounded-full">متوفر</span>
-                  <span class="bg-blue-100 text-blue-600 text-xs px-2 py-0.5 rounded-full">نباتي 🌱</span>
+                
+                <h1 class="hero-title">
+                    حوّل قائمة مطعمك إلى
+                    <span class="gradient-text">تجربة رقمية مذهلة</span>
+                </h1>
+                
+                <p class="hero-subtitle">
+                    أنشئ قائمة طعام احترافية في دقائق، استقبل الطلبات عبر واتساب، 
+                    وتابع أداء مطعمك من أي مكان. بدون برمجة، بدون تعقيد!
+                </p>
+                
+                <div class="hero-actions">
+                    <a href="admin/register.html" class="btn btn-primary btn-lg">
+                        <i class="fas fa-rocket"></i>
+                        ابدأ مجاناً الآن
+                    </a>
+                    <a href="#demo" class="btn btn-secondary btn-lg">
+                        <i class="fas fa-play-circle"></i>
+                        شاهد العرض التوضيحي
+                    </a>
                 </div>
-              </div>
-              <div class="flex gap-2">
-                <button class="w-8 h-8 bg-gray-50 rounded-lg flex items-center justify-center hover:bg-orange-50 hover:text-orange-500 transition"><i class="fas fa-edit text-xs"></i></button>
-                <button class="w-8 h-8 bg-gray-50 rounded-lg flex items-center justify-center hover:bg-red-50 hover:text-red-500 transition"><i class="fas fa-trash text-xs"></i></button>
-              </div>
-            </div>
-
-            <div class="menu-item-card flex items-center gap-4 p-4 rounded-xl border border-gray-100 hover:border-orange-300">
-              <div class="drag-handle text-gray-300 hover:text-gray-500"><i class="fas fa-grip-vertical"></i></div>
-              <div class="w-16 h-16 bg-red-50 rounded-xl flex items-center justify-center text-3xl">🍗</div>
-              <div class="flex-1">
-                <h4 class="font-bold">أجنحة دجاج حارة</h4>
-                <p class="text-xs text-gray-500">أجنحة دجاج مقلية بصلصة حارة خاصة</p>
-                <div class="flex items-center gap-2 mt-1">
-                  <span class="text-orange-500 font-bold text-sm">28 ر.س</span>
-                  <span class="bg-yellow-100 text-yellow-600 text-xs px-2 py-0.5 rounded-full">نفذ ⚠️</span>
-                  <span class="bg-red-100 text-red-600 text-xs px-2 py-0.5 rounded-full">حار جداً 🌶️🌶️</span>
+                
+                <div class="hero-stats">
+                    <div class="stat-item">
+                        <strong>500+</strong>
+                        <span>مطعم يستخدم المنصة</span>
+                    </div>
+                    <div class="stat-divider"></div>
+                    <div class="stat-item">
+                        <strong>50K+</strong>
+                        <span>طلب شهري</span>
+                    </div>
+                    <div class="stat-divider"></div>
+                    <div class="stat-item">
+                        <strong>4.9/5</strong>
+                        <span>تقييم العملاء</span>
+                    </div>
                 </div>
-              </div>
-              <div class="flex gap-2">
-                <button class="w-8 h-8 bg-gray-50 rounded-lg flex items-center justify-center hover:bg-orange-50 hover:text-orange-500 transition"><i class="fas fa-edit text-xs"></i></button>
-                <button class="w-8 h-8 bg-gray-50 rounded-lg flex items-center justify-center hover:bg-red-50 hover:text-red-500 transition"><i class="fas fa-trash text-xs"></i></button>
-              </div>
             </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Live Preview -->
-      <div class="lg:col-span-1">
-        <div class="bg-white rounded-2xl p-4 shadow-sm sticky top-20">
-          <div class="flex items-center justify-between mb-4">
-            <h3 class="font-bold">معاينة مباشرة 📱</h3>
-            <div class="flex gap-2">
-              <button class="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center text-sm"><i class="fas fa-mobile-alt"></i></button>
-              <button class="w-8 h-8 bg-gray-50 rounded-lg flex items-center justify-center text-sm"><i class="fas fa-tablet-alt"></i></button>
-            </div>
-          </div>
-          <div class="bg-gray-50 rounded-xl p-3 max-h-[600px] overflow-y-auto">
-            <div class="bg-white rounded-xl p-4 mb-3">
-              <div class="flex items-center gap-3 mb-2">
-                <div class="w-10 h-10 gradient-bg rounded-full flex items-center justify-center"><i class="fas fa-utensils text-white text-sm"></i></div>
-                <div><h4 class="font-bold text-sm">مطعم الأصالة</h4><p class="text-xs text-gray-400">مأكولات شرقية أصيلة</p></div>
-              </div>
-            </div>
-            <div class="flex gap-2 mb-3 overflow-x-auto pb-1">
-              <span class="bg-orange-500 text-white px-3 py-1 rounded-full text-xs whitespace-nowrap">المقبلات</span>
-              <span class="bg-gray-100 text-gray-500 px-3 py-1 rounded-full text-xs whitespace-nowrap">الرئيسية</span>
-              <span class="bg-gray-100 text-gray-500 px-3 py-1 rounded-full text-xs whitespace-nowrap">البيتزا</span>
-              <span class="bg-gray-100 text-gray-500 px-3 py-1 rounded-full text-xs whitespace-nowrap">المشروبات</span>
-            </div>
-            <div class="space-y-2">
-              <div class="bg-white rounded-xl p-3 flex gap-3">
-                <div class="w-14 h-14 bg-orange-50 rounded-lg flex items-center justify-center text-2xl flex-shrink-0">🥗</div>
-                <div class="flex-1 min-w-0">
-                  <h5 class="font-bold text-sm">سلطة سيزر</h5>
-                  <p class="text-xs text-gray-400 truncate">خس روميني، كروتون، صلصة سيزر</p>
-                  <span class="text-orange-500 font-bold text-sm">35 ر.س</span>
+            
+            <div class="hero-image slide-up">
+                <div class="phone-mockup">
+                    <div class="phone-notch"></div>
+                    <div class="phone-screen">
+                        <div class="demo-menu-header">
+                            <div class="demo-restaurant-info">
+                                <div class="demo-logo">🍕</div>
+                                <div>
+                                    <h4>مطعم السعادة</h4>
+                                    <p>مطعم إيطالي</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="demo-search">
+                            <i class="fas fa-search"></i>
+                            <span>ابحث عن طبق...</span>
+                        </div>
+                        <div class="demo-categories">
+                            <span class="active">الكل</span>
+                            <span>بيتزا</span>
+                            <span>معجنات</span>
+                            <span>مشروبات</span>
+                        </div>
+                        <div class="demo-items">
+                            <div class="demo-item">
+                                <div class="demo-item-img">🍕</div>
+                                <div class="demo-item-info">
+                                    <h5>بيتزا مارغريتا</h5>
+                                    <p>صلصة طماطم، موزاريلا...</p>
+                                    <span class="price">١٢٠ ج.م</span>
+                                </div>
+                            </div>
+                            <div class="demo-item">
+                                <div class="demo-item-img">🍝</div>
+                                <div class="demo-item-info">
+                                    <h5>باستا أربياتا</h5>
+                                    <p>صوص الكريمه، فراخ...</p>
+                                    <span class="price">٩٥ ج.م</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-              </div>
-              <div class="bg-white rounded-xl p-3 flex gap-3">
-                <div class="w-14 h-14 bg-yellow-50 rounded-lg flex items-center justify-center text-2xl flex-shrink-0">🧆</div>
-                <div class="flex-1 min-w-0">
-                  <h5 class="font-bold text-sm">حمص بالطحينة</h5>
-                  <p class="text-xs text-gray-400 truncate">حمص مطحون، طحينة، زيت زيتون</p>
-                  <span class="text-orange-500 font-bold text-sm">18 ر.س</span>
+            </div>
+        </div>
+        
+        <!-- Floating Elements -->
+        <div class="floating-element fe-1">🍔</div>
+        <div class="floating-element fe-2">🍕</div>
+        <div class="floating-element fe-3">🍣</div>
+        <div class="floating-element fe-4">🌮</div>
+    </section>
+
+    <!-- Trusted By Section -->
+    <section class="trusted-section">
+        <div class="container text-center">
+            <p class="trusted-label">موثوق من قبل أفضل المطاعم</p>
+            <div class="logos-grid">
+                <div class="logo-item">🏪 مطعم الزهراء</div>
+                <div class="logo-item">🍕 بيتزا روما</div>
+                <div class="logo-item">🍜 مطعم الشام</div>
+                <div class="logo-item">🥗 سلطات ناعمة</div>
+                <div class="logo-item">☕ كافيه الموج</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features-section">
+        <div class="container">
+            <div class="section-header text-center">
+                <span class="section-badge">المميزات</span>
+                <h2>كل ما تحتاجه لإدارة قائمتك</h2>
+                <p>منصة متكاملة تجعل إدارة مطعك أسهل وأكثر فعالية</p>
+            </div>
+            
+            <div class="features-grid">
+                <!-- Feature 1 -->
+                <div class="feature-card">
+                    <div class="feature-icon orange">
+                        <i class="fas fa-magic"></i>
+                    </div>
+                    <h3>استيراد بالذكاء الاصطناعي</h3>
+                    <p>ارفع صورة أو ملف قائمتك وسنحللها تلقائياً وننشئ لك قائمة رقمية كاملة مع الأسعار والأقسام.</p>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-check"></i> دعم الصور والـ PDF</li>
+                        <li><i class="fas fa-check"></i> استخراج تلقائي للأسعار</li>
+                        <li><i class="fas fa-check"></i> تصنيف ذكي للأصناف</li>
+                    </ul>
                 </div>
-              </div>
-              <div class="bg-white rounded-xl p-3 flex gap-3 opacity-50">
-                <div class="w-14 h-14 bg-red-50 rounded-lg flex items-center justify-center text-2xl flex-shrink-0">🍗</div>
-                <div class="flex-1 min-w-0">
-                  <h5 class="font-bold text-sm">أجنحة دجاج حارة</h5>
-                  <p class="text-xs text-gray-400 truncate">نفذ من المخزون</p>
-                  <span class="text-gray-400 font-bold text-sm line-through">28 ر.س</span>
+
+                <!-- Feature 2 -->
+                <div class="feature-card featured">
+                    <div class="featured-badge">الأكثر شعبية</div>
+                    <div class="feature-icon green">
+                        <i class="fab fa-whatsapp"></i>
+                    </div>
+                    <h3>طلبات عبر واتساب</h3>
+                    <p>استقبل الطلبات مباشرة على واتساب مع جميع تفاصيل الطلب منسقة بشكل احترافي.</p>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-check"></i> رسائل جاهزة للإرسال</li>
+                        <li><i class="fas fa-check"></i> تتبع حالة الطلب</li>
+                        <li><i class="fas fa-check"></i> إشعارات فورية</li>
+                    </ul>
                 </div>
-              </div>
+
+                <!-- Feature 3 -->
+                <div class="feature-card">
+                    <div class="feature-icon blue">
+                        <i class="fas fa-mobile-alt"></i>
+                    </div>
+                    <h3>قائمة رقمية للزبائن</h3>
+                    <p>روابط خاصة لكل مطعم تعمل كتطبيق ويب (PWA) مع شعار المطعم وألوانه الخاصة.</p>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-check"></i> تصميم متجاوب</li>
+                        <li><i class="fas fa-check"></i> سرعة فائقة</li>
+                        <li><i class="fas fa-check"></i> يعمل بدون إنترنت</li>
+                    </ul>
+                </div>
+
+                <!-- Feature 4 -->
+                <div class="feature-card">
+                    <div class="feature-icon purple">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3>تحليلات وإحصائيات</h3>
+                    <p>تابع أداء مطعمك من خلال تقارير مفصلة عن المبيعات والطلبات والأصناف الأكثر طلباً.</p>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-check"></i> تقارير يومية/أسبوعية</li>
+                        <li><i class="fas fa-check"></i> تحليل المبيعات</li>
+                        <li><i class="fas fa-check"></i> تتبع الأرباح</li>
+                    </ul>
+                </div>
+
+                <!-- Feature 5 -->
+                <div class="feature-card">
+                    <div class="feature-icon red">
+                        <i class="fas fa-bell"></i>
+                    </div>
+                    <h3>نظام إشعارات ذكي</h3>
+                    <p>إشعارات فورية للمدير والزبون عند كل حدث: طلب جديد، تأكيد، تحضير، توصيل.</p>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-check"></i> إشعارات Push</li>
+                        <li><i class="fas fa-check"></i> رسائل واتساب آلية</li>
+                        <li><i class="fas fa-check"></i> تحديثات الحالة</li>
+                    </ul>
+                </div>
+
+                <!-- Feature 6 -->
+                <div class="feature-card">
+                    <div class="feature-icon teal">
+                        <i class="fas fa-qrcode"></i>
+                    </div>
+                    <h3>QR Code لكل مطعم</h3>
+                    <p>رمز QR خاص بمطعمك يمكن الزبائن من الوصول لقائمتك بضغطة واحدة.</p>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-check"></i> QR قابل للطباعة</li>
+                        <li><i class="fas fa-check"></i> رابط مخصص</li>
+                        <li><i class="fas fa-check"></i> سهولة المشاركة</li>
+                    </ul>
+                </div>
             </div>
-          </div>
         </div>
-      </div>
-    </div>
-  </div>
-</div>
+    </section>
 
-<!-- ==================== QR CODES PAGE ==================== -->
-<div id="page-qr-codes" class="page">
-  <div class="p-6 fade-in">
-    <div class="flex flex-col md:flex-row md:items-center justify-between mb-8">
-      <div><h1 class="text-2xl font-extrabold">رموز QR</h1><p class="text-gray-500">إدارة رموز QR للطاولات</p></div>
-      <button class="btn-primary text-white px-5 py-3 rounded-xl font-semibold flex items-center gap-2 mt-4 md:mt-0">
-        <i class="fas fa-plus"></i> إنشاء رمز QR
-      </button>
-    </div>
-
-    <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-      <div class="bg-white rounded-2xl p-6 shadow-sm text-center card-hover">
-        <div class="w-32 h-32 mx-auto bg-gray-100 rounded-2xl flex items-center justify-center mb-4 relative">
-          <div class="grid grid-cols-5 gap-1 p-4">
-            <div class="w-4 h-4 bg-gray-800 rounded-sm"></div><div class="w-4 h-4 bg-white"></div><div class="w-4 h-4 bg-gray-800 rounded-sm"></div><div class="w-4 h-4 bg-gray-800 rounded-sm"></div><div class="w-4 h-4 bg-white"></div>
-            <div class="w-4 h-4 bg-gray-800 rounded-sm"></div><div class="w-4 h-4 bg-gray-800 rounded-sm"></div><div class="w-4 h-4 bg-white"></div><div class="w-4 h-4 bg-gray-800 rounded-sm"></div><div class="w-4 h-4 bg-gray-800 rounded-sm"></div>
-            <div class="w-4 h-4 bg-white"></div><div class="w-4 h-4 bg-gray-800 rounded-sm"></div><div class="w-4 h-4 bg-gray-800 rounded-sm"></div><div class="w-4 h-4 bg-white"></div><div class="w-4 h-4 bg-gray-800 rounded-sm"></div>
-            <div class="w-4 h-4 bg-gray-800 rounded-sm"></div><div class="w-4 h-4 bg-white"></div><div class="w-4 h-4 bg-gray-800 rounded-sm"></div><div class="w-4 h-4 bg-gray-800 rounded-sm"></div><div class="w-4 h-4 bg-white"></div>
-            <div class="w-4 h-4 bg-white"></div><div class="w-4 h-4 bg-gray-800 rounded-sm"></div><div class="w-4 h-4 bg-white"></div><div class="w-4 h-4 bg-gray-800 rounded-sm"></div><div class="w-4 h-4 bg-gray-800 rounded-sm"></div>
-          </div>
-        </div>
-        <h4 class="font-bold mb-1">طاولة 1</h4>
-        <p class="text-xs text-gray-400 mb-3">248 مسح</p>
-        <div class="flex gap-2">
-          <button class="flex-1 bg-orange-50 text-orange-500 py-2 rounded-lg text-xs font-semibold hover:bg-orange-100"><i class="fas fa-download ml-1"></i> تحميل</button>
-          <button class="flex-1 bg-gray-50 text-gray-600 py-2 rounded-lg text-xs font-semibold hover:bg-gray-100"><i class="fas fa-print ml-1"></i> طباعة</button>
-        </div>
-      </div>
-
-      <div class="bg-white rounded-2xl p-6 shadow-sm text-center card-hover">
-        <div class="w-32 h-32 mx-auto bg-gray-100 rounded-2xl flex items-center justify-center mb-4">
-          <div class="grid grid-cols-5 gap-1 p-4">
-            <div class="w-4 h-4 bg-gray-800 rounded-sm"></div><div class="w-4 h-4 bg-gray-800 rounded-sm"></div><div class="w-4 h-4 bg-white"></div><div class="w-4 h-4 bg-gray-800 rounded-sm"></div><div class="w-4 h-4 bg-gray-800 rounded-sm"></div>
-            <div class="w-4 h-4 bg-white"></div><div class="w-4 h-4 bg-gray-800 rounded-sm"></div><div class="w-4 h-4 bg-gray-800 rounded-sm"></div><div class="w-4 h-4 bg-white"></div><div class="w-4 h-4 bg-gray-800 rounded-sm"></div>
-            <div class="w-4 h-4 bg-gray-800 rounded-sm"></div><div class="w-4 h-4 bg-white"></div><div class="w-4 h-4 bg-gray-800 rounded-sm"></div><div class="w-4 h-4 bg-gray-800 rounded-sm"></div><div class="w-4 h-4 bg-white"></div>
-            <div class="w-4 h-4 bg-gray-800 rounded-sm"></div><div class="w-4 h-4 bg-gray-800 rounded-sm"></div><div class="w-4 h-4 bg-white"></div><div class="w-4 h-4 bg-gray-800 rounded-sm"></div><div class="w-4 h-4 bg-gray-800 rounded-sm"></div>
-            <div class="w-4 h-4 bg-gray-800 rounded-sm"></div><div class="w-4 h-4 bg-white"></div><div class="w-4 h-4 bg-gray-800 rounded-sm"></div><div class="w-4 h-4 bg-white"></div><div class="w-4 h-4 bg-gray-800 rounded-sm"></div>
-          </div>
-        </div>
-        <h4 class="font-bold mb-1">طاولة 2</h4>
-        <p class="text-xs text-gray-400 mb-3">192 مسح</p>
-        <div class="flex gap-2">
-          <button class="flex-1 bg-orange-50 text-orange-500 py-2 rounded-lg text-xs font-semibold hover:bg-orange-100"><i class="fas fa-download ml-1"></i> تحميل</button>
-          <button class="flex-1 bg-gray-50 text-gray-600 py-2 rounded-lg text-xs font-semibold hover:bg-gray-100"><i class="fas fa-print ml-1"></i> طباعة</button>
-        </div>
-      </div>
-
-      <div class="bg-white rounded-2xl p-6 shadow-sm text-center card-hover">
-        <div class="w-32 h-32 mx-auto bg-gray-100 rounded-2xl flex items-center justify-center mb-4">
-          <div class="grid grid-cols-5 gap-1 p-4">
-            <div class="w-4 h-4 bg-gray-800 rounded-sm"></div><div class="w-4 h-4 bg-white"></div><div class="w-4 h-4 bg-gray-800 rounded-sm"></div><div class="w-4 h-4 bg-gray-800 rounded-sm"></div><div class="w-4 h-4 bg-gray-800 rounded-sm"></div>
-            <div class="w-4 h-4 bg-gray-800 rounded-sm"></div><div class="w-4 h-4 bg-gray-800 rounded-sm"></div><div class="w-4 h-4 bg-gray-800 rounded-sm"></div><div class="w-4 h-4 bg-white"></div><div class="w-4 h-4 bg-gray-800 rounded-sm"></div>
-            <div class="w-4 h-4 bg-white"></div><div class="w-4 h-4 bg-gray-800 rounded-sm"></div><div class="w-4 h-4 bg-white"></div><div class="w-4 h-4 bg-gray-800 rounded-sm"></div><div class="w-4 h-4 bg-white"></div>
-            <div class="w-4 h-4 bg-gray-800 rounded-sm"></div><div class="w-4 h-4 bg-white"></div><div class="w-4 h-4 bg-gray-800 rounded-sm"></div><div class="w-4 h-4 bg-gray-800 rounded-sm"></div><div class="w-4 h-4 bg-gray-800 rounded-sm"></div>
-            <div class="w-4 h-4 bg-white"></div><div class="w-4 h-4 bg-gray-800 rounded-sm"></div><div class="w-4 h-4 bg-white"></div><div class="w-4 h-4 bg-gray-800 rounded-sm"></div><div class="w-4 h-4 bg-white"></div>
-          </div>
-        </div>
-        <h4 class="font-bold mb-1">طاولة 3</h4>
-        <p class="text-xs text-gray-400 mb-3">315 مسح</p>
-        <div class="flex gap-2">
-          <button class="flex-1 bg-orange-50 text-orange-500 py-2 rounded-lg text-xs font-semibold hover:bg-orange-100"><i class="fas fa-download ml-1"></i> تحميل</button>
-          <button class="flex-1 bg-gray-50 text-gray-600 py-2 rounded-lg text-xs font-semibold hover:bg-gray-100"><i class="fas fa-print ml-1"></i> طباعة</button>
-        </div>
-      </div>
-
-      <div onclick="alert('سيتم إنشاء رمز QR جديد')" class="bg-white rounded-2xl p-6 shadow-sm border-2 border-dashed border-gray-200 flex flex-col items-center justify-center cursor-pointer hover:border-orange-500 min-h-[280px] transition">
-        <div class="w-14 h-14 bg-orange-50 rounded-full flex items-center justify-center mb-3"><i class="fas fa-plus text-orange-500 text-xl"></i></div>
-        <h4 class="font-bold text-sm">إضافة طاولة جديدة</h4>
-        <p class="text-xs text-gray-400 mt-1">إنشاء رمز QR جديد</p>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ==================== ANALYTICS PAGE ==================== -->
-<div id="page-analytics" class="page">
-  <div class="p-6 fade-in">
-    <div class="flex flex-col md:flex-row md:items-center justify-between mb-8">
-      <div><h1 class="text-2xl font-extrabold">التقارير والتحليلات</h1><p class="text-gray-500">تابع أداء قائمتك الرقمية</p></div>
-      <div class="flex gap-3 mt-4 md:mt-0">
-        <select class="px-4 py-2 rounded-xl border border-gray-200 text-sm"><option>آخر 7 أيام</option><option>آخر 30 يوم</option><option>آخر 3 أشهر</option></select>
-        <button class="bg-white border border-gray-200 px-4 py-2 rounded-xl text-sm font-semibold"><i class="fas fa-download ml-1"></i> تصدير</button>
-      </div>
-    </div>
-
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-      <div class="bg-white rounded-2xl p-5 shadow-sm"><div class="flex items-center gap-3 mb-2"><div class="w-10 h-10 bg-orange-50 rounded-xl flex items-center justify-center"><i class="fas fa-eye text-orange-500"></i></div><span class="text-xs text-green-500 font-bold">+12%</span></div><div class="text-2xl font-extrabold">24,521</div><p class="text-xs text-gray-500">إجمالي المشاهدات</p></div>
-      <div class="bg-white rounded-2xl p-5 shadow-sm"><div class="flex items-center gap-3 mb-2"><div class="w-10 h-10 bg-green-50 rounded-xl flex items-center justify-center"><i class="fas fa-qrcode text-green-500"></i></div><span class="text-xs text-green-500 font-bold">+8%</span></div><div class="text-2xl font-extrabold">8,742</div><p class="text-xs text-gray-500">عمليات المسح</p></div>
-      <div class="bg-white rounded-2xl p-5 shadow-sm"><div class="flex items-center gap-3 mb-2"><div class="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center"><i class="fas fa-clock text-blue-500"></i></div><span class="text-xs text-green-500 font-bold">+5%</span></div><div class="text-2xl font-extrabold">2:45</div><p class="text-xs text-gray-500">متوسط وقت التصفح</p></div>
-      <div class="bg-white rounded-2xl p-5 shadow-sm"><div class="flex items-center gap-3 mb-2"><div class="w-10 h-10 bg-purple-50 rounded-xl flex items-center justify-center"><i class="fas fa-percentage text-purple-500"></i></div><span class="text-xs text-red-500 font-bold">-2%</span></div><div class="text-2xl font-extrabold">68%</div><p class="text-xs text-gray-500">معدل التحويل</p></div>
-    </div>
-
-    <div class="grid lg:grid-cols-2 gap-6">
-      <div class="bg-white rounded-2xl p-6 shadow-sm">
-        <h3 class="font-bold text-lg mb-4">المشاهدات حسب اليوم</h3>
-        <div class="flex items-end gap-2 h-40">
-          <div class="flex-1 flex flex-col items-center gap-1"><div class="w-full bg-orange-200 rounded-t" style="height:40%"></div><span class="text-xs text-gray-400">س</span></div>
-          <div class="flex-1 flex flex-col items-center gap-1"><div class="w-full bg-orange-300 rounded-t" style="height:65%"></div><span class="text-xs text-gray-400">ح</span></div>
-          <div class="flex-1 flex flex-col items-center gap-1"><div class="w-full bg-orange-300 rounded-t" style="height:50%"></div><span class="text-xs text-gray-400">ن</span></div>
-          <div class="flex-1 flex flex-col items-center gap-1"><div class="w-full bg-orange-400 rounded-t" style="height:75%"></div><span class="text-xs text-gray-400">ث</span></div>
-          <div class="flex-1 flex flex-col items-center gap-1"><div class="w-full gradient-bg rounded-t" style="height:100%"></div><span class="text-xs text-gray-400">ر</span></div>
-          <div class="flex-1 flex flex-col items-center gap-1"><div class="w-full bg-orange-400 rounded-t" style="height:85%"></div><span class="text-xs text-gray-400">خ</span></div>
-          <div class="flex-1 flex flex-col items-center gap-1"><div class="w-full bg-orange-500 rounded-t" style="height:95%"></div><span class="text-xs text-gray-400">ج</span></div>
-        </div>
-      </div>
-      <div class="bg-white rounded-2xl p-6 shadow-sm">
-        <h3 class="font-bold text-lg mb-4">الأقسام الأكثر مشاهدة</h3>
-        <div class="space-y-3">
-          <div><div class="flex justify-between text-sm mb-1"><span>البيتزا 🍕</span><span class="font-bold">35%</span></div><div class="progress-bar"><div class="progress-fill" style="width:35%"></div></div></div>
-          <div><div class="flex justify-between text-sm mb-1"><span>الأطباق الرئيسية 🍖</span><span class="font-bold">28%</span></div><div class="progress-bar"><div class="progress-fill" style="width:28%"></div></div></div>
-          <div><div class="flex justify-between text-sm mb-1"><span>المشروبات 🥤</span><span class="font-bold">20%</span></div><div class="progress-bar"><div class="progress-fill" style="width:20%"></div></div></div>
-          <div><div class="flex justify-between text-sm mb-1"><span>المقبلات 🥗</span><span class="font-bold">12%</span></div><div class="progress-bar"><div class="progress-fill" style="width:12%"></div></div></div>
-          <div><div class="flex justify-between text-sm mb-1"><span>الحلويات 🍰</span><span class="font-bold">5%</span></div><div class="progress-bar"><div class="progress-fill" style="width:5%"></div></div></div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ==================== ORDERS PAGE ==================== -->
-<div id="page-orders" class="page">
-  <div class="p-6 fade-in">
-    <div class="flex flex-col md:flex-row md:items-center justify-between mb-8">
-      <div><h1 class="text-2xl font-extrabold">الطلبات</h1><p class="text-gray-500">إدارة طلبات العملاء</p></div>
-      <div class="flex gap-3 mt-4 md:mt-0">
-        <div class="relative"><input type="text" placeholder="بحث بالرقم..." class="px-4 py-2 pr-9 rounded-xl border border-gray-200 text-sm focus:border-orange-500 focus:outline-none"><i class="fas fa-search absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i></div>
-        <select class="px-4 py-2 rounded-xl border border-gray-200 text-sm"><option>جميع الحالات</option><option>جديد</option><option>قيد التحضير</option><option>مكتمل</option></select>
-      </div>
-    </div>
-
-    <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
-      <div class="overflow-x-auto">
-        <table class="w-full text-sm">
-          <thead class="bg-gray-50">
-            <tr class="text-gray-500">
-              <th class="text-right p-4 font-semibold">رقم الطلب</th>
-              <th class="text-right p-4 font-semibold">الطاولة</th>
-              <th class="text-right p-4 font-semibold">الأصناف</th>
-              <th class="text-right p-4 font-semibold">المبلغ</th>
-              <th class="text-right p-4 font-semibold">الحالة</th>
-              <th class="text-right p-4 font-semibold">الوقت</th>
-              <th class="text-right p-4 font-semibold">إجراءات</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr class="border-b hover:bg-gray-50"><td class="p-4 font-bold">#1042</td><td class="p-4">طاولة 5</td><td class="p-4">بيتزا مارغريتا ×2, عصير برتقال ×2</td><td class="p-4 font-bold">130 ر.س</td><td class="p-4"><span class="bg-green-100 text-green-600 px-3 py-1 rounded-full text-xs">مكتمل ✓</span></td><td class="p-4 text-gray-500">12:45 م</td><td class="p-4"><button class="text-orange-500 hover:underline text-xs">التفاصيل</button></td></tr>
-            <tr class="border-b hover:bg-gray-50"><td class="p-4 font-bold">#1041</td><td class="p-4">طاولة 12</td><td class="p-4">برجر كلاسيك ×1, بطاطس ×1, كولا ×2</td><td class="p-4 font-bold">95 ر.س</td><td class="p-4"><span class="bg-yellow-100 text-yellow-600 px-3 py-1 rounded-full text-xs">قيد التحضير ⏳</span></td><td class="p-4 text-gray-500">12:38 م</td><td class="p-4"><button class="text-orange-500 hover:underline text-xs">التفاصيل</button></td></tr>
-            <tr class="border-b hover:bg-gray-50"><td class="p-4 font-bold">#1040</td><td class="p-4">طاولة 3</td><td class="p-4">سلطة سيزر ×1</td><td class="p-4 font-bold">35 ر.س</td><td class="p-4"><span class="bg-blue-100 text-blue-600 px-3 py-1 rounded-full text-xs">جديد 🆕</span></td><td class="p-4 text-gray-500">12:32 م</td><td class="p-4"><button class="text-orange-500 hover:underline text-xs">التفاصيل</button></td></tr>
-            <tr class="border-b hover:bg-gray-50"><td class="p-4 font-bold">#1039</td><td class="p-4">طاولة 8</td><td class="p-4">باستا ألفريدو ×1, تيراميسو ×1</td><td class="p-4 font-bold">120 ر.س</td><td class="p-4"><span class="bg-green-100 text-green-600 px-3 py-1 rounded-full text-xs">مكتمل ✓</span></td><td class="p-4 text-gray-500">12:20 م</td><td class="p-4"><button class="text-orange-500 hover:underline text-xs">التفاصيل</button></td></tr>
-            <tr class="hover:bg-gray-50"><td class="p-4 font-bold">#1038</td><td class="p-4">طاولة 1</td><td class="p-4">مشكل مشاوي ×1, حمص ×1, عصير ×3</td><td class="p-4 font-bold">185 ر.س</td><td class="p-4"><span class="bg-green-100 text-green-600 px-3 py-1 rounded-full text-xs">مكتمل ✓</span></td><td class="p-4 text-gray-500">12:10 م</td><td class="p-4"><button class="text-orange-500 hover:underline text-xs">التفاصيل</button></td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="p-4 flex items-center justify-between border-t">
-        <p class="text-sm text-gray-500">عرض 1-5 من 156 طلب</p>
-        <div class="flex gap-2">
-          <button class="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-sm"><i class="fas fa-chevron-right"></i></button>
-          <button class="w-8 h-8 rounded-lg gradient-bg text-white flex items-center justify-center text-sm">1</button>
-          <button class="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-sm">2</button>
-          <button class="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-sm">3</button>
-          <button class="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-sm"><i class="fas fa-chevron-left"></i></button>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ==================== SETTINGS PAGE ==================== -->
-<div id="page-settings" class="page">
-  <div class="p-6 fade-in">
-    <h1 class="text-2xl font-extrabold mb-2">الإعدادات</h1>
-    <p class="text-gray-500 mb-8">إدارة إعدادات حسابك ومطعمك</p>
-
-    <div class="grid lg:grid-cols-4 gap-6">
-      <div class="lg:col-span-1">
-        <div class="bg-white rounded-2xl p-4 shadow-sm space-y-1">
-          <button class="w-full text-right px-4 py-3 rounded-xl bg-orange-50 text-orange-500 font-semibold text-sm flex items-center gap-2"><i class="fas fa-store"></i> معلومات المطعم</button>
-          <button class="w-full text-right px-4 py-3 rounded-xl hover:bg-gray-50 text-sm flex items-center gap-2"><i class="fas fa-user"></i> الحساب الشخصي</button>
-          <button class="w-full text-right px-4 py-3 rounded-xl hover:bg-gray-50 text-sm flex items-center gap-2"><i class="fas fa-bell"></i> الإشعارات</button>
-          <button class="w-full text-right px-4 py-3 rounded-xl hover:bg-gray-50 text-sm flex items-center gap-2"><i class="fas fa-palette"></i> المظهر والتخصيص</button>
-          <button class="w-full text-right px-4 py-3 rounded-xl hover:bg-gray-50 text-sm flex items-center gap-2"><i class="fas fa-language"></i> اللغة والمنطقة</button>
-          <button class="w-full text-right px-4 py-3 rounded-xl hover:bg-gray-50 text-sm flex items-center gap-2"><i class="fas fa-plug"></i> التكاملات</button>
-          <button class="w-full text-right px-4 py-3 rounded-xl hover:bg-gray-50 text-red-500 text-sm flex items-center gap-2"><i class="fas fa-trash"></i> حذف الحساب</button>
-        </div>
-      </div>
-
-      <div class="lg:col-span-3 space-y-6">
-        <div class="bg-white rounded-2xl p-6 shadow-sm">
-          <h3 class="font-bold text-lg mb-4">معلومات المطعم</h3>
-          <div class="flex items-center gap-4 mb-6">
-            <div class="w-20 h-20 gradient-bg rounded-2xl flex items-center justify-center text-white text-3xl"><i class="fas fa-utensils"></i></div>
-            <div>
-              <button class="btn-primary text-white px-4 py-2 rounded-lg text-sm font-semibold">تغيير الشعار</button>
-              <p class="text-xs text-gray-400 mt-1">PNG, JPG حتى 2MB</p>
+    <!-- How It Works Section -->
+    <section id="how-it-works" class="how-it-works-section">
+        <div class="container">
+            <div class="section-header text-center">
+                <span class="section-badge">كيف يعمل</span>
+                <h2>ثلاث خطوات بسيطة فقط!</h2>
+                <p>ابدأ في أقل من 5 دقائق</p>
             </div>
-          </div>
-          <div class="grid md:grid-cols-2 gap-4">
-            <div><label class="block text-sm font-semibold mb-2">اسم المطعم</label><input type="text" value="مطعم الأصالة" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-orange-500 focus:outline-none"></div>
-            <div><label class="block text-sm font-semibold mb-2">رقم الهاتف</label><input type="text" value="+966 50 123 4567" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-orange-500 focus:outline-none"></div>
-            <div><label class="block text-sm font-semibold mb-2">البريد الإلكتروني</label><input type="email" value="info@alasala.com" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-orange-500 focus:outline-none"></div>
-            <div><label class="block text-sm font-semibold mb-2">الموقع</label><input type="text" value="الرياض، حي الملقا" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-orange-500 focus:outline-none"></div>
-            <div class="md:col-span-2"><label class="block text-sm font-semibold mb-2">وصف المطعم</label><textarea rows="3" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-orange-500 focus:outline-none">مطعم أصالة يقدم أشهى المأكولات الشرقية والشرق أوسطية بلمسة عصرية</textarea></div>
-            <div><label class="block text-sm font-semibold mb-2">ساعات العمل - من</label><input type="time" value="10:00" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-orange-500 focus:outline-none"></div>
-            <div><label class="block text-sm font-semibold mb-2">ساعات العمل - إلى</label><input type="time" value="23:00" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-orange-500 focus:outline-none"></div>
-          </div>
-          <button class="btn-primary text-white px-6 py-3 rounded-xl font-semibold mt-6">حفظ التغييرات</button>
-        </div>
+            
+            <div class="steps-container">
+                <!-- Step 1 -->
+                <div class="step-card">
+                    <div class="step-number">١</div>
+                    <div class="step-content">
+                        <div class="step-icon">
+                            <i class="fas fa-user-plus"></i>
+                        </div>
+                        <h3>أنشئ حسابك</h3>
+                        <p>سجل مجاناً وأدخل بيانات مطعمك الأساسية: الاسم، الشعار، رقم الواتساب.</p>
+                    </div>
+                    <div class="step-visual">
+                        <div class="mini-form">
+                            <div class="input-placeholder"></div>
+                            <div class="input-placeholder short"></div>
+                            <div class="btn-placeholder"></div>
+                        </div>
+                    </div>
+                </div>
 
-        <div class="bg-white rounded-2xl p-6 shadow-sm">
-          <h3 class="font-bold text-lg mb-4">الإشعارات</h3>
-          <div class="space-y-4">
-            <div class="flex items-center justify-between"><div><p class="font-semibold text-sm">إشعارات الطلبات الجديدة</p><p class="text-xs text-gray-400">تلقي إشعار عند كل طلب جديد</p></div><div class="toggle-switch active" onclick="this.classList.toggle('active')"></div></div>
-            <div class="flex items-center justify-between"><div><p class="font-semibold text-sm">إشعارات المسح</p><p class="text-xs text-gray-400">إشعار عند مسح QR code</p></div><div class="toggle-switch active" onclick="this.classList.toggle('active')"></div></div>
-            <div class="flex items-center justify-between"><div><p class="font-semibold text-sm">التقارير الأسبوعية</p><p class="text-xs text-gray-400">تقرير أسبوعي بالبريد الإلكتروني</p></div><div class="toggle-switch" onclick="this.classList.toggle('active')"></div></div>
-            <div class="flex items-center justify-between"><div><p class="font-semibold text-sm">التقييمات والمراجعات</p><p class="text-xs text-gray-400">إشعار عند تلقي تقييم جديد</p></div><div class="toggle-switch active" onclick="this.classList.toggle('active')"></div></div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
+                <!-- Step 2 -->
+                <div class="step-card">
+                    <div class="step-number">٢</div>
+                    <div class="step-content">
+                        <div class="step-icon">
+                            <i class="fas fa-upload"></i>
+                        </div>
+                        <h3>أضف قائمتك</h3>
+                        <p>اكتب الأصناف يدوياً، أو ارفع صورة/ملف ودع الذكاء الاصطناعي يحللها لك.</p>
+                    </div>
+                    <div class="step-visual">
+                        <div class="upload-zone-mini">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <span>اسحب الملف هنا</span>
+                        </div>
+                    </div>
+                </div>
 
-<!-- ==================== SUBSCRIPTION PAGE ==================== -->
-<div id="page-subscription" class="page">
-  <div class="p-6 fade-in">
-    <h1 class="text-2xl font-extrabold mb-2">الاشتراك</h1>
-    <p class="text-gray-500 mb-8">إدارة خطتك الحالية وترقيتها</p>
-
-    <div class="bg-gradient-to-r from-orange-500 to-yellow-500 rounded-2xl p-6 text-white mb-8">
-      <div class="flex flex-col md:flex-row md:items-center justify-between">
-        <div>
-          <p class="text-white/80 text-sm">خطتك الحالية</p>
-          <h2 class="text-3xl font-extrabold mt-1">الاحترافي</h2>
-          <p class="text-white/80 mt-2">تجدد في 15 يناير 2025 • 99 ر.س/شهر</p>
-        </div>
-        <div class="mt-4 md:mt-0">
-          <button class="bg-white text-orange-500 px-6 py-3 rounded-xl font-bold">ترقية الخطة</button>
-        </div>
-      </div>
-      <div class="mt-6 grid grid-cols-3 gap-4">
-        <div class="bg-white/20 rounded-xl p-3 text-center"><div class="text-2xl font-extrabold">3</div><p class="text-xs text-white/80">قوائم نشطة</p></div>
-        <div class="bg-white/20 rounded-xl p-3 text-center"><div class="text-2xl font-extrabold">∞</div><p class="text-xs text-white/80">أطباق</p></div>
-        <div class="bg-white/20 rounded-xl p-3 text-center"><div class="text-2xl font-extrabold">10</div><p class="text-xs text-white/80">رموز QR</p></div>
-      </div>
-    </div>
-
-    <div class="grid md:grid-cols-3 gap-6">
-      <div class="bg-white rounded-2xl p-6 shadow-sm border-2 border-gray-100">
-        <h3 class="text-xl font-bold mb-1">المبتدئ</h3>
-        <p class="text-gray-500 text-sm mb-4">للمطاعم الصغيرة</p>
-        <div class="mb-4"><span class="text-4xl font-extrabold">مجاني</span></div>
-        <ul class="space-y-2 mb-6 text-sm">
-          <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> قائمة واحدة</li>
-          <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> حتى 20 طبق</li>
-          <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> 3 رموز QR</li>
-        </ul>
-        <button class="w-full py-3 rounded-xl border-2 border-gray-200 font-semibold text-sm">الخطة الحالية</button>
-      </div>
-      <div class="bg-white rounded-2xl p-6 shadow-sm border-2 border-orange-500 relative">
-        <div class="absolute -top-3 left-1/2 -translate-x-1/2 gradient-bg text-white px-3 py-1 rounded-full text-xs font-bold">الأكثر شعبية</div>
-        <h3 class="text-xl font-bold mb-1">الاحترافي</h3>
-        <p class="text-gray-500 text-sm mb-4">للمطاعم المتوسطة</p>
-        <div class="mb-4"><span class="text-4xl font-extrabold">99</span><span class="text-gray-500"> ر.س/شهر</span></div>
-        <ul class="space-y-2 mb-6 text-sm">
-          <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> قوائم غير محدودة</li>
-          <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> أطباق غير محدودة</li>
-          <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> 10 رموز QR</li>
-          <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> تحليلات متقدمة</li>
-        </ul>
-        <button class="w-full py-3 rounded-xl gradient-bg text-white font-semibold text-sm">خطتك الحالية ✓</button>
-      </div>
-      <div class="bg-white rounded-2xl p-6 shadow-sm border-2 border-gray-100">
-        <h3 class="text-xl font-bold mb-1">المؤسسات</h3>
-        <p class="text-gray-500 text-sm mb-4">لسلاسل المطاعم</p>
-        <div class="mb-4"><span class="text-4xl font-extrabold">299</span><span class="text-gray-500"> ر.س/شهر</span></div>
-        <ul class="space-y-2 mb-6 text-sm">
-          <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> كل مميزات الاحترافي</li>
-          <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> فروع متعددة</li>
-          <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> QR غير محدود</li>
-          <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> API مخصص</li>
-        </ul>
-        <button class="w-full py-3 rounded-xl border-2 border-orange-500 text-orange-500 font-semibold text-sm hover:bg-orange-50 transition">ترقية الآن</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ==================== TEMPLATES PAGE ==================== -->
-<div id="page-templates-page" class="page">
-  <div class="container mx-auto px-6 py-12 fade-in">
-    <div class="text-center mb-12">
-      <span class="inline-block bg-orange-100 text-orange-600 px-4 py-2 rounded-full text-sm font-semibold mb-4">القوالب</span>
-      <h1 class="text-4xl font-extrabold mb-3">اختر قالبك <span class="gradient-text">المثالي</span></h1>
-      <p class="text-gray-600 max-w-2xl mx-auto">مجموعة متنوعة من القوالب المصممة لكل أنواع المطاعم والكافيهات</p>
-    </div>
-
-    <div class="flex flex-wrap justify-center gap-3 mb-10">
-      <button class="bg-orange-500 text-white px-5 py-2 rounded-full text-sm font-semibold">الكل</button>
-      <button class="bg-gray-100 text-gray-600 px-5 py-2 rounded-full text-sm font-semibold hover:bg-orange-500 hover:text-white transition">مطاعم</button>
-      <button class="bg-gray-100 text-gray-600 px-5 py-2 rounded-full text-sm font-semibold hover:bg-orange-500 hover:text-white transition">كافيهات</button>
-      <button class="bg-gray-100 text-gray-600 px-5 py-2 rounded-full text-sm font-semibold hover:bg-orange-500 hover:text-white transition">وجبات سريعة</button>
-      <button class="bg-gray-100 text-gray-600 px-5 py-2 rounded-full text-sm font-semibold hover:bg-orange-500 hover:text-white transition">حلويات</button>
-      <button class="bg-gray-100 text-gray-600 px-5 py-2 rounded-full text-sm font-semibold hover:bg-orange-500 hover:text-white transition">صحي</button>
-    </div>
-
-    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-      <div class="card-hover group">
-        <div class="relative rounded-2xl overflow-hidden shadow-lg">
-          <div class="h-64 bg-gradient-to-br from-red-400 to-orange-500 flex items-center justify-center p-6">
-            <div class="bg-white/95 rounded-xl p-4 w-full shadow-lg">
-              <h4 class="font-bold text-sm mb-2">🍕 بيتزا إيطاليا</h4>
-              <div class="space-y-1 text-xs"><div class="flex justify-between"><span>مارغريتا</span><span class="font-bold">45 ر.س</span></div><div class="flex justify-between"><span>بيبروني</span><span class="font-bold">55 ر.س</span></div></div>
+                <!-- Step 3 -->
+                <div class="step-card">
+                    <div class="step-number">٣</div>
+                    <div class="step-content">
+                        <div class="step-icon">
+                            <i class="fas fa-share-alt"></i>
+                        </div>
+                        <h3>شارك واستقبل الطلبات</h3>
+                        <p>شارك رابط قائتك أو QR Code وابدأ باستقبال الطلبات مباشرة على واتساب!</p>
+                    </div>
+                    <div class="step-visual">
+                        <div class="share-preview">
+                            <div class="url-preview">menu.mezomenu.com/your-restaurant</div>
+                            <div class="qr-mini">QR</div>
+                        </div>
+                    </div>
+                </div>
             </div>
-          </div>
-          <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-3">
-            <button class="bg-white text-gray-800 px-4 py-2 rounded-full text-sm font-bold">معاينة</button>
-            <button onclick="navigateTo('menu-builder')" class="btn-primary text-white px-4 py-2 rounded-full text-sm font-bold">استخدام</button>
-          </div>
         </div>
-        <div class="mt-3 flex items-center justify-between">
-          <div><h3 class="font-bold">قالب البيتزا</h3><p class="text-gray-400 text-xs">مطاعم إيطالية</p></div>
-          <span class="bg-red-100 text-red-600 text-xs px-2 py-1 rounded-full">مجاني</span>
-        </div>
-      </div>
+    </section>
 
-      <div class="card-hover group">
-        <div class="relative rounded-2xl overflow-hidden shadow-lg">
-          <div class="h-64 bg-gradient-to-br from-amber-600 to-yellow-500 flex items-center justify-center p-6">
-            <div class="bg-white/95 rounded-xl p-4 w-full shadow-lg">
-              <h4 class="font-bold text-sm mb-2">🍔 برجر هاوس</h4>
-              <div class="space-y-1 text-xs"><div class="flex justify-between"><span>كلاسيك</span><span class="font-bold">38 ر.س</span></div><div class="flex justify-between"><span>دبل تشيز</span><span class="font-bold">48 ر.س</span></div></div>
+    <!-- Pricing Section -->
+    <section id="pricing" class="pricing-section">
+        <div class="container">
+            <div class="section-header text-center">
+                <span class="section-badge">الأسعار</span>
+                <h2>خطط تناسب جميع المطاعم</h2>
+                <p>ابدأ مجاناً، ترقَّ عندما تنمو</p>
             </div>
-          </div>
-          <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-3">
-            <button class="bg-white text-gray-800 px-4 py-2 rounded-full text-sm font-bold">معاينة</button>
-            <button onclick="navigateTo('menu-builder')" class="btn-primary text-white px-4 py-2 rounded-full text-sm font-bold">استخدام</button>
-          </div>
-        </div>
-        <div class="mt-3 flex items-center justify-between">
-          <div><h3 class="font-bold">قالب البرجر</h3><p class="text-gray-400 text-xs">وجبات سريعة</p></div>
-          <span class="bg-red-100 text-red-600 text-xs px-2 py-1 rounded-full">مجاني</span>
-        </div>
-      </div>
 
-      <div class="card-hover group">
-        <div class="relative rounded-2xl overflow-hidden shadow-lg">
-          <div class="h-64 bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center p-6">
-            <div class="bg-white/95 rounded-xl p-4 w-full shadow-lg">
-              <h4 class="font-bold text-sm mb-2">🥗 كافيه صحي</h4>
-              <div class="space-y-1 text-xs"><div class="flex justify-between"><span>سلطة كينوا</span><span class="font-bold">32 ر.س</span></div><div class="flex justify-between"><span>عصير أخضر</span><span class="font-bold">22 ر.س</span></div></div>
+            <div class="pricing-toggle">
+                <span class="${window.currentPlan === 'monthly' ? 'active' : ''}">شهري</span>
+                <label class="switch">
+                    <input type="checkbox" id="pricingToggle">
+                    <span class="slider round"></span>
+                </label>
+                <span>سنوي <badge class="save-badge">وفِّر 20%</badge></span>
             </div>
-          </div>
-          <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-3">
-            <button class="bg-white text-gray-800 px-4 py-2 rounded-full text-sm font-bold">معاينة</button>
-            <button onclick="navigateTo('menu-builder')" class="btn-primary text-white px-4 py-2 rounded-full text-sm font-bold">استخدام</button>
-          </div>
-        </div>
-        <div class="mt-3 flex items-center justify-between">
-          <div><h3 class="font-bold">قالب الكافيه</h3><p class="text-gray-400 text-xs">كافيهات صحية</p></div>
-          <span class="bg-orange-100 text-orange-600 text-xs px-2 py-1 rounded-full">PRO</span>
-        </div>
-      </div>
 
-      <div class="card-hover group">
-        <div class="relative rounded-2xl overflow-hidden shadow-lg">
-          <div class="h-64 bg-gradient-to-br from-pink-400 to-rose-500 flex items-center justify-center p-6">
-            <div class="bg-white/95 rounded-xl p-4 w-full shadow-lg">
-              <h4 class="font-bold text-sm mb-2">🍰 حلويات سكر</h4>
-              <div class="space-y-1 text-xs"><div class="flex justify-between"><span>تشيز كيك</span><span class="font-bold">35 ر.س</span></div><div class="flex justify-between"><span>تيراميسو</span><span class="font-bold">40 ر.س</span></div></div>
+            <div class="pricing-grid">
+                <!-- Free Plan -->
+                <div class="pricing-card">
+                    <div class="pricing-header">
+                        <h3>مجاني</h3>
+                        <div class="pricing-price">
+                            <span class="currency">ج.م</span>
+                            <span class="amount">0</span>
+                            <span class="period">/شهرياً</span>
+                        </div>
+                        <p>للمطاعم الصغيرة الجديدة</p>
+                    </div>
+                    <ul class="pricing-features">
+                        <li><i class="fas fa-check"></i> قائمة رقمية أساسية</li>
+                        <li><i class="fas fa-check"></i> حتى 20 صنف</li>
+                        <li><i class="fas fa-check"></i> رابط واحد</li>
+                        <li><i class="fas fa-check"></i> طلبات via WhatsApp</li>
+                        <li class="disabled"><i class="fas fa-times"></i> تحليلات متقدمة</li>
+                        <li class="disabled"><i class="fas fa-times"></i> شعار مخصص</li>
+                        <li class="disabled"><i class="fas fa-times"></i> دعم فني prioritized</li>
+                    </ul>
+                    <a href="admin/register.html?plan=free" class="btn btn-secondary btn-lg w-100">ابدأ مجاناً</a>
+                </div>
+
+                <!-- Pro Plan -->
+                <div class="pricing-card popular">
+                    <div class="popular-badge">الأكثر شعبية ⭐</div>
+                    <div class="pricing-header">
+                        <h3>احترافي</h3>
+                        <div class="pricing-price">
+                            <span class="currency">ج.م</span>
+                            <span class="amount monthly-price">199</span>
+                            <span class="amount yearly-price" style="display:none;">159</span>
+                            <span class="period">/شهرياً</span>
+                        </div>
+                        <p>للمطاعم المتوسطة</p>
+                    </div>
+                    <ul class="pricing-features">
+                        <li><i class="fas fa-check"></i> كل مميزات المجاني</li>
+                        <li><i class="fas fa-check"></i> أصناف غير محدودة</li>
+                        <li><i class="fas fa-check"></i> استيراد بالذكاء الاصطناعي</li>
+                        <li><i class="fas fa-check"></i> شعار وألوان مخصصة</li>
+                        <li><i class="fas fa-check"></i> تحليلات وإحصائيات</li>
+                        <li><i class="fas fa-check"></i> QR Code مخصص</li>
+                        <li><i class="fas fa-check"></i> دعم فني 24/7</li>
+                    </ul>
+                    <a href="admin/register.html?plan=pro" class="btn btn-primary btn-lg w-100">ابدأ التجربة المجانية</a>
+                </div>
+
+                <!-- Enterprise Plan -->
+                <div class="pricing-card">
+                    <div class="pricing-header">
+                        <h3>المؤسسات</h3>
+                        <div class="pricing-price">
+                            <span class="currency">ج.م</span>
+                            <span class="amount monthly-price">499</span>
+                            <span class="amount yearly-price" style="display:none;">399</span>
+                            <span class="period">/شهرياً</span>
+                        </div>
+                        <p>لسلاسل المطاعم</p>
+                    </div>
+                    <ul class="pricing-features">
+                        <li><i class="fas fa-check"></i> كل مميزات الاحترافي</li>
+                        <li><i class="fas fa-check"></i> فروع متعددة</li>
+                        <li><i class="fas fa-check"></i> مستخدمين غير محدودين</li>
+                        <li><i class="fas fa-check"></i> API مخصص</li>
+                        <li><i class="fas fa-check"></i> تكاملات مخصصة</li>
+                        <li><i class="fas fa-check"></i> مدير حساب خاص</li>
+                        <li><i class="fas fa-check"></i> SLA مضمون</li>
+                    </ul>
+                    <a href="contact.html" class="btn btn-outline btn-lg w-100">تواصل معنا</a>
+                </div>
             </div>
-          </div>
-          <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-3">
-            <button class="bg-white text-gray-800 px-4 py-2 rounded-full text-sm font-bold">معاينة</button>
-            <button onclick="navigateTo('menu-builder')" class="btn-primary text-white px-4 py-2 rounded-full text-sm font-bold">استخدام</button>
-          </div>
         </div>
-        <div class="mt-3 flex items-center justify-between">
-          <div><h3 class="font-bold">قالب الحلويات</h3><p class="text-gray-400 text-xs">محلات حلويات</p></div>
-          <span class="bg-red-100 text-red-600 text-xs px-2 py-1 rounded-full">مجاني</span>
-        </div>
-      </div>
+    </section>
 
-      <div class="card-hover group">
-        <div class="relative rounded-2xl overflow-hidden shadow-lg">
-          <div class="h-64 bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center p-6">
-            <div class="bg-white/95 rounded-xl p-4 w-full shadow-lg">
-              <h4 class="font-bold text-sm mb-2">☕ كافيه لاونج</h4>
-              <div class="space-y-1 text-xs"><div class="flex justify-between"><span>لاتيه</span><span class="font-bold">22 ر.س</span></div><div class="flex justify-between"><span>كابتشينو</span><span class="font-bold">20 ر.س</span></div></div>
+    <!-- Testimonials Section -->
+    <section id="testimonials" class="testimonials-section">
+        <div class="container">
+            <div class="section-header text-center">
+                <span class="section-badge">آراء العملاء</span>
+                <h2>ماذا يقول عملاؤنا؟</h2>
+                <p>انضم لآلاف المطاعم التي ثقت بمنصتنا</p>
             </div>
-          </div>
-          <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-3">
-            <button class="bg-white text-gray-800 px-4 py-2 rounded-full text-sm font-bold">معاينة</button>
-            <button onclick="navigateTo('menu-builder')" class="btn-primary text-white px-4 py-2 rounded-full text-sm font-bold">استخدام</button>
-          </div>
-        </div>
-        <div class="mt-3 flex items-center justify-between">
-          <div><h3 class="font-bold">قالب الكافيه</h3><p class="text-gray-400 text-xs">كافيهات</p></div>
-          <span class="bg-orange-100 text-orange-600 text-xs px-2 py-1 rounded-full">PRO</span>
-        </div>
-      </div>
 
-      <div class="card-hover group">
-        <div class="relative rounded-2xl overflow-hidden shadow-lg">
-          <div class="h-64 bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center p-6">
-            <div class="bg-white/95 rounded-xl p-4 w-full shadow-lg">
-              <h4 class="font-bold text-sm mb-2">🍣 سوشي بار</h4>
-              <div class="space-y-1 text-xs"><div class="flex justify-between"><span>كاليفورنيا</span><span class="font-bold">65 ر.س</span></div><div class="flex justify-between"><span>سالمون</span><span class="font-bold">75 ر.س</span></div></div>
+            <div class="testimonials-slider">
+                <div class="testimonial-card">
+                    <div class="testimonial-stars">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <p class="testimonial-text">
+                        "منصة رائعة! وفّرت علينا الكثير من الوقت والمجهود. الآن قائمتنا الرقمية احترافية 
+                        والزبائن يطلبون بسهولة عبر واتساب."
+                    </p>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">أ</div>
+                        <div class="author-info">
+                            <h4>أحمد محمد</h4>
+                            <p>صاحب مطعم الزهراء - القاهرة</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="testimonial-card">
+                    <div class="testimonial-stars">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <p class="testimonial-text">
+                        "ميزة الاستيراد بالذكاء الاصطناعي مذهلة! رفعت صورة القائمة القديمة 
+                        وفي دقائق كانت جاهزة. خدمة عملاء ممتازة أيضاً."
+                    </p>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">س</div>
+                        <div class="author-info">
+                            <h4>سارة علي</h4>
+                            <p>مديرة بيتزا روما - الإسكندرية</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="testimonial-card">
+                    <div class="testimonial-stars">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star-half-alt"></i>
+                    </div>
+                    <p class="testimonial-text">
+                        "تحولت طريقة تعاملنا مع الطلبات تماماً. الإحصائيات تساعدنا نفهم 
+                        ما يفضله زبائننا. أنصح بها بشدة!"
+                    </p>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">م</div>
+                        <div class="author-info">
+                            <h4>محمد حسن</h4>
+                            <p>مالك سلسلة مطاعم الشام - جدة</p>
+                        </div>
+                    </div>
+                </div>
             </div>
-          </div>
-          <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-3">
-            <button class="bg-white text-gray-800 px-4 py-2 rounded-full text-sm font-bold">معاينة</button>
-            <button onclick="navigateTo('menu-builder')" class="btn-primary text-white px-4 py-2 rounded-full text-sm font-bold">استخدام</button>
-          </div>
         </div>
-        <div class="mt-3 flex items-center justify-between">
-          <div><h3 class="font-bold">قالب السوشي</h3><p class="text-gray-400 text-xs">مطاعم يابانية</p></div>
-          <span class="bg-orange-100 text-orange-600 text-xs px-2 py-1 rounded-full">PRO</span>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
+    </section>
 
-<!-- ==================== PRICING PAGE ==================== -->
-<div id="page-pricing-page" class="page">
-  <div class="container mx-auto px-6 py-12 fade-in">
-    <div class="text-center mb-12">
-      <span class="inline-block bg-orange-100 text-orange-600 px-4 py-2 rounded-full text-sm font-semibold mb-4">الأسعار</span>
-      <h1 class="text-4xl font-extrabold mb-3">خطط <span class="gradient-text">تناسب الجميع</span></h1>
-      <p class="text-gray-600">ابدأ مجاناً وطوّر حسب احتياجاتك</p>
-      <div class="flex items-center justify-center gap-3 mt-6">
-        <span class="text-sm font-semibold">شهري</span>
-        <div class="toggle-switch" onclick="this.classList.toggle('active')"></div>
-        <span class="text-sm font-semibold">سنوي <span class="text-green-500 text-xs">وفّر 20%</span></span>
-      </div>
-    </div>
-
-    <div class="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-      <div class="card-hover bg-white rounded-3xl p-8 border border-gray-100">
-        <h3 class="text-2xl font-bold mb-1">المبتدئ</h3>
-        <p class="text-gray-500 text-sm mb-4">للمطاعم الصغيرة</p>
-        <div class="mb-6"><span class="text-5xl font-extrabold">مجاني</span></div>
-        <ul class="space-y-3 mb-8 text-sm">
-          <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> قائمة واحدة</li>
-          <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> حتى 20 طبق</li>
-          <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> 3 رموز QR</li>
-          <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> دعم بالبريد</li>
-          <li class="flex items-center gap-2 text-gray-400"><i class="fas fa-times"></i> تحليلات متقدمة</li>
-          <li class="flex items-center gap-2 text-gray-400"><i class="fas fa-times"></i> إزالة العلامة المائية</li>
-        </ul>
-        <button class="w-full py-3 rounded-xl border-2 border-gray-200 font-bold hover:border-orange-500 transition">ابدأ الآن</button>
-      </div>
-
-      <div class="card-hover gradient-bg rounded-3xl p-8 text-white relative shadow-2xl transform md:scale-105">
-        <div class="absolute -top-4 left-1/2 -translate-x-1/2 bg-yellow-400 text-gray-900 px-4 py-1 rounded-full text-sm font-bold">الأكثر شعبية</div>
-        <h3 class="text-2xl font-bold mb-1">الاحترافي</h3>
-        <p class="text-white/80 text-sm mb-4">للمطاعم المتوسطة</p>
-        <div class="mb-6"><span class="text-5xl font-extrabold">99</span><span class="text-lg"> ر.س/شهر</span></div>
-        <ul class="space-y-3 mb-8 text-sm">
-          <li class="flex items-center gap-2"><i class="fas fa-check"></i> قوائم غير محدودة</li>
-          <li class="flex items-center gap-2"><i class="fas fa-check"></i> أطباق غير محدودة</li>
-          <li class="flex items-center gap-2"><i class="fas fa-check"></i> 10 رموز QR</li>
-          <li class="flex items-center gap-2"><i class="fas fa-check"></i> تحليلات متقدمة</li>
-          <li class="flex items-center gap-2"><i class="fas fa-check"></i> إزالة العلامة المائية</li>
-          <li class="flex items-center gap-2"><i class="fas fa-check"></i> دعم 24/7</li>
-        </ul>
-        <button class="w-full py-3 rounded-xl bg-white text-orange-500 font-bold hover:bg-gray-100 transition">ابدأ التجربة</button>
-      </div>
-
-      <div class="card-hover bg-white rounded-3xl p-8 border border-gray-100">
-        <h3 class="text-2xl font-bold mb-1">المؤسسات</h3>
-        <p class="text-gray-500 text-sm mb-4">لسلاسل المطاعم</p>
-        <div class="mb-6"><span class="text-5xl font-extrabold">299</span><span class="text-lg"> ر.س/شهر</span></div>
-        <ul class="space-y-3 mb-8 text-sm">
-          <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> كل مميزات الاحترافي</li>
-          <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> فروع متعددة</li>
-          <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> QR غير محدود</li>
-          <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> API للتكامل</li>
-          <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> مدير حساب مخصص</li>
-          <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> تدريب الفريق</li>
-        </ul>
-        <button class="w-full py-3 rounded-xl border-2 border-gray-200 font-bold hover:border-orange-500 transition">تواصل معنا</button>
-      </div>
-    </div>
-
-    <!-- Comparison Table -->
-    <div class="mt-16 bg-white rounded-2xl shadow-sm overflow-hidden">
-      <div class="p-6 border-b"><h3 class="text-xl font-bold text-center">مقارنة تفصيلية للخطط</h3></div>
-      <div class="overflow-x-auto">
-        <table class="w-full text-sm">
-          <thead class="bg-gray-50"><tr><th class="text-right p-4">الميزة</th><th class="p-4 text-center">المبتدئ</th><th class="p-4 text-center bg-orange-50">الاحترافي</th><th class="p-4 text-center">المؤسسات</th></tr></thead>
-          <tbody>
-            <tr class="border-b"><td class="p-4 font-semibold">عدد القوائم</td><td class="p-4 text-center">1</td><td class="p-4 text-center bg-orange-50">غير محدود</td><td class="p-4 text-center">غير محدود</td></tr>
-            <tr class="border-b"><td class="p-4 font-semibold">عدد الأطباق</td><td class="p-4 text-center">20</td><td class="p-4 text-center bg-orange-50">غير محدود</td><td class="p-4 text-center">غير محدود</td></tr>
-            <tr class="border-b"><td class="p-4 font-semibold">رموز QR</td><td class="p-4 text-center">3</td><td class="p-4 text-center bg-orange-50">10</td><td class="p-4 text-center">غير محدود</td></tr>
-            <tr class="border-b"><td class="p-4 font-semibold">التحليلات</td><td class="p-4 text-center">أساسية</td><td class="p-4 text-center bg-orange-50">متقدمة</td><td class="p-4 text-center">متقدمة + API</td></tr>
-            <tr class="border-b"><td class="p-4 font-semibold">الدعم الفني</td><td class="p-4 text-center">بريد</td><td class="p-4 text-center bg-orange-50">24/7</td><td class="p-4 text-center">مدير مخصص</td></tr>
-            <tr><td class="p-4 font-semibold">العلامة المائية</td><td class="p-4 text-center">✓</td><td class="p-4 text-center bg-orange-50 text-green-500">✗</td><td class="p-4 text-center text-green-500">✗</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ==================== ABOUT PAGE ==================== -->
-<div id="page-about-page" class="page">
-  <div class="container mx-auto px-6 py-12 fade-in">
-    <div class="text-center mb-12">
-      <span class="inline-block bg-orange-100 text-orange-600 px-4 py-2 rounded-full text-sm font-semibold mb-4">من نحن</span>
-      <h1 class="text-4xl font-extrabold mb-3">قصتنا <span class="gradient-text">ورؤيتنا</span></h1>
-      <p class="text-gray-600 max-w-2xl mx-auto">نساعد المطاعم على التحول الرقمي بأدوات بسيطة وفعّالة</p>
-    </div>
-
-    <div class="grid md:grid-cols-2 gap-12 items-center mb-16">
-      <div>
-        <h2 class="text-3xl font-extrabold mb-4">رحلتنا بدأت من <span class="gradient-text">فكرة بسيطة</span></h2>
-        <p class="text-gray-600 mb-4 leading-relaxed">في عام 2022، لاحظنا أن معظم المطاعم لا تزال تعتمد على القوائم الورقية التقليدية التي يصعب تحديثها وتكلف الكثير في الطباعة. قررنا إيجاد حل.</p>
-        <p class="text-gray-600 mb-4 leading-relaxed">اليوم، نخدم أكثر من 2,500 مطعم في المنطقة العربية، ونساعد يومياً في تحويل آلاف العمليات إلى تجارب رقمية سلسة.</p>
-        <div class="grid grid-cols-3 gap-4 mt-6">
-          <div class="text-center"><div class="text-3xl font-extrabold gradient-text">2022</div><p class="text-xs text-gray-500">سنة التأسيس</p></div>
-          <div class="text-center"><div class="text-3xl font-extrabold gradient-text">15+</div><p class="text-xs text-gray-500">دولة</p></div>
-          <div class="text-center"><div class="text-3xl font-extrabold gradient-text">50+</div><p class="text-xs text-gray-500">فريق العمل</p></div>
-        </div>
-      </div>
-      <div class="bg-gradient-to-br from-orange-100 to-yellow-100 rounded-3xl p-8">
-        <div class="grid grid-cols-2 gap-4">
-          <div class="bg-white rounded-2xl p-4 text-center shadow-sm"><i class="fas fa-bullseye text-orange-500 text-2xl mb-2"></i><h4 class="font-bold text-sm">رسالتنا</h4><p class="text-xs text-gray-500 mt-1">تمكين المطاعم بأدوات رقمية مبتكرة</p></div>
-          <div class="bg-white rounded-2xl p-4 text-center shadow-sm"><i class="fas fa-eye text-orange-500 text-2xl mb-2"></i><h4 class="font-bold text-sm">رؤيتنا</h4><p class="text-xs text-gray-500 mt-1">أن نكون المنصة الأولى عربياً</p></div>
-          <div class="bg-white rounded-2xl p-4 text-center shadow-sm"><i class="fas fa-heart text-orange-500 text-2xl mb-2"></i><h4 class="font-bold text-sm">قيمنا</h4><p class="text-xs text-gray-500 mt-1">الابتكار، الجودة، الشفافية</p></div>
-          <div class="bg-white rounded-2xl p-4 text-center shadow-sm"><i class="fas fa-users text-orange-500 text-2xl mb-2"></i><h4 class="font-bold text-sm">فريقنا</h4><p class="text-xs text-gray-500 mt-1">+50 خبير في التقنية والتصميم</p></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Team -->
-    <div class="text-center mb-10">
-      <h2 class="text-3xl font-extrabold mb-3">فريق <span class="gradient-text">القيادة</span></h2>
-    </div>
-    <div class="grid md:grid-cols-4 gap-6">
-      <div class="text-center card-hover bg-white rounded-2xl p-6 shadow-sm">
-        <div class="w-20 h-20 gradient-bg rounded-full mx-auto mb-3 flex items-center justify-center text-white text-2xl font-bold">مع</div>
-        <h4 class="font-bold">محمد العلي</h4>
-        <p class="text-sm text-gray-500">المؤسس والرئيس التنفيذي</p>
-      </div>
-      <div class="text-center card-hover bg-white rounded-2xl p-6 shadow-sm">
-        <div class="w-20 h-20 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full mx-auto mb-3 flex items-center justify-center text-white text-2xl font-bold">سأ</div>
-        <h4 class="font-bold">سارة أحمد</h4>
-        <p class="text-sm text-gray-500">مديرة المنتج</p>
-      </div>
-      <div class="text-center card-hover bg-white rounded-2xl p-6 shadow-sm">
-        <div class="w-20 h-20 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full mx-auto mb-3 flex items-center justify-center text-white text-2xl font-bold">خف</div>
-        <h4 class="font-bold">خالد الفهد</h4>
-        <p class="text-sm text-gray-500">المدير التقني</p>
-      </div>
-      <div class="text-center card-hover bg-white rounded-2xl p-6 shadow-sm">
-        <div class="w-20 h-20 bg-gradient-to-br from-green-500 to-emerald-500 rounded-full mx-auto mb-3 flex items-center justify-center text-white text-2xl font-bold">نخ</div>
-        <h4 class="font-bold">نورة الخالد</h4>
-        <p class="text-sm text-gray-500">مديرة التسويق</p>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ==================== BLOG PAGE ==================== -->
-<div id="page-blog-page" class="page">
-  <div class="container mx-auto px-6 py-12 fade-in">
-    <div class="text-center mb-12">
-      <span class="inline-block bg-orange-100 text-orange-600 px-4 py-2 rounded-full text-sm font-semibold mb-4">المدونة</span>
-      <h1 class="text-4xl font-extrabold mb-3">أحدث <span class="gradient-text">المقالات</span></h1>
-      <p class="text-gray-600">نصائح وحيل لتطوير أعمالك في مجال المطاعم</p>
-    </div>
-
-    <!-- Featured Post -->
-    <div class="bg-white rounded-3xl shadow-sm overflow-hidden mb-10 card-hover">
-      <div class="grid md:grid-cols-2">
-        <div class="h-64 md:h-auto bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center">
-          <i class="fas fa-newspaper text-white/30 text-8xl"></i>
-        </div>
-        <div class="p-8">
-          <span class="inline-block bg-orange-100 text-orange-600 px-3 py-1 rounded-full text-xs font-semibold mb-3">مقال مميز</span>
-          <h2 class="text-2xl font-extrabold mb-3">10 نصائح لزيادة مبيعات مطعمك باستخدام القائمة الرقمية</h2>
-          <p class="text-gray-600 mb-4 leading-relaxed">اكتشف كيف يمكن للقائمة الرقمية أن تحول تجربة عملائك وتزيد من مبيعاتك بنسبة تصل إلى 30%...</p>
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-2">
-              <div class="w-8 h-8 gradient-bg rounded-full flex items-center justify-center text-white text-xs font-bold">مع</div>
-              <div><p class="text-sm font-semibold">محمد العلي</p><p class="text-xs text-gray-400">15 ديسمبر 2024 • 5 دقائق قراءة</p></div>
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="container">
+            <div class="cta-content">
+                <h2>جاهز لتحويل قائمتك؟</h2>
+                <p>انضم إلى أكثر من 500 مطعم يستخدم MezoMenu اليوم</p>
+                <div class="cta-actions">
+                    <a href="admin/register.html" class="btn btn-primary btn-lg">
+                        <i class="fas fa-rocket"></i>
+                        ابدأ مجاناً - لا تحتاج بطاقة ائتمان
+                    </a>
+                    <a href="contact.html" class="btn btn-white btn-lg">
+                        <i class="fas fa-phone-alt"></i>
+                        تحدث مع فريق المبيعات
+                    </a>
+                </div>
+                <div class="cta-trust">
+                    <span><i class="fas fa-check-circle"></i> تجربة مجانية 14 يوم</span>
+                    <span><i class="fas fa-check-circle"></i> إلغاء في أي وقت</span>
+                    <span><i class="fas fa-check-circle"></i> دعم فني مجاني</span>
+                </div>
             </div>
-            <button class="text-orange-500 font-semibold text-sm hover:underline">اقرأ المزيد ←</button>
-          </div>
         </div>
-      </div>
-    </div>
+    </section>
 
-    <div class="grid md:grid-cols-3 gap-6">
-      <div class="card-hover bg-white rounded-2xl overflow-hidden shadow-sm">
-        <div class="h-40 bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center"><i class="fas fa-chart-line text-white/30 text-5xl"></i></div>
-        <div class="p-5">
-          <span class="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded-full">تحليلات</span>
-          <h3 class="font-bold mt-2 mb-2">كيف تقرأ بيانات قائمتك الرقمية</h3>
-          <p class="text-sm text-gray-500 mb-3">دليل شامل لفهم التحليلات واتخاذ قرارات ذكية...</p>
-          <p class="text-xs text-gray-400">10 ديسمبر 2024 • 4 دقائق</p>
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <a href="#" class="logo">
+                        <span class="logo-icon">🍽️</span>
+                        <span class="logo-text">Mezo<span>Menu</span></span>
+                    </a>
+                    <p>نظام القوائم الرقمية الأول للمطاعم في الشرق الأوسط. نساعد المطاعم على النمو والتطور الرقمي.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+
+                <div class="footer-links">
+                    <h4>المنصة</h4>
+                    <a href="#features">المميزات</a>
+                    <a href="#pricing">الأسعار</a>
+                    <a href="#">التكاملات</a>
+                    <a href="#">API</a>
+                </div>
+
+                <div class="footer-links">
+                    <h4>الدعم</h4>
+                    <a href="#">مركز المساعدة</a>
+                    <a href="#">الدروس التعليمية</a>
+                    <a href="#">الأسئلة الشائعة</a>
+                    <a href="contact.html">تواصل معنا</a>
+                </div>
+
+                <div class="footer-links">
+                    <h4>الشركة</h4>
+                    <a href="#">من نحن</a>
+                    <a href="#"> المدونة</a>
+                    <a href="#">وظائف</a>
+                    <a href="#">شركاء النجاح</a>
+                </div>
+
+                <div class="footer-newsletter">
+                    <h4>النشرة البريدية</h4>
+                    <p>اشترك لتصلك آخر التحديثات والعروض</p>
+                    <form class="newsletter-form" onsubmit="event.preventDefault(); Toast.success('شكراً لاشتراكك!');">
+                        <input type="email" placeholder="بريدك الإلكتروني" required>
+                        <button type="submit"><i class="fas fa-paper-plane"></i></button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2024 MezoMenu. جميع الحقوق محفوظة.</p>
+                <div class="footer-legal">
+                    <a href="#">سياسة الخصوصية</a>
+                    <a href="#">الشروط والأحكام</a>
+                </div>
+            </div>
         </div>
-      </div>
-      <div class="card-hover bg-white rounded-2xl overflow-hidden shadow-sm">
-        <div class="h-40 bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center"><i class="fas fa-qrcode text-white/30 text-5xl"></i></div>
-        <div class="p-5">
-          <span class="text-xs bg-green-100 text-green-600 px-2 py-1 rounded-full">نصائح</span>
-          <h3 class="font-bold mt-2 mb-2">أفضل الممارسات لوضع QR Code</h3>
-          <p class="text-sm text-gray-500 mb-3">أين تضع رموز QR في مطعمك للحصول على أفضل نتائج...</p>
-          <p class="text-xs text-gray-400">5 ديسمبر 2024 • 3 دقائق</p>
-        </div>
-      </div>
-      <div class="card-hover bg-white rounded-2xl overflow-hidden shadow-sm">
-        <div class="h-40 bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center"><i class="fas fa-camera text-white/30 text-5xl"></i></div>
-        <div class="p-5">
-          <span class="text-xs bg-purple-100 text-purple-600 px-2 py-1 rounded-full">تصوير</span>
-          <h3 class="font-bold mt-2 mb-2">تصوير الأطباق باحترافية بهاتفك</h3>
-          <p class="text-sm text-gray-500 mb-3">نصائح لتصوير أطباقك بشكل جذاب دون معدات باهظة...</p>
-          <p class="text-xs text-gray-400">1 ديسمبر 2024 • 6 دقائق</p>
-        </div>
-      </div>
-      <div class="card-hover bg-white rounded-2xl overflow-hidden shadow-sm">
-        <div class="h-40 bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center"><i class="fas fa-lightbulb text-white/30 text-5xl"></i></div>
-        <div class="p-5">
-          <span class="text-xs bg-amber-100 text-amber-600 px-2 py-1 rounded-full">أفكار</span>
-          <h3 class="font-bold mt-2 mb-2">5 اتجاهات في القوائم الرقمية لعام 2025</h3>
-          <p class="text-sm text-gray-500 mb-3">ما الذي يمكن أن نتوقعه في عالم القوائم الرقمية...</p>
-          <p class="text-xs text-gray-400">28 نوفمبر 2024 • 5 دقائق</p>
-        </div>
-      </div>
-      <div class="card-hover bg-white rounded-2xl overflow-hidden shadow-sm">
-        <div class="h-40 bg-gradient-to-br from-red-400 to-rose-500 flex items-center justify-center"><i class="fas fa-utensils text-white/30 text-5xl"></i></div>
-        <div class="p-5">
-          <span class="text-xs bg-red-100 text-red-600 px-2 py-1 rounded-full">دليل</span>
-          <h3 class="font-bold mt-2 mb-2">كيف تنظم قائمة مطعمك بفعالية</h3>
-          <p class="text-sm text-gray-500 mb-3">استراتيجيات ترتيب الأطباق لزيادة المبيعات...</p>
-          <p class="text-xs text-gray-400">22 نوفمبر 2024 • 7 دقائق</p>
-        </div>
-      </div>
-      <div class="card-hover bg-white rounded-2xl overflow-hidden shadow-sm">
-        <div class="h-40 bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center"><i class="fas fa-mobile-alt text-white/30 text-5xl"></i></div>
-        <div class="p-5">
-          <span class="text-xs bg-teal-100 text-teal-600 px-2 py-1 rounded-full">تقنية</span>
-          <h3 class="font-bold mt-2 mb-2">لماذا القائمة الرقمية أفضل من التطبيق</h3>
-          <p class="text-sm text-gray-500 mb-3">مقارنة شاملة بين القوائم الرقمية وتطبيقات المطاعم...</p>
-          <p class="text-xs text-gray-400">18 نوفمبر 2024 • 4 دقائق</p>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
+    </footer>
 
-<!-- ==================== FAQ PAGE ==================== -->
-<div id="page-faq-page" class="page">
-  <div class="container mx-auto px-6 py-12 fade-in">
-    <div class="text-center mb-12">
-      <span class="inline-block bg-orange-100 text-orange-600 px-4 py-2 rounded-full text-sm font-semibold mb-4">الأسئلة الشائعة</span>
-      <h1 class="text-4xl font-extrabold mb-3">هل لديك <span class="gradient-text">سؤال؟</span></h1>
-      <p class="text-gray-600">إجابات على أكثر الأسئلة شيوعاً</p>
-    </div>
+    <!-- Scripts -->
+    <script src="assets/js/main.js"></script>
+    <script>
+        // Mobile menu toggle
+        document.getElementById('mobileMenuToggle').addEventListener('click', () => {
+            document.getElementById('mobileMenu').classList.toggle('active');
+        });
 
-    <div class="max-w-3xl mx-auto space-y-3">
-      <div class="faq-item bg-white rounded-2xl shadow-sm overflow-hidden">
-        <button onclick="this.parentElement.classList.toggle('open')" class="w-full flex items-center justify-between p-5 text-right">
-          <span class="font-bold">ما هو Digital Menu Hub؟</span>
-          <i class="fas fa-chevron-down faq-icon text-orange-500"></i>
-        </button>
-        <div class="faq-answer px-5"><p class="pb-5 text-gray-600 leading-relaxed">Digital Menu Hub هو منصة لإنشاء وإدارة القوائم الرقمية للمطاعم والكافيهات. يمكنك إنشاء قائمة تفاعلية جميلة ومشاركتها مع عملائك عبر رمز QR واحد.</p></div>
-      </div>
+        // Pricing toggle
+        document.getElementById('pricingToggle').addEventListener('change', (e) => {
+            const isYearly = e.target.checked;
+            document.querySelectorAll('.monthly-price').forEach(el => {
+                el.style.display = isYearly ? 'none' : 'inline';
+            });
+            document.querySelectorAll('.yearly-price').forEach(el => {
+                el.style.display = isYearly ? 'inline' : 'none';
+            });
+        });
 
-      <div class="faq-item bg-white rounded-2xl shadow-sm overflow-hidden">
-        <button onclick="this.parentElement.classList.toggle('open')" class="w-full flex items-center justify-between p-5 text-right">
-          <span class="font-bold">هل يمكنني استخدام المنصة مجاناً؟</span>
-          <i class="fas fa-chevron-down faq-icon text-orange-500"></i>
-        </button>
-        <div class="faq-answer px-5"><p class="pb-5 text-gray-600 leading-relaxed">نعم! نوفر خطة مجانية تتيح لك إنشاء قائمة واحدة حتى 20 طبق مع 3 رموز QR. يمكنك الترقية في أي وقت للحصول على مميزات إضافية.</p></div>
-      </div>
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    // Close mobile menu if open
+                    document.getElementById('mobileMenu').classList.remove('active');
+                }
+            });
+        });
+    </script>
 
-      <div class="faq-item bg-white rounded-2xl shadow-sm overflow-hidden">
-        <button onclick="this.parentElement.classList.toggle('open')" class="w-full flex items-center justify-between p-5 text-right">
-          <span class="font-bold">هل أحتاج خبرة تقنية لاستخدام المنصة؟</span>
-          <i class="fas fa-chevron-down faq-icon text-orange-500"></i>
-        </button>
-        <div class="faq-answer px-5"><p class="pb-5 text-gray-600 leading-relaxed">لا أبداً! المنصة مصممة لتكون سهلة الاستخدام. يمكنك إنشاء قائمتك الرقمية في أقل من 10 دقائق بدون أي خبرة تقنية.</p></div>
-      </div>
+    <!-- Additional Styles for Landing Page -->
+    <style>
+        /* Navbar */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+        }
 
-      <div class="faq-item bg-white rounded-2xl shadow-sm overflow-hidden">
-        <button onclick="this.parentElement.classList.toggle('open')" class="w-full flex items-center justify-between p-5 text-right">
-          <span class="font-bold">هل يمكنني تخصيص تصميم القائمة؟</span>
-          <i class="fas fa-chevron-down faq-icon text-orange-500"></i>
-        </button>
-        <div class="faq-answer px-5"><p class="pb-5 text-gray-600 leading-relaxed">بالتأكيد! يمكنك اختيار من بين قوالب جاهزة أو تخصيص الألوان والخطوط والشعار لتناسب هوية مطعمك التجارية.</p></div>
-      </div>
+        .nav-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 70px;
+        }
 
-      <div class="faq-item bg-white rounded-2xl shadow-sm overflow-hidden">
-        <button onclick="this.parentElement.classList.toggle('open')" class="w-full flex items-center justify-between p-5 text-right">
-          <span class="font-bold">هل تدعم المنصة لغات متعددة؟</span>
-          <i class="fas fa-chevron-down faq-icon text-orange-500"></i>
-        </button>
-        <div class="faq-answer px-5"><p class="pb-5 text-gray-600 leading-relaxed">نعم، ندعم أكثر من 20 لغة بما في ذلك العربية والإنجليزية والفرنسية. يمكن لعملائك التبديل بين اللغات بسهولة.</p></div>
-      </div>
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--dark-color);
+            text-decoration: none;
+        }
 
-      <div class="faq-item bg-white rounded-2xl shadow-sm overflow-hidden">
-        <button onclick="this.parentElement.classList.toggle('open')" class="w-full flex items-center justify-between p-5 text-right">
-          <span class="font-bold">كيف يمكنني طباعة رموز QR؟</span>
-          <i class="fas fa-chevron-down faq-icon text-orange-500"></i>
-        </button>
-        <div class="faq-answer px-5"><p class="pb-5 text-gray-600 leading-relaxed">يمكنك تحميل رموز QR بصيغة PNG أو PDF عالية الجودة وطباعتها. كما نوفر قوالب جاهزة للطباعة بتصاميم أنيقة.</p></div>
-      </div>
+        .logo-icon { font-size: 2rem; }
+        .logo-text span { color: var(--primary-color); }
 
-      <div class="faq-item bg-white rounded-2xl shadow-sm overflow-hidden">
-        <button onclick="this.parentElement.classList.toggle('open')" class="w-full flex items-center justify-between p-5 text-right">
-          <span class="font-bold">هل يمكنني إلغاء اشتراكي في أي وقت؟</span>
-          <i class="fas fa-chevron-down faq-icon text-orange-500"></i>
-        </button>
-        <div class="faq-answer px-5"><p class="pb-5 text-gray-600 leading-relaxed">نعم، يمكنك إلغاء اشتراكك في أي وقت بدون أي رسوم إضافية. ستستمر في الاستفادة من الخدمة حتى نهاية فترة الفوترة الحالية.</p></div>
-      </div>
+        .nav-links {
+            display: flex;
+            gap: 32px;
+        }
 
-      <div class="faq-item bg-white rounded-2xl shadow-sm overflow-hidden">
-        <button onclick="this.parentElement.classList.toggle('open')" class="w-full flex items-center justify-between p-5 text-right">
-          <span class="font-bold">هل بياناتي آمنة؟</span>
-          <i class="fas fa-chevron-down faq-icon text-orange-500"></i>
-        </button>
-        <div class="faq-answer px-5"><p class="pb-5 text-gray-600 leading-relaxed">بالتأكيد! نستخدم تشفير SSL ونسخ احتياطية يومية. بياناتك محمية بأعلى معايير الأمان ونحن ملتزمون بحماية خصوصيتك.</p></div>
-      </div>
-    </div>
+        .nav-links a {
+            color: var(--gray-700);
+            font-weight: 600;
+            transition: var(--transition-fast);
+        }
 
-    <div class="text-center mt-12">
-      <p class="text-gray-600 mb-4">لم تجد إجابة سؤالك؟</p>
-      <button onclick="navigateTo('home')" class="btn-primary text-white px-6 py-3 rounded-full font-bold">تواصل معنا</button>
-    </div>
-  </div>
-</div>
+        .nav-links a:hover { color: var(--primary-color); }
 
-</main>
+        .nav-actions { display: flex; gap: 12px; }
 
-<!-- ==================== ADD ITEM MODAL ==================== -->
-<div id="addItemModal" class="hidden fixed inset-0 z-[60]">
-  <div class="modal-overlay absolute inset-0 bg-black/50" onclick="closeAddItemModal()"></div>
-  <div class="modal-content absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-3xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
-    <div class="flex items-center justify-between mb-6">
-      <h3 class="text-xl font-extrabold">إضافة طبق جديد</h3>
-      <button onclick="closeAddItemModal()" class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200"><i class="fas fa-times"></i></button>
-    </div>
-    <form onsubmit="event.preventDefault(); addItem(); closeAddItemModal();" class="space-y-4">
-      <div>
-        <label class="block text-sm font-semibold mb-2">اسم الطبق *</label>
-        <input id="itemName" type="text" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-orange-500 focus:outline-none" placeholder="مثال: بيتزا مارغريتا" required>
-      </div>
-      <div>
-        <label class="block text-sm font-semibold mb-2">الوصف</label>
-        <textarea id="itemDesc" rows="2" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-orange-500 focus:outline-none" placeholder="وصف مختصر للطبق..."></textarea>
-      </div>
-      <div class="grid grid-cols-2 gap-4">
-        <div>
-          <label class="block text-sm font-semibold mb-2">السعر *</label>
-          <input id="itemPrice" type="number" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-orange-500 focus:outline-none" placeholder="0" required>
-        </div>
-        <div>
-          <label class="block text-sm font-semibold mb-2">الأيقونة</label>
-          <select id="itemIcon" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-orange-500 focus:outline-none">
-            <option>🍕</option><option>🍔</option><option>🥗</option><option>🍗</option><option>🍖</option><option>🍝</option><option>🍰</option><option>🥤</option><option>☕</option><option>🧆</option><option>🍣</option><option>🌮</option>
-          </select>
-        </div>
-      </div>
-      <div>
-        <label class="block text-sm font-semibold mb-2">القسم</label>
-        <select class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-orange-500 focus:outline-none">
-          <option>المقبلات</option><option>الأطباق الرئيسية</option><option>البيتزا</option><option>المشروبات</option><option>الحلويات</option>
-        </select>
-      </div>
-      <div class="flex flex-wrap gap-2">
-        <label class="flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-lg cursor-pointer"><input type="checkbox" class="accent-orange-500"><span class="text-sm">متوفر</span></label>
-        <label class="flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-lg cursor-pointer"><input type="checkbox" class="accent-orange-500"><span class="text-sm">حار 🌶️</span></label>
-        <label class="flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-lg cursor-pointer"><input type="checkbox" class="accent-orange-500"><span class="text-sm">نباتي 🌱</span></label>
-        <label class="flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-lg cursor-pointer"><input type="checkbox" class="accent-orange-500"><span class="text-sm">جديد ✨</span></label>
-        <label class="flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-lg cursor-pointer"><input type="checkbox" class="accent-orange-500"><span class="text-sm">الأكثر طلباً 🔥</span></label>
-      </div>
-      <div>
-        <label class="block text-sm font-semibold mb-2">صورة الطبق</label>
-        <div class="border-2 border-dashed border-gray-200 rounded-xl p-6 text-center cursor-pointer hover:border-orange-500 transition">
-          <i class="fas fa-cloud-upload-alt text-3xl text-gray-300 mb-2"></i>
-          <p class="text-sm text-gray-500">اسحب الصورة هنا أو <span class="text-orange-500 font-semibold">تصفح</span></p>
-          <p class="text-xs text-gray-400 mt-1">PNG, JPG حتى 5MB</p>
-        </div>
-      </div>
-      <button type="submit" class="btn-primary w-full text-white py-3 rounded-xl font-bold">إضافة الطبق</button>
-    </form>
-  </div>
-</div>
+        .mobile-menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--gray-700);
+        }
 
-<!-- ==================== FOOTER (Public Pages Only) ==================== -->
-<footer id="publicFooter" class="bg-gray-900 text-white pt-12 pb-6">
-  <div class="container mx-auto px-6">
-    <div class="grid md:grid-cols-4 gap-8 mb-10">
-      <div>
-        <div class="flex items-center gap-2 mb-4">
-          <div class="w-10 h-10 gradient-bg rounded-xl flex items-center justify-center"><i class="fas fa-utensils text-white"></i></div>
-          <span class="text-lg font-bold">DigitalMenuHub</span>
-        </div>
-        <p class="text-gray-400 text-sm leading-relaxed">الحل الأمثل لإنشاء قوائم رقمية تفاعلية للمطاعم والكافيهات.</p>
-      </div>
-      <div>
-        <h4 class="font-bold mb-4">المنتج</h4>
-        <ul class="space-y-2 text-gray-400 text-sm">
-          <li><a onclick="navigateTo('templates-page')" class="cursor-pointer hover:text-orange-500 transition">القوالب</a></li>
-          <li><a onclick="navigateTo('pricing-page')" class="cursor-pointer hover:text-orange-500 transition">الأسعار</a></li>
-          <li><a href="#" class="hover:text-orange-500 transition">المميزات</a></li>
-          <li><a href="#" class="hover:text-orange-500 transition">التحديثات</a></li>
-        </ul>
-      </div>
-      <div>
-        <h4 class="font-bold mb-4">الشركة</h4>
-        <ul class="space-y-2 text-gray-400 text-sm">
-          <li><a onclick="navigateTo('about-page')" class="cursor-pointer hover:text-orange-500 transition">من نحن</a></li>
-          <li><a onclick="navigateTo('blog-page')" class="cursor-pointer hover:text-orange-500 transition">المدونة</a></li>
-          <li><a onclick="navigateTo('faq-page')" class="cursor-pointer hover:text-orange-500 transition">الأسئلة الشائعة</a></li>
-          <li><a href="#" class="hover:text-orange-500 transition">تواصل معنا</a></li>
-        </ul>
-      </div>
-      <div>
-        <h4 class="font-bold mb-4">تابعنا</h4>
-        <div class="flex gap-3 mb-4">
-          <a href="#" class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-orange-500 transition"><i class="fab fa-twitter"></i></a>
-          <a href="#" class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-orange-500 transition"><i class="fab fa-instagram"></i></a>
-          <a href="#" class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-orange-500 transition"><i class="fab fa-linkedin-in"></i></a>
-          <a href="#" class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-orange-500 transition"><i class="fab fa-youtube"></i></a>
-        </div>
-        <div class="flex gap-2">
-          <input type="email" placeholder="بريدك الإلكتروني" class="flex-1 px-3 py-2 rounded-lg bg-gray-800 border border-gray-700 focus:border-orange-500 focus:outline-none text-sm">
-          <button class="btn-primary px-3 py-2 rounded-lg"><i class="fas fa-paper-plane"></i></button>
-        </div>
-      </div>
-    </div>
-    <div class="border-t border-gray-800 pt-6 flex flex-col md:flex-row justify-between items-center gap-4">
-      <p class="text-gray-400 text-sm">© 2024 Digital Menu Hub. جميع الحقوق محفوظة.</p>
-      <div class="flex gap-6 text-sm text-gray-400">
-        <a href="#" class="hover:text-orange-500 transition">سياسة الخصوصية</a>
-        <a href="#" class="hover:text-orange-500 transition">الشروط والأحكام</a>
-      </div>
-    </div>
-  </div>
-</footer>
+        .mobile-menu {
+            display: none;
+            position: absolute;
+            top: 70px;
+            left: 0;
+            right: 0;
+            background: var(--white);
+            padding: 20px;
+            box-shadow: var(--shadow-lg);
+            flex-direction: column;
+            gap: 12px;
+        }
 
-<script>
-// Dashboard pages
-const dashboardPages = ['dashboard', 'my-menus', 'menu-builder', 'qr-codes', 'analytics', 'orders', 'settings', 'subscription'];
-const publicPages = ['home', 'login', 'register', 'templates-page', 'pricing-page', 'about-page', 'blog-page', 'faq-page'];
+        .mobile-menu.active { display: flex; }
+        .mobile-menu a { padding: 12px; border-radius: var(--radius-md); }
+        .mobile-menu a:hover { background: var(--gray-100); }
 
-let currentPage = 'home';
-let sidebarOpen = window.innerWidth >= 1024;
+        @media (max-width: 768px) {
+            .nav-links, .nav-actions { display: none; }
+            .mobile-menu-toggle { display: block; }
+        }
 
-function navigateTo(page) {
-  // Hide all pages
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  
-  // Show target page
-  const targetPage = document.getElementById('page-' + page);
-  if (targetPage) {
-    targetPage.classList.add('active');
-    currentPage = page;
-  }
+        /* Hero */
+        .hero {
+            min-height: 100vh;
+            padding-top: 70px;
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(135deg, #fff9f5 0%, #fff 50%, #f0f7ff 100%);
+        }
 
-  // Toggle navbars
-  const isDashboard = dashboardPages.includes(page);
-  document.getElementById('publicNav').classList.toggle('hidden', isDashboard);
-  document.getElementById('dashboardNav').classList.toggle('hidden', !isDashboard);
-  document.getElementById('sidebar').classList.toggle('hidden', !isDashboard || !sidebarOpen);
-  document.getElementById('publicFooter').classList.toggle('hidden', isDashboard);
+        .hero-bg {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(255,107,53,0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(247,147,30,0.1) 0%, transparent 50%);
+        }
 
-  // Update main padding
-  const main = document.getElementById('mainContent');
-  if (isDashboard) {
-    main.classList.add('md:mr-64');
-    main.classList.remove('pt-16');
-    main.style.paddingTop = '4rem';
-  } else {
-    main.classList.remove('md:mr-64');
-    main.classList.add('pt-16');
-    main.style.paddingTop = '';
-  }
+        .hero-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: center;
+            min-height: calc(100vh - 70px);
+            padding-top: 40px;
+            padding-bottom: 40px;
+        }
 
-  // Update sidebar active state
-  document.querySelectorAll('.sidebar-item').forEach(item => {
-    item.classList.remove('active');
-    if (item.dataset.page === page) item.classList.add('active');
-  });
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, rgba(255,107,53,0.1), rgba(247,147,30,0.1));
+            color: var(--primary-color);
+            padding: 8px 20px;
+            border-radius: var(--radius-full);
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 24px;
+        }
 
-  // Scroll to top
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
+        .hero-title {
+            font-size: 3.5rem;
+            line-height: 1.2;
+            margin-bottom: 24px;
+        }
 
-function toggleSidebar() {
-  sidebarOpen = !sidebarOpen;
-  const sidebar = document.getElementById('sidebar');
-  const main = document.getElementById('mainContent');
-  
-  if (sidebarOpen) {
-    sidebar.classList.remove('hidden');
-    main.classList.add('md:mr-64');
-  } else {
-    sidebar.classList.add('hidden');
-    main.classList.remove('md:mr-64');
-  }
-}
+        .gradient-text {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
 
-function toggleMobileMenu() {
-  document.getElementById('mobileMenu').classList.toggle('hidden');
-}
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: var(--gray-600);
+            line-height: 1.8;
+            margin-bottom: 32px;
+        }
 
-function openAddItemModal() {
-  document.getElementById('addItemModal').classList.remove('hidden');
-  document.body.style.overflow = 'hidden';
-}
+        .hero-actions {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 48px;
+            flex-wrap: wrap;
+        }
 
-function closeAddItemModal() {
-  document.getElementById('addItemModal').classList.add('hidden');
-  document.body.style.overflow = '';
-}
+        .hero-stats {
+            display: flex;
+            align-items: center;
+            gap: 32px;
+            padding: 24px;
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-md);
+            width: fit-content;
+        }
 
-function addItem() {
-  const name = document.getElementById('itemName').value;
-  const desc = document.getElementById('itemDesc').value;
-  const price = document.getElementById('itemPrice').value;
-  const icon = document.getElementById('itemIcon').value;
+        .stat-item strong {
+            display: block;
+            font-size: 1.75rem;
+            color: var(--dark-color);
+        }
 
-  if (!name || !price) return;
+        .stat-item span {
+            font-size: 0.85rem;
+            color: var(--gray-600);
+        }
 
-  const list = document.getElementById('menuItemsList');
-  const newItem = document.createElement('div');
-  newItem.className = 'menu-item-card flex items-center gap-4 p-4 rounded-xl border border-gray-100 hover:border-orange-300 fade-in';
-  newItem.innerHTML = `
-    <div class="drag-handle text-gray-300 hover:text-gray-500"><i class="fas fa-grip-vertical"></i></div>
-    <div class="w-16 h-16 bg-orange-50 rounded-xl flex items-center justify-center text-3xl">${icon}</div>
-    <div class="flex-1">
-      <h4 class="font-bold">${name}</h4>
-      <p class="text-xs text-gray-500">${desc || 'بدون وصف'}</p>
-      <div class="flex items-center gap-2 mt-1">
-        <span class="text-orange-500 font-bold text-sm">${price} ر.س</span>
-        <span class="bg-green-100 text-green-600 text-xs px-2 py-0.5 rounded-full">متوفر</span>
-      </div>
-    </div>
-    <div class="flex gap-2">
-      <button class="w-8 h-8 bg-gray-50 rounded-lg flex items-center justify-center hover:bg-orange-50 hover:text-orange-500 transition"><i class="fas fa-edit text-xs"></i></button>
-      <button onclick="this.closest('.menu-item-card').remove()" class="w-8 h-8 bg-gray-50 rounded-lg flex items-center justify-center hover:bg-red-50 hover:text-red-500 transition"><i class="fas fa-trash text-xs"></i></button>
-    </div>
-  `;
-  list.appendChild(newItem);
+        .stat-divider {
+            width: 1px;
+            height: 40px;
+            background: var(--gray-200);
+        }
 
-  // Reset form
-  document.getElementById('itemName').value = '';
-  document.getElementById('itemDesc').value = '';
-  document.getElementById('itemPrice').value = '';
-}
+        /* Phone Mockup */
+        .hero-image { display: flex; justify-content: center; }
 
-function addCategory() {
-  const name = prompt('أدخل اسم القسم الجديد:');
-  if (name) {
-    const list = document.getElementById('categoriesList');
-    const span = document.createElement('span');
-    span.className = 'bg-gray-100 text-gray-600 px-4 py-2 rounded-full text-sm font-semibold cursor-pointer hover:bg-gray-200';
-    span.textContent = name;
-    list.appendChild(span);
-  }
-}
+        .phone-mockup {
+            width: 300px;
+            height: 600px;
+            background: #1a1a2e;
+            border-radius: 40px;
+            padding: 12px;
+            box-shadow: 0 50px 100px rgba(0,0,0,0.25);
+            position: relative;
+        }
 
-// Handle responsive sidebar
-window.addEventListener('resize', () => {
-  if (window.innerWidth >= 1024 && dashboardPages.includes(currentPage)) {
-    sidebarOpen = true;
-    document.getElementById('sidebar').classList.remove('hidden');
-    document.getElementById('mainContent').classList.add('md:mr-64');
-  }
-});
+        .phone-notch {
+            position: absolute;
+            top: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 28px;
+            background: #1a1a2e;
+            border-radius: 20px;
+            z-index: 10;
+        }
 
-// Initialize
-navigateTo('home');
-</script>
+        .phone-screen {
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            border-radius: 30px;
+            overflow: hidden;
+            padding: 16px;
+        }
 
+        .demo-menu-header { margin-bottom: 16px; }
+        .demo-restaurant-info { display: flex; align-items: center; gap: 12px; }
+        .demo-logo {
+            width: 48px; height: 48px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border-radius: var(--radius-md);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem;
+        }
+        .demo-restaurant-info h4 { font-size: 1rem; margin: 0; }
+        .demo-restaurant-info p { font-size: 0.8rem; color: var(--gray-600); margin: 0; }
+
+        .demo-search {
+            background: var(--gray-100);
+            padding: 12px 16px;
+            border-radius: var(--radius-full);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--gray-500);
+            font-size: 0.9rem;
+            margin-bottom: 16px;
+        }
+
+        .demo-categories {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            margin-bottom: 16px;
+        }
+
+        .demo-categories span {
+            padding: 6px 14px;
+            background: var(--gray-100);
+            border-radius: var(--radius-full);
+            font-size: 0.8rem;
+            white-space: nowrap;
+            font-weight: 600;
+        }
+
+        .demo-categories span.active {
+            background: var(--primary-color);
+            color: var(--white);
+        }
+
+        .demo-items { display: flex; flex-direction: column; gap: 12px; }
+
+        .demo-item {
+            display: flex;
+            gap: 12px;
+            padding: 12px;
+            background: var(--gray-50);
+            border-radius: var(--radius-md);
+        }
+
+        .demo-item-img {
+            width: 60px; height: 60px;
+            background: var(--gray-200);
+            border-radius: var(--radius-md);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .demo-item-info h5 { font-size: 0.9rem; margin-bottom: 4px; }
+        .demo-item-info p { font-size: 0.75rem; color: var(--gray-600); margin: 0 0 8px 0; }
+        .demo-item-info .price { color: var(--primary-color); font-weight: 700; }
+
+        /* Floating Elements */
+        .floating-element {
+            position: absolute;
+            font-size: 3rem;
+            animation: float 6s ease-in-out infinite;
+            opacity: 0.6;
+        }
+
+        .fe-1 { top: 20%; left: 5%; animation-delay: 0s; }
+        .fe-2 { top: 60%; left: 15%; animation-delay: 1s; }
+        .fe-3 { top: 30%; right: 8%; animation-delay: 2s; }
+        .fe-4 { bottom: 20%; right: 12%; animation-delay: 3s; }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(10deg); }
+        }
+
+        /* Trusted Section */
+        .trusted-section {
+            padding: 60px 0;
+            background: var(--gray-50);
+            border-top: 1px solid var(--gray-200);
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .trusted-label {
+            color: var(--gray-600);
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .logos-grid {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 40px;
+            flex-wrap: wrap;
+        }
+
+        .logo-item {
+            font-weight: 700;
+            color: var(--gray-700);
+            opacity: 0.7;
+            transition: var(--transition-fast);
+        }
+
+        .logo-item:hover { opacity: 1; }
+
+        /* Features Section */
+        .features-section {
+            padding: 100px 0;
+        }
+
+        .section-header {
+            margin-bottom: 60px;
+        }
+
+        .section-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, rgba(255,107,53,0.1), rgba(247,147,30,0.1));
+            color: var(--primary-color);
+            padding: 8px 20px;
+            border-radius: var(--radius-full);
+            font-weight: 700;
+            font-size: 0.9rem;
+            margin-bottom: 16px;
+        }
+
+        .section-header h2 {
+            font-size: 2.5rem;
+            margin-bottom: 16px;
+        }
+
+        .section-header p {
+            font-size: 1.125rem;
+            color: var(--gray-600);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+        }
+
+        .feature-card {
+            background: var(--white);
+            padding: 36px;
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition-normal);
+            position: relative;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .feature-card.featured {
+            border: 2px solid var(--primary-color);
+            transform: scale(1.02);
+        }
+
+        .feature-card.featured:hover { transform: scale(1.05); }
+
+        .featured-badge {
+            position: absolute;
+            top: -12px;
+            right: 24px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: var(--white);
+            padding: 6px 16px;
+            border-radius: var(--radius-full);
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+
+        .feature-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+            color: var(--white);
+            margin-bottom: 20px;
+        }
+
+        .feature-icon.orange { background: linear-gradient(135deg, #ff6b35, #f7931e); }
+        .feature-icon.green { background: linear-gradient(135deg, #28a745, #20c997); }
+        .feature-icon.blue { background: linear-gradient(135deg, #17a2b8, #6f42c1); }
+        .feature-icon.purple { background: linear-gradient(135deg, #6f42c1, #e83e8c); }
+        .feature-icon.red { background: linear-gradient(135deg, #dc3545, #fd7e14); }
+        .feature-icon.teal { background: linear-gradient(135deg, #20c997, #17a2b8); }
+
+        .feature-card h3 {
+            font-size: 1.35rem;
+            margin-bottom: 12px;
+        }
+
+        .feature-card > p {
+            color: var(--gray-600);
+            margin-bottom: 20px;
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .feature-list li {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 0;
+            color: var(--gray-700);
+            font-size: 0.95rem;
+        }
+
+        .feature-list li i { color: var(--success); }
+        .feature-list li.disabled { color: var(--gray-400); }
+        .feature-list li.disabled i { color: var(--gray-400); }
+
+        @media (max-width: 1024px) {
+            .features-grid { grid-template-columns: repeat(2, 1fr); }
+            .feature-card.featured { transform: none; }
+            .feature-card.featured:hover { transform: translateY(-8px); }
+        }
+
+        @media (max-width: 768px) {
+            .features-grid { grid-template-columns: 1fr; }
+            .hero-container { grid-template-columns: 1fr; text-align: center; }
+            .hero-title { font-size: 2.5rem; }
+            .hero-actions { justify-content: center; }
+            .hero-stats { margin: 0 auto; }
+            .phone-mockup { width: 260px; height: 520px; }
+        }
+
+        /* How It Works */
+        .how-it-works-section {
+            padding: 100px 0;
+            background: var(--gray-50);
+        }
+
+        .steps-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 40px;
+        }
+
+        .step-card {
+            background: var(--white);
+            padding: 32px;
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-sm);
+            position: relative;
+        }
+
+        .step-number {
+            position: absolute;
+            top: -20px;
+            right: 24px;
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: var(--white);
+            border-radius: var(--radius-full);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            font-weight: 800;
+        }
+
+        .step-icon {
+            width: 56px;
+            height: 56px;
+            background: var(--gray-100);
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+
+        .step-card h3 {
+            font-size: 1.25rem;
+            margin-bottom: 12px;
+        }
+
+        .step-card p {
+            color: var(--gray-600);
+            margin-bottom: 20px;
+        }
+
+        .mini-form .input-placeholder {
+            height: 44px;
+            background: var(--gray-100);
+            border-radius: var(--radius-md);
+            margin-bottom: 10px;
+        }
+
+        .mini-form .input-placeholder.short { width: 60%; }
+        .mini-form .btn-placeholder {
+            height: 44px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border-radius: var(--radius-md);
+        }
+
+        .upload-zone-mini {
+            height: 80px;
+            border: 2px dashed var(--gray-300);
+            border-radius: var(--radius-md);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--gray-500);
+            font-size: 0.85rem;
+        }
+
+        .upload-zone-mini i { font-size: 1.5rem; margin-bottom: 4px; }
+
+        .share-preview { display: flex; align-items: center; gap: 12px; }
+
+        .url-preview {
+            flex: 1;
+            padding: 10px 14px;
+            background: var(--gray-100);
+            border-radius: var(--radius-md);
+            font-size: 0.8rem;
+            color: var(--gray-600);
+        }
+
+        .qr-mini {
+            width: 50px; height: 50px;
+            background: var(--gray-900);
+            color: var(--white);
+            border-radius: var(--radius-md);
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 800;
+            font-size: 0.7rem;
+        }
+
+        @media (max-width: 768px) {
+            .steps-container { grid-template-columns: 1fr; }
+        }
+
+        /* Pricing */
+        .pricing-section { padding: 100px 0; }
+
+        .pricing-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 48px;
+            color: var(--gray-600);
+            font-weight: 600;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 56px;
+            height: 30px;
+        }
+
+        .switch input { opacity: 0; width: 0; height: 0; }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: var(--gray-300);
+            transition: var(--transition-fast);
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 22px; width: 22px;
+            left: 4px; bottom: 4px;
+            background: var(--white);
+            transition: var(--transition-fast);
+            border-radius: 50%;
+        }
+
+        input:checked + .slider { background: var(--primary-color); }
+        input:checked + .slider:before { transform: translateX(26px); }
+
+        .save-badge {
+            background: var(--success);
+            color: var(--white);
+            padding: 2px 10px;
+            border-radius: var(--radius-full);
+            font-size: 0.75rem;
+        }
+
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .pricing-card {
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            padding: 36px;
+            box-shadow: var(--shadow-md);
+            transition: var(--transition-normal);
+            position: relative;
+        }
+
+        .pricing-card:hover { transform: translateY(-8px); box-shadow: var(--shadow-xl); }
+
+        .pricing-card.popular {
+            border: 2px solid var(--primary-color);
+            transform: scale(1.05);
+            z-index: 1;
+        }
+
+        .pricing-card.popular:hover { transform: scale(1.08); }
+
+        .popular-badge {
+            position: absolute;
+            top: -14px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: var(--white);
+            padding: 8px 24px;
+            border-radius: var(--radius-full);
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .pricing-header { text-align: center; margin-bottom: 28px; }
+
+        .pricing-header h3 { font-size: 1.5rem; margin-bottom: 16px; }
+
+        .pricing-price {
+            margin-bottom: 8px;
+        }
+
+        .pricing-price .currency {
+            font-size: 1.25rem;
+            vertical-align: super;
+            color: var(--gray-600);
+        }
+
+        .pricing-price .amount {
+            font-size: 3.5rem;
+            font-weight: 800;
+            color: var(--dark-color);
+        }
+
+        .pricing-price .period {
+            font-size: 1rem;
+            color: var(--gray-600);
+        }
+
+        .pricing-header > p { color: var(--gray-600); }
+
+        .pricing-features { list-style: none; padding: 0; margin-bottom: 28px; }
+
+        .pricing-features li {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--gray-100);
+            color: var(--gray-700);
+        }
+
+        .pricing-features li i { color: var(--success); }
+        .pricing-features li.disabled { color: var(--gray-400); }
+        .pricing-features li.disabled i { color: var(--gray-300); }
+
+        @media (max-width: 1024px) {
+            .pricing-grid { grid-template-columns: 1fr; max-width: 450px; }
+            .pricing-card.popular { transform: none; }
+            .pricing-card.popular:hover { transform: translateY(-8px); }
+        }
+
+        /* Testimonials */
+        .testimonials-section {
+            padding: 100px 0;
+            background: var(--gray-50);
+        }
+
+        .testimonials-slider {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+        }
+
+        .testimonial-card {
+            background: var(--white);
+            padding: 32px;
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .testimonial-stars {
+            display: flex;
+            gap: 4px;
+            color: #ffc107;
+            font-size: 1.125rem;
+            margin-bottom: 20px;
+        }
+
+        .testimonial-text {
+            font-size: 1.05rem;
+            line-height: 1.8;
+            color: var(--gray-700);
+            margin-bottom: 24px;
+        }
+
+        .testimonial-author {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .author-avatar {
+            width: 48px; height: 48px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: var(--white);
+            border-radius: var(--radius-full);
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700;
+        }
+
+        .author-info h4 { font-size: 1rem; margin: 0; }
+        .author-info p { font-size: 0.85rem; color: var(--gray-600); margin: 0; }
+
+        @media (max-width: 768px) {
+            .testimonials-slider { grid-template-columns: 1fr; }
+        }
+
+        /* CTA */
+        .cta-section {
+            padding: 100px 0;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: var(--white);
+            text-align: center;
+        }
+
+        .cta-content h2 {
+            font-size: 2.5rem;
+            color: var(--white);
+            margin-bottom: 16px;
+        }
+
+        .cta-content p {
+            font-size: 1.25rem;
+            opacity: 0.9;
+            margin-bottom: 32px;
+        }
+
+        .cta-actions {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 32px;
+        }
+
+        .btn-white {
+            background: var(--white);
+            color: var(--primary-color);
+        }
+
+        .btn-white:hover {
+            background: var(--gray-100);
+            color: var(--primary-dark);
+        }
+
+        .cta-trust {
+            display: flex;
+            justify-content: center;
+            gap: 32px;
+            flex-wrap: wrap;
+            opacity: 0.9;
+            font-size: 0.95rem;
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--dark-color);
+            color: var(--gray-300);
+            padding: 80px 0 0;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr 1.5fr;
+            gap: 40px;
+            margin-bottom: 60px;
+        }
+
+        .footer-brand p {
+            color: var(--gray-400);
+            margin: 16px 0 24px;
+            line-height: 1.7;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 12px;
+        }
+
+        .social-links a {
+            width: 40px; height: 40px;
+            background: rgba(255,255,255,0.1);
+            border-radius: var(--radius-full);
+            display: flex; align-items: center; justify-content: center;
+            color: var(--gray-300);
+            transition: var(--transition-fast);
+        }
+
+        .social-links a:hover {
+            background: var(--primary-color);
+            color: var(--white);
+        }
+
+        .footer-links h4 {
+            color: var(--white);
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+        }
+
+        .footer-links a {
+            display: block;
+            color: var(--gray-400);
+            padding: 8px 0;
+            transition: var(--transition-fast);
+        }
+
+        .footer-links a:hover { color: var(--white); }
+
+        .footer-newsletter h4 { color: var(--white); margin-bottom: 12px; }
+        .footer-newsletter p { color: var(--gray-400); margin-bottom: 16px; }
+
+        .newsletter-form {
+            display: flex;
+            gap: 8px;
+        }
+
+        .newsletter-form input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.1);
+            border-radius: var(--radius-md);
+            color: var(--white);
+            font-family: 'Cairo', sans-serif;
+        }
+
+        .newsletter-form input::placeholder { color: var(--gray-500); }
+
+        .newsletter-form button {
+            padding: 12px 20px;
+            background: var(--primary-color);
+            border: none;
+            border-radius: var(--radius-md);
+            color: var(--white);
+            cursor: pointer;
+        }
+
+        .footer-bottom {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 24px 0;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .footer-legal { display: flex; gap: 24px; }
+        .footer-legal a { color: var(--gray-400); }
+        .footer-legal a:hover { color: var(--white); }
+
+        @media (max-width: 1024px) {
+            .footer-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 768px) {
+            .footer-grid { grid-template-columns: 1fr; }
+            .footer-bottom { flex-direction: column; gap: 16px; text-align: center; }
+        }
+    </style>
 </body>
 </html>
-```

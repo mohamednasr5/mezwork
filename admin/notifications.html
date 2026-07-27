@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الإشعارات - MezoMenu</title>
+    <link rel="icon" type="image/png" href="../assets/images/favicon.png">
+    <link rel="stylesheet" href="../assets/css/main.css">
+    <link rel="stylesheet" href="../assets/css/admin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <img src="../assets/images/logo.png" alt="MezoMenu" onerror="this.style.display='none'">
+                    <div>
+                        <h2>MezoMenu</h2>
+                        <small>لوحة التحكم</small>
+                    </div>
+                </div>
+                <div class="restaurant-selector">
+                    <select id="restaurantSelect">
+                        <option value="">مطعم المبروك</option>
+                    </select>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <span class="nav-section-title">الرئيسية</span>
+                    <a href="dashboard.html" class="nav-item">
+                        <i class="fas fa-chart-pie"></i>
+                        <span>لوحة الإحصائيات</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <span class="nav-section-title">القائمة</span>
+                    <a href="menu.html" class="nav-item">
+                        <i class="fas fa-utensils"></i>
+                        <span>إدارة القائمة</span>
+                    </a>
+                    <a href="ai-import.html" class="nav-item">
+                        <i class="fas fa-wand-magic-sparkles"></i>
+                        <span>استيراد ذكي</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <span class="nav-section-title">الطلبات</span>
+                    <a href="orders.html" class="nav-item">
+                        <i class="fas fa-receipt"></i>
+                        <span>إدارة الطلبات</span>
+                        <span class="badge">5</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <span class="nav-section-title">الإعدادات</span>
+                    <a href="settings.html" class="nav-item">
+                        <i class="fas fa-cog"></i>
+                        <span>إعدادات المطعم</span>
+                    </a>
+                    <a href="notifications.html" class="nav-item active">
+                        <i class="fas fa-bell"></i>
+                        <span>الإشعارات</span>
+                        <span class="badge">3</span>
+                    </a>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar">م</div>
+                    <div class="user-details">
+                        <h4>مدير المطعم</h4>
+                        <p>admin@mezo.com</p>
+                    </div>
+                    <button onclick="logout()" class="btn btn-sm btn-danger">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Header -->
+            <header class="top-header">
+                <div class="header-left">
+                    <button class="menu-toggle" onclick="toggleSidebar()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 class="page-title">الإشعارات</h1>
+                </div>
+                <div class="header-right">
+                    <button onclick="markAllAsRead()" class="btn btn-secondary">
+                        <i class="fas fa-check-double"></i>
+                        تحديد الكل كمقروء
+                    </button>
+                    <button onclick="clearAllNotifications()" class="btn btn-danger">
+                        <i class="fas fa-trash"></i>
+                        مسح الكل
+                    </button>
+                </div>
+            </header>
+
+            <!-- Page Content -->
+            <div class="page-content">
+                <!-- Notification Filters -->
+                <div class="notification-filters">
+                    <button class="filter-btn active" data-filter="all">
+                        <i class="fas fa-inbox"></i> الكل <span class="count">12</span>
+                    </button>
+                    <button class="filter-btn" data-filter="unread">
+                        <i class="fas fa-envelope"></i> غير مقروءة <span class="count">3</span>
+                    </button>
+                    <button class="filter-btn" data-filter="orders">
+                        <i class="fas fa-receipt"></i> طلبات <span class="count">5</span>
+                    </button>
+                    <button class="filter-btn" data-filter="system">
+                        <i class="fas fa-cog"></i> النظام <span class="count">4</span>
+                    </button>
+                    <button class="filter-btn" data-filter="promotions">
+                        <i class="fas fa-tag"></i> عروض <span class="count">0</span>
+                    </button>
+                </div>
+
+                <!-- Notifications List -->
+                <div class="notifications-list" id="notificationsList">
+                    <!-- Unread Order Notification -->
+                    <div class="notification-card unread" data-type="orders">
+                        <div class="notification-icon order">
+                            <i class="fas fa-receipt"></i>
+                        </div>
+                        <div class="notification-content">
+                            <h4>طلب جديد #1001</h4>
+                            <p>لقد تلقيت طلباً جديداً من أحمد محمد بمبلغ 250 ج.م</p>
+                            <span class="notification-time">منذ 5 دقائق</span>
+                        </div>
+                        <div class="notification-actions">
+                            <a href="orders.html" class="btn btn-sm btn-primary">عرض الطلب</a>
+                            <button onclick="markAsRead(this)" class="btn btn-sm btn-outline">✓</button>
+                        </div>
+                    </div>
+
+                    <!-- Unread Order Notification -->
+                    <div class="notification-card unread" data-type="orders">
+                        <div class="notification-icon order">
+                            <i class="fas fa-receipt"></i>
+                        </div>
+                        <div class="notification-content">
+                            <h4>طلب جديد #1000</h4>
+                            <p>لقد تلقيت طلباً جديداً من سارة أحمد بمبلغ 180 ج.م</p>
+                            <span class="notification-time">منذ 15 دقيقة</span>
+                        </div>
+                        <div class="notification-actions">
+                            <a href="orders.html" class="btn btn-sm btn-primary">عرض الطلب</a>
+                            <button onclick="markAsRead(this)" class="btn btn-sm btn-outline">✓</button>
+                        </div>
+                    </div>
+
+                    <!-- System Notification -->
+                    <div class="notification-card unread" data-type="system">
+                        <div class="notification-icon system">
+                            <i class="fas fa-bell"></i>
+                        </div>
+                        <div class="notification-content">
+                            <h4>تذكير: تحديث القائمة</h4>
+                            <p>لم تقم بتحديث قائمتك منذ أسبوع. حافظ على تحديث القائمة لجذب المزيد من العملاء!</p>
+                            <span class="notification-time">منذ ساعة</span>
+                        </div>
+                        <div class="notification-actions">
+                            <a href="menu.html" class="btn btn-sm btn-secondary">تحديث الآن</a>
+                            <button onclick="markAsRead(this)" class="btn btn-sm btn-outline">✓</button>
+                        </div>
+                    </div>
+
+                    <!-- Read Notification -->
+                    <div class="notification-card read" data-type="orders">
+                        <div class="notification-icon success">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="notification-content">
+                            <h4>تم تسليم الطلب #999</h4>
+                            <p>تم تسليم الطلب بنجاح للعميل محمود علي</p>
+                            <span class="notification-time">منذ ساعتين</span>
+                        </div>
+                        <div class="notification-actions">
+                            <button class="btn btn-sm btn-outline disabled">تم التسليم</button>
+                        </div>
+                    </div>
+
+                    <!-- Read Notification -->
+                    <div class="notification-card read" data-type="system">
+                        <div class="notification-icon info">
+                            <i class="fas fa-info-circle"></i>
+                        </div>
+                        <div class="notification-content">
+                            <h4>تحديث النظام</h4>
+                            <p>تم إضافة ميزة جديدة: استيراد القائمة بالذكاء الاصطناعي! جربها الآن.</p>
+                            <span class="notification-time">منذ يوم</span>
+                        </div>
+                        <div class="notification-actions">
+                            <a href="ai-import.html" class="btn btn-sm btn-secondary">تجربة</a>
+                        </div>
+                    </div>
+
+                    <!-- More notifications... -->
+                    <div class="notification-card read" data-type="promotions">
+                        <div class="notification-icon promo">
+                            <i class="fas fa-percent"></i>
+                        </div>
+                        <div class="notification-content">
+                            <h4>عرض خاص على الباقات المدفوعة</h4>
+                            <p>احصل على خصم 20% عند ترقية باقتك خلال هذا الشهر!</p>
+                            <span class="notification-time">منذ 3 أيام</span>
+                        </div>
+                        <div class="notification-actions">
+                            <a href="settings.html#subscription" class="btn btn-sm btn-primary">ترقية الآن</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Load More -->
+                <div class="load-more-wrapper">
+                    <button onclick="loadMoreNotifications()" class="btn btn-outline">
+                        <i class="fas fa-chevron-down"></i> عرض المزيد
+                    </button>
+                </div>
+            </div>
+        </main>
+
+        <!-- Sidebar Overlay for Mobile -->
+        <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+    </div>
+
+    <script src="../assets/js/main.js"></script>
+    <script src="../assets/js/notifications.js"></script>
+</body>
+</html>
