@@ -1043,41 +1043,49 @@
                     }
                 };
 
-                console.log('[Register] Sending registration data...');
+                // Validate required fields
+                if (!formData.fullName) throw new Error('يرجى إدخال الاسم الكامل');
+                if (!formData.email) throw new Error('يرجى إدخال البريد الإلكتروني');
+                if (!isValidEmail(formData.email)) throw new Error('صيغة البريد الإلكتروني غير صحيحة');
+                if (!formData.phone) throw new Error('يرجاء إدخال رقم الهاتف');
+                if (!isValidPhone(formData.phone)) throw new Error('صيغة رقم الهاتف غير صحيحة');
+                if (!formData.password) throw new Error('يرجى إدخال كلمة المرور');
+                if (formData.password.length < 6) throw new Error('كلمة المرور يجب أن تكون 6 أحرف على الأقل');
+                if (!formData.restaurant.name) throw new Error('يرجى إدخال اسم المطعم');
 
-                // Call the real API
-                const response = await fetch(`${CONFIG.API_URL}/api/auth/register`, {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(formData)
-                });
+                console.log('[Register] Sending REAL registration data to Worker...');
 
-                const result = await response.json();
+                // Use Auth system for real Worker registration
+                const result = await Auth.register(formData);
 
-                console.log('[Register] API Response:', result);
+                if (result.success) {
+                    console.log('[Register] Successful registration!');
+                    
+                    // Also save in legacy format for compatibility
+                    Storage.set('user_data', result.user);
+                    if (result.token) {
+                        Storage.set('auth_token', result.token);
+                    }
 
-                if (!response.ok || !result.success) {
+                    Toast.success('مرحباً ' + (result.user?.displayName || '') + '! تم إنشاء الحساب بنجاح 🎉');
+
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';
+                    }, 1500);
+                } else {
                     throw new Error(result.error || 'فشل إنشاء الحساب');
                 }
-
-                // Save user data from response
-                const userData = result.data.user;
-                Storage.set('user_data', userData);
-                Storage.set('auth_token', result.data.token);
-
-                Toast.success('مرحباً ' + (userData.displayName || '') + '! تم إنشاء الحساب بنجاح 🎉');
-
-                setTimeout(() => {
-                    window.location.href = 'dashboard.html';
-                }, 1500);
 
             } catch (error) {
                 console.error('[Register] Error:', error);
                 
-                if (error.message.includes('fetch') || error.message.includes('network')) {
+                // Check error type and show appropriate message
+                if (error.message.includes('fetch') || error.message.includes('network') || error.message.includes('Failed')) {
                     Toast.error('فشل الاتصال بالخادم - تحقق من اتصالك بالإنترنت');
+                } else if (error.message.includes('409') || error.message.toLowerCase().includes('exists')) {
+                    Toast.error('البريد الإلكتروني مسجل مسبقاً - سجل دخول بدلاً من ذلك');
+                } else if (error.message.includes('400') || error.message.includes('validation')) {
+                    Toast.error('بيانات غير صحيحة - تأكد من ملء جميع الحقول');
                 } else {
                     Toast.error(error.message || 'حدث خطأ أثناء التسجيل');
                 }
@@ -1097,10 +1105,249 @@
                 .substring(0, 30) || 'my-restaurant';
         }
 
-        // Social login handler
-        function socialLogin(provider) {
-            Toast.info(`تسجيل الدخول عبر ${provider} قريباً...`);
+        // Social Registration Handler - Google/Gmail Support
+        async function socialLogin(provider) {
+            try {
+                showLoading(`جاري التسجيل عبر ${provider}...`);
+
+                if (provider === 'google' || provider === 'gmail') {
+                    await handleGoogleRegister();
+                } else if (provider === 'apple') {
+                    Toast.info('تسجيل عبر Apple قريباً...');
+                    hideLoading();
+                } else if (provider === 'facebook') {
+                    Toast.info('تسجيل عبر Facebook قريباً...');
+                    hideLoading();
+                }
+
+            } catch (error) {
+                hideLoading();
+                console.error(`[Social Register] ${provider} error:`, error);
+                Toast.error('فشل التسجيل: ' + error.message);
+            }
         }
+
+        // Google/Gmail Registration with OAuth
+        async function handleGoogleRegister() {
+            // Check if Google API is loaded
+            if (typeof google === 'undefined' || !google.accounts) {
+                // Fallback: Manual Google OAuth flow
+                await manualGoogleRegister();
+                return;
+            }
+
+            // Use Google Identity Services for registration
+            google.accounts.id.initialize({
+                client_id: 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com', // Replace with your Google Client ID
+                callback: handleGoogleRegisterCredentialResponse,
+                auto_select: false,
+                context: 'signup'
+            });
+
+            // Show Google One Tap or prompt
+            google.accounts.id.prompt((notification) => {
+                if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+                    google.accounts.id.prompt();
+                }
+            });
+        }
+
+        // Handle Google credential response for registration
+        async function handleGoogleRegisterCredentialResponse(response) {
+            try {
+                console.log('[Google Register] Received credential, verifying...');
+
+                // Send ID token to Worker for verification/registration
+                const authResult = await Auth.registerWithGoogle(response.credential);
+
+                if (authResult.success) {
+                    // If user needs to complete restaurant info, show modal
+                    if (authResult.needsRestaurantInfo) {
+                        showRestaurantInfoModal(authResult.user);
+                    } else {
+                        Toast.success('تم التسجيل بحساب Google! 🎉');
+                        
+                        setTimeout(() => {
+                            window.location.href = 'dashboard.html';
+                        }, 1000);
+                    }
+                } else {
+                    throw new Error(authResult.error || 'فشل التحقق من Google');
+                }
+            } catch (error) {
+                hideLoading();
+                Toast.error(error.message);
+            }
+        }
+
+        // Show restaurant info completion modal for social sign-up
+        function showRestaurantInfoModal(user) {
+            const modal = document.createElement('div');
+            modal.className = 'modal-overlay active';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 500px;">
+                    <div class="modal-header">
+                        <h3><i class="fas fa-store"></i> إكمال بيانات المطعم</h3>
+                        <button onclick="this.closest('.modal-overlay').remove()" class="close-btn">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <p>مرحباً ${user.displayName || user.email.split('@')[0]}! أكمل بيانات مطعمك للمتابعة:</p>
+                        <form id="restaurantInfoForm" style="margin-top: 20px;">
+                            <div class="form-group">
+                                <label>اسم المطعم *</label>
+                                <input type="text" id="socialRestaurantName" required placeholder="مثال: مطعم المبروك">
+                            </div>
+                            <div class="form-group">
+                                <label>المدينة</label>
+                                <select id="socialCity">
+                                    <option value="cairo">القاهرة</option>
+                                    <option value="alexandria">الإسكندرية</option>
+                                    <option value="giza">الجيزة</option>
+                                    <option value="mansoura">المنصورة</option>
+                                    <option value="other">أخرى</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>نوع المطبخ</label>
+                                <select id="socialCuisineType">
+                                    <option value="egyptian">مصري</option>
+                                    <option value="arabic">عربي</option>
+                                    <option value="italian">إيطالي</option>
+                                    <option value="chinese">صيني</option>
+                                    <option value="fast_food">وجبات سريعة</option>
+                                    <option value="other">أخرى</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-block">
+                                <i class="fas fa-check"></i> حفظ والمتابعة
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+
+            // Handle form submission
+            document.getElementById('restaurantInfoForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const restaurantData = {
+                    name: document.getElementById('socialRestaurantName').value,
+                    slug: generateSlug(document.getElementById('socialRestaurantName').value),
+                    city: document.getElementById('socialCity').value,
+                    cuisineType: document.getElementById('socialCuisineType').value
+                };
+
+                if (!restaurantData.name) {
+                    Toast.warning('يرجى إدخال اسم المطعم');
+                    return;
+                }
+
+                try {
+                    showLoading('جاري حفظ بيانات المطعم...');
+                    
+                    // Update user with restaurant data
+                    const updateResult = await WorkerAPI.saveRestaurant(
+                        user.restaurantId || user.uid,
+                        restaurantData,
+                        Auth.getToken()
+                    );
+
+                    if (updateResult.success) {
+                        modal.remove();
+                        hideLoading();
+                        Toast.success('تم حفظ بيانات المطعم! 🎉');
+                        
+                        setTimeout(() => {
+                            window.location.href = 'dashboard.html';
+                        }, 1000);
+                    } else {
+                        throw new Error(updateResult.error || 'فشل الحفظ');
+                    }
+                } catch (error) {
+                    hideLoading();
+                    Toast.error(error.message);
+                }
+            });
+        }
+
+        // Manual Google OAuth fallback for registration
+        async function manualGoogleRegister() {
+            try {
+                const clientId = prompt(
+                    'أدخل Google Client ID (اختياري - للتطوير فقط)', 
+                    ''
+                );
+
+                if (!clientId) {
+                    Toast.info('سيتم تفعيل تسجيل Google قريباً');
+                    hideLoading();
+                    return;
+                }
+
+                // Load Google API dynamically
+                const script = document.createElement('script');
+                script.src = 'https://accounts.google.com/gsi/client';
+                script.async = true;
+                script.defer = true;
+                script.onload = () => handleGoogleRegister();
+                document.head.appendChild(script);
+
+            } catch (error) {
+                hideLoading();
+                console.error('[Manual Google Register] Error:', error);
+                Toast.error('فشل تحميل Google Sign-In');
+            }
+        }
+
+        // Password strength indicator
+        function checkPasswordStrength(password) {
+            const strengthEl = document.getElementById('passwordStrength');
+            if (!strengthEl || !password) return;
+
+            let strength = 0;
+            if (password.length >= 6) strength++;
+            if (password.length >= 10) strength++;
+            if (/[A-Z]/.test(password)) strength++;
+            if (/[0-9]/.test(password)) strength++;
+            if (/[^A-Za-z0-9]/.test(password)) strength++;
+
+            const levels = ['ضعيفة جداً', 'ضعيفة', 'متوسطة', 'قوية', 'قوية جداً'];
+            const colors = ['#dc3545', '#fd7e14', '#ffc107', '#28a745', '#20c997'];
+
+            strengthEl.textContent = levels[strength] || '';
+            strengthEl.style.color = colors[strength] || '#666';
+        }
+
+        // Add password input listener
+        document.addEventListener('DOMContentLoaded', () => {
+            const passwordInput = document.getElementById('password');
+            if (passwordInput) {
+                passwordInput.addEventListener('input', (e) => {
+                    checkPasswordStrength(e.target.value);
+                });
+            }
+
+            // Auto-generate slug from restaurant name
+            const restaurantNameInput = document.getElementById('restaurantName');
+            const slugInput = document.getElementById('restaurantSlug');
+            
+            if (restaurantNameInput && slugInput) {
+                restaurantNameInput.addEventListener('input', (e) => {
+                    if (!slugInput.value) {
+                        slugInput.value = generateSlug(e.target.value);
+                        slugInput.dispatchEvent(new Event('change'));
+                    }
+                });
+            }
+
+            // Check if already logged in
+            if (Auth.isAuthenticated()) {
+                console.log('[Register] User already logged in, redirecting...');
+                window.location.href = 'dashboard.html';
+            }
+        });
     </script>
 </body>
 </html>

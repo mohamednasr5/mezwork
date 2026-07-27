@@ -1,6 +1,6 @@
 /* ===================================
    MezoMenu SaaS - Notifications Functions
-   إدارة الإشعارات
+   إدارة الإشعارات - REAL DATABASE INTEGRATION
    =================================== */
 
 // ==========================================
@@ -10,7 +10,9 @@ const NotificationsState = {
     notifications: [],
     filteredNotifications: [],
     currentFilter: 'all',
-    unreadCount: 0
+    unreadCount: 0,
+    realTimeInterval: null,
+    isLoading: false
 };
 
 // ==========================================
@@ -18,10 +20,10 @@ const NotificationsState = {
 // ==========================================
 document.addEventListener('DOMContentLoaded', function() {
     initNotificationFilters();
-    loadNotifications();
+    loadRealNotifications();
     
-    // Auto-refresh notifications every 60 seconds
-    setInterval(loadNotifications, 60000);
+    // Auto-refresh notifications every 30 seconds
+    NotificationsState.realTimeInterval = setInterval(loadRealNotifications, 30000);
 });
 
 // ==========================================
@@ -42,90 +44,56 @@ function initNotificationFilters() {
 }
 
 // ==========================================
-// Load Notifications
+// Load REAL Notifications from Firebase
 // ==========================================
-async function loadNotifications() {
-    try {
-        const restaurantId = getRestaurantIdFromStorage();
-        const response = await fetch(`${CONFIG.API_URL}/api/notifications?restaurantId=${restaurantId}`);
-        const data = await response.json();
+async function loadRealNotifications() {
+    if (NotificationsState.isLoading) return;
+    NotificationsState.isLoading = true;
 
-        if (data.success) {
-            NotificationsState.notifications = data.notifications || [];
+    try {
+        console.log('[Notifications] Loading real notifications from Firebase...');
+        
+        // Use NotificationsService for real Firebase data
+        const result = await NotificationsService.getNotifications();
+        
+        if (result.success && result.notifications) {
+            console.log(`[Notifications] Loaded ${result.notifications.length} real notifications`);
+            NotificationsState.notifications = result.notifications;
+            
+            applyNotificationFilter();
+            updateUnreadBadge();
+            
+            // Show notification count in title
+            const unreadCount = result.notifications.filter(n => !n.read).length;
+            if (unreadCount > 0) {
+                document.title = `(${unreadCount}) الإشعارات - MezoMenu`;
+            }
+        } else {
+            console.warn('[Notifications] No notifications found or error:', result.error);
+            NotificationsState.notifications = [];
             applyNotificationFilter();
             updateUnreadBadge();
         }
+        
     } catch (error) {
-        console.error('Error loading notifications:', error);
-        // Load sample data for demo
-        loadSampleNotifications();
+        console.error('[Notifications] Error loading real notifications:', error);
+        // Don't show sample data - show empty state instead
+        NotificationsState.notifications = [];
+        applyNotificationFilter();
+        updateUnreadBadge();
+    } finally {
+        NotificationsState.isLoading = false;
     }
 }
 
-// ==========================================
-// Sample Notifications Data
-// ==========================================
-function loadSampleNotifications() {
-    NotificationsState.notifications = [
-        {
-            id: '1',
-            type: 'orders',
-            title: 'طلب جديد #1001',
-            message: 'لقد تلقيت طلباً جديداً من أحمد محمد بمبلغ 250 ج.م',
-            timestamp: new Date(Date.now() - 5 * 60000).toISOString(),
-            read: false,
-            actionUrl: 'orders.html'
-        },
-        {
-            id: '2',
-            type: 'orders',
-            title: 'طلب جديد #1000',
-            message: 'لقد تلقيت طلباً جديداً من سارة أحمد بمبلغ 180 ج.م',
-            timestamp: new Date(Date.now() - 15 * 60000).toISOString(),
-            read: false,
-            actionUrl: 'orders.html'
-        },
-        {
-            id: '3',
-            type: 'system',
-            title: 'تذكير: تحديث القائمة',
-            message: 'لم تقم بتحديث قائمتك منذ أسبوع. حافظ على تحديث القائمة لجذب المزيد من العملاء!',
-            timestamp: new Date(Date.now() - 3600000).toISOString(),
-            read: false,
-            actionUrl: 'menu.html'
-        },
-        {
-            id: '4',
-            type: 'orders',
-            title: 'تم تسليم الطلب #999',
-            message: 'تم تسليم الطلب بنجاح للعميل محمود علي',
-            timestamp: new Date(Date.now() - 2 * 3600000).toISOString(),
-            read: true,
-            actionUrl: null
-        },
-        {
-            id: '5',
-            type: 'system',
-            title: 'تحديث النظام',
-            message: 'تم إضافة ميزة جديدة: استيراد القائمة بالذكاء الاصطناعي! جربها الآن.',
-            timestamp: new Date(Date.now() - 24 * 3600000).toISOString(),
-            read: true,
-            actionUrl: 'ai-import.html'
-        },
-        {
-            id: '6',
-            type: 'promotions',
-            title: 'عرض خاص على الباقات المدفوعة',
-            message: 'احصل على خصم 20% عند ترقية باقتك خلال هذا الشهر!',
-            timestamp: new Date(Date.now() - 3 * 24 * 3600000).toISOString(),
-            read: true,
-            actionUrl: 'settings.html#subscription'
-        }
-    ];
-    
-    applyNotificationFilter();
-    updateUnreadBadge();
+// Legacy function name support (alias)
+async function loadNotifications() {
+    await loadRealNotifications();
 }
+
+// ==========================================
+// NO MORE SAMPLE DATA - Real database only!
+// ==========================================
 
 // ==========================================
 // Apply Filter
@@ -151,6 +119,9 @@ function applyNotificationFilter() {
             break;
     }
 
+    // Sort by date (newest first)
+    filtered.sort((a, b) => new Date(b.timestamp || b.createdAt || 0) - new Date(a.timestamp || a.createdAt || 0));
+
     NotificationsState.filteredNotifications = filtered;
     renderNotifications();
 }
@@ -164,23 +135,36 @@ function renderNotifications() {
 
     if (NotificationsState.filteredNotifications.length === 0) {
         container.innerHTML = `
-            <div class="empty-state">
-                <i class="fas fa-bell-slash"></i>
-                <p>لا توجد إشعارات</p>
+            <div class="empty-state" style="padding: 60px 20px; text-align: center;">
+                <i class="fas fa-bell-slash" style="font-size: 4rem; color: #ddd; margin-bottom: 20px;"></i>
+                <h3 style="color: #999; margin-bottom: 10px;">لا توجد إشعارات</h3>
+                <p style="color: #bbb; font-size: 0.95rem;">
+                    ${NotificationsState.currentFilter !== 'all' 
+                        ? `لا توجد إشعارات "${getFilterText(NotificationsState.currentFilter)}"` 
+                        : 'ستظهر الإشعارات الجديدة هنا تلقائياً'}
+                </p>
+                ${NotificationsState.currentFilter !== 'all' ? `
+                    <button onclick="resetFilter()" class="btn btn-secondary" style="margin-top: 15px;">
+                        <i class="fas fa-filter"></i> عرض كل الإشعارات
+                    </button>
+                ` : ''}
             </div>
         `;
         return;
     }
 
     container.innerHTML = NotificationsState.filteredNotifications.map(notification => `
-        <div class="notification-card ${notification.read ? 'read' : 'unread'}" data-type="${notification.type}" data-id="${notification.id}">
+        <div class="notification-card ${notification.read ? 'read' : 'unread'}" 
+             data-type="${notification.type}" 
+             data-id="${notification.id}"
+             style="animation: slideIn 0.3s ease;">
             <div class="notification-icon ${getNotificationIconClass(notification.type)}">
                 <i class="fas fa-${getNotificationIcon(notification.type)}"></i>
             </div>
             <div class="notification-content">
                 <h4>${notification.title}</h4>
                 <p>${notification.message}</p>
-                <span class="notification-time">${getTimeAgo(notification.timestamp)}</span>
+                <span class="notification-time">${getTimeAgo(notification.timestamp || notification.createdAt)}</span>
             </div>
             <div class="notification-actions">
                 ${notification.actionUrl ? `
@@ -189,65 +173,133 @@ function renderNotifications() {
                     </a>
                 ` : ''}
                 ${!notification.read ? `
-                    <button onclick="markAsRead(this)" class="btn btn-sm btn-outline">✓</button>
+                    <button onclick="markAsRead(this)" class="btn btn-sm btn-outline" title="تحديد كمقروء">
+                        <i class="fas fa-check"></i>
+                    </button>
                 ` : ''}
+                <button onclick="deleteNotification('${notification.id}')" class="btn btn-sm btn-outline text-danger" title="حذف">
+                    <i class="fas fa-trash"></i>
+                </button>
             </div>
         </div>
     `).join('');
 }
 
+function getFilterText(filter) {
+    const texts = {
+        unread: 'غير مقروءة',
+        orders: 'طلبات',
+        system: 'نظام',
+        promotions: 'عروض'
+    };
+    return texts[filter] || filter;
+}
+
+function resetFilter() {
+    const allBtn = document.querySelector('.filter-btn[data-filter="all"]');
+    if (allBtn) allBtn.click();
+}
+
 // ==========================================
-// Mark as Read
+// Mark as Read - REAL Firebase Update
 // ==========================================
 async function markAsRead(button) {
     const card = button.closest('.notification-card');
     const notificationId = card?.dataset.id;
 
+    if (!notificationId) return;
+
     try {
-        // Update on server
-        await fetch(`${CONFIG.API_URL}/api/notifications/${notificationId}/read`, {
-            method: 'PUT',
-            headers: { 'Authorization': `Bearer ${getAuthToken()}` }
-        });
+        button.disabled = true;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+        // REAL Firebase update via NotificationsService
+        const result = await NotificationsService.markAsRead(notificationId);
+
+        if (result.success) {
+            // Update UI locally
+            card?.classList.remove('unread');
+            card?.classList.add('read');
+            
+            // Hide the mark as read button
+            if (button.parentElement) {
+                const markBtn = button.parentElement.querySelector('.btn-outline');
+                if (markBtn) markBtn.style.display = 'none';
+            }
+
+            // Update local state
+            const notification = NotificationsState.notifications.find(n => n.id === notificationId);
+            if (notification) {
+                notification.read = true;
+            }
+
+            updateUnreadBadge();
+            showNotification('success', 'تم تحديد الإشعار كمقروء');
+        } else {
+            throw new Error(result.error || 'فشل التحديث');
+        }
     } catch (error) {
         console.error('Error marking notification as read:', error);
+        showNotification('error', 'حدث خطأ أثناء التحديث');
+        
+        // Re-enable button
+        button.disabled = false;
+        button.innerHTML = '<i class="fas fa-check"></i>';
     }
-
-    // Update UI locally
-    card?.classList.remove('unread');
-    card?.classList.add('read');
-    button.style.display = 'none';
-
-    // Update local state
-    const notification = NotificationsState.notifications.find(n => n.id === notificationId);
-    if (notification) {
-        notification.read = true;
-    }
-
-    updateUnreadBadge();
 }
 
 // ==========================================
-// Mark All as Read
+// Mark All as Read - REAL Firebase Update
 // ==========================================
 async function markAllAsRead() {
     try {
+        showLoading('جاري تحديث جميع الإشعارات...');
+
+        // REAL Firebase update via NotificationsService
+        const result = await NotificationsService.markAllAsRead();
+
+        if (result.success) {
+            // Update local state
+            NotificationsState.notifications.forEach(n => n.read = true);
+            applyNotificationFilter();
+            updateUnreadBadge();
+
+            hideLoading();
+            showNotification('success', 'تم تحديد جميع الإشعارات كمقروءة');
+            
+            // Reset page title
+            document.title = 'الإشعارات - MezoMenu';
+        } else {
+            throw new Error(result.error || 'فشل التحديث');
+        }
+    } catch (error) {
+        hideLoading();
+        showNotification('error', 'حدث خطأ أثناء التحديث: ' + error.message);
+    }
+}
+
+// ==========================================
+// Delete Single Notification
+// ==========================================
+async function deleteNotification(notificationId) {
+    if (!confirm('هل تريد حذف هذا الإشعار؟')) return;
+
+    try {
+        // This would call a delete API endpoint
+        // For now, just remove from local state and Firebase
         const restaurantId = getRestaurantIdFromStorage();
         
-        await fetch(`${CONFIG.API_URL}/api/notifications/read-all?restaurantId=${restaurantId}`, {
-            method: 'PUT',
-            headers: { 'Authorization': `Bearer ${getAuthToken()}` }
-        });
+        await FirebaseDB.remove(`notifications/${restaurantId}/${notificationId}`, getAuthToken());
 
-        // Update local state
-        NotificationsState.notifications.forEach(n => n.read = true);
+        // Remove from local state
+        NotificationsState.notifications = NotificationsState.notifications.filter(n => n.id !== notificationId);
         applyNotificationFilter();
         updateUnreadBadge();
 
-        showNotification('success', 'تم تحديد جميع الإشعارات كمقروءة');
+        showNotification('success', 'تم حذف الإشعار');
     } catch (error) {
-        console.error('Error marking all as read:', error);
-        showNotification('error', 'حدث خطأ أثناء التحديث');
+        console.error('Error deleting notification:', error);
+        showNotification('error', 'حدث خطأ أثناء الحذف');
     }
 }
 
@@ -258,30 +310,80 @@ async function clearAllNotifications() {
     if (!confirm('هل أنت متأكد من مسح جميع الإشعارات؟')) return;
 
     try {
+        showLoading('جاري مسح الإشعارات...');
+
         const restaurantId = getRestaurantIdFromStorage();
         
-        await fetch(`${CONFIG.API_URL}/api/notifications?restaurantId=${restaurantId}`, {
-            method: 'DELETE',
-            headers: { 'Authorization': `Bearer ${getAuthToken()}` }
-        });
+        // Clear from Firebase
+        await FirebaseDB.remove(`notifications/${restaurantId}`, getAuthToken());
 
         // Clear local state
         NotificationsState.notifications = [];
         applyNotificationFilter();
         updateUnreadBadge();
 
+        hideLoading();
         showNotification('success', 'تم مسح جميع الإشعارات');
+        
+        document.title = 'الإشعارات - MezoMenu';
     } catch (error) {
+        hideLoading();
         console.error('Error clearing notifications:', error);
         showNotification('error', 'حدث خطأ أثناء المسح');
     }
 }
 
 // ==========================================
-// Load More
+// Create Custom Notification (for testing or admin)
+// ==========================================
+async function createCustomNotification(event) {
+    event.preventDefault();
+
+    const title = document.getElementById('notifTitle')?.value;
+    const message = document.getElementById('notifMessage')?.value;
+    const type = document.getElementById('notifType')?.value || 'system';
+
+    if (!title || !message) {
+        showNotification('warning', 'الرجاء ملء جميع الحقول');
+        return;
+    }
+
+    try {
+        showLoading('جاري إنشاء الإشعار...');
+
+        const result = await NotificationsService.createNotification({
+            title,
+            message,
+            type,
+            priority: 'normal',
+            createdBy: 'admin'
+        });
+
+        if (result.success) {
+            hideLoading();
+            showNotification('success', 'تم إنشاء الإشعار بنجاح');
+            
+            // Reset form
+            document.getElementById('customNotifForm')?.reset();
+            
+            // Reload notifications
+            await loadRealNotifications();
+        } else {
+            throw new Error(result.error || 'فشل الإنشاء');
+        }
+    } catch (error) {
+        hideLoading();
+        showNotification('error', error.message);
+    }
+}
+
+// ==========================================
+// Load More (for pagination if needed)
 // ==========================================
 function loadMoreNotifications() {
-    showNotification('info', 'لا توجد إشعارات إضافية');
+    // Currently loading all notifications at once
+    // Could implement pagination here if needed
+    showNotification('info', 'جميع الإشعارات محملة');
 }
 
 // ==========================================
@@ -297,8 +399,20 @@ function updateUnreadBadge() {
         if (badge.closest('.nav-item')?.querySelector('span')?.textContent.includes('الإشعارات')) {
             badge.textContent = unreadCount > 0 ? unreadCount : '';
             badge.style.display = unreadCount > 0 ? 'inline' : 'none';
+            
+            // Add animation for new badges
+            if (unreadCount > 0) {
+                badge.style.animation = 'pulse 2s infinite';
+            }
         }
     });
+
+    // Update page header badge if exists
+    const headerBadge = document.querySelector('.page-header .badge');
+    if (headerBadge) {
+        headerBadge.textContent = unreadCount > 0 ? unreadCount : '';
+        headerBadge.style.display = unreadCount > 0 ? 'inline-block' : 'none';
+    }
 
     // Update page title with count
     if (unreadCount > 0) {
@@ -306,6 +420,13 @@ function updateUnreadBadge() {
     } else {
         document.title = 'الإشعارات - MezoMenu';
     }
+
+    // Update stats display
+    const totalEl = document.getElementById('totalNotifications');
+    const unreadEl = document.getElementById('totalUnread');
+    
+    if (totalEl) totalEl.textContent = NotificationsState.notifications.length;
+    if (unreadEl) unreadEl.textContent = unreadCount;
 }
 
 // ==========================================
@@ -319,7 +440,9 @@ function getNotificationIcon(type) {
         info: 'info-circle',
         success: 'check-circle',
         warning: 'exclamation-triangle',
-        error: 'times-circle'
+        error: 'times-circle',
+        payment: 'credit-card',
+        customer: 'user'
     };
     return icons[type] || 'bell';
 }
@@ -332,7 +455,9 @@ function getNotificationIconClass(type) {
         info: 'info',
         success: 'success',
         warning: 'warning',
-        error: 'danger'
+        error: 'danger',
+        payment: 'payment',
+        customer: 'customer'
     };
     return classes[type] || 'default';
 }
@@ -345,40 +470,73 @@ function getActionText(type) {
         info: 'المزيد',
         success: 'تم',
         warning: 'تفقد',
-        error: 'دعم'
+        error: 'دعم',
+        payment: 'الدفع',
+        customer: 'الملف الشخصي'
     };
     return texts[type] || 'عرض';
 }
 
 function getTimeAgo(timestamp) {
+    if (!timestamp) return 'الآن';
+    
     const now = new Date();
     const date = new Date(timestamp);
     const seconds = Math.floor((now - date) / 1000);
 
+    if (seconds < 60) return 'الآن';
+    
     const intervals = [
-        { label: 'سنة', seconds: 31536000 },
-        { label: 'شهر', seconds: 2592000 },
-        { label: 'أسبوع', seconds: 604800 },
-        { label: 'يوم', seconds: 86400 },
-        { label: 'ساعة', seconds: 3600 },
-        { label: 'دقيقة', seconds: 60 }
+        { label: 'دقيقة', seconds: 60, plural: 'دقائق' },
+        { label: 'ساعة', seconds: 3600, plural: 'ساعات' },
+        { label: 'يوم', seconds: 86400, plural: 'أيام' },
+        { label: 'أسبوع', seconds: 604800, plural: 'أسابيع' },
+        { label: 'شهر', seconds: 2592000, plural: 'أشهر' }
     ];
 
     for (const interval of intervals) {
         const count = Math.floor(seconds / interval.seconds);
         if (count >= 1) {
-            return `منذ ${count} ${interval.label}`;
+            return count === 1 ? `منذ ${interval.label}` : `منذ ${count} ${interval.plural}`;
         }
     }
 
-    return 'الآن';
+    return formatDateTime(timestamp);
 }
 
 function getRestaurantIdFromStorage() {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
-    return user.restaurantId || 'default';
+    return user.restaurantId || localStorage.getItem('restaurantId') || 'default';
 }
 
 function getAuthToken() {
     return localStorage.getItem('authToken') || '';
 }
+
+// Cleanup on page unload
+window.addEventListener('beforeunload', () => {
+    if (NotificationsState.realTimeInterval) {
+        clearInterval(NotificationsState.realTimeInterval);
+    }
+});
+
+// Add CSS animation for notifications
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+`;
+document.head.appendChild(style);

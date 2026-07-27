@@ -1,6 +1,7 @@
 /* ===================================
    MezoMenu SaaS - AI Import Functions
    استيراد القائمة بالذكاء الاصطناعي
+   Supports: Worker AI + NVIDIA API
    =================================== */
 
 // ==========================================
@@ -11,7 +12,9 @@ const AIImportState = {
     imageUrl: '',
     extractedData: null,
     isProcessing: false,
-    progress: 0
+    progress: 0,
+    selectedAIProvider: 'worker', // 'worker' or 'nvidia'
+    nvidiaModel: 'nvidia/neva-22b' // Default NVIDIA model for vision
 };
 
 // ==========================================
@@ -20,7 +23,86 @@ const AIImportState = {
 document.addEventListener('DOMContentLoaded', function() {
     initUploadZones();
     loadImportHistory();
+    initAIProviderSelector();
+    checkNVIDIAStatus();
 });
+
+// ==========================================
+// AI Provider Selection
+// ==========================================
+function initAIProviderSelector() {
+    const providerSelect = document.getElementById('aiProviderSelect');
+    
+    if (providerSelect) {
+        providerSelect.addEventListener('change', (e) => {
+            AIImportState.selectedAIProvider = e.target.value;
+            
+            // Show/hide NVIDIA settings based on selection
+            const nvidiaSettings = document.getElementById('nvidiaSettings');
+            if (nvidiaSettings) {
+                nvidiaSettings.style.display = e.target.value === 'nvidia' ? 'block' : 'none';
+            }
+            
+            // Update UI indication
+            showNotification('info', `تم اختيار: ${e.target.value === 'worker' ? 'Worker AI (افتراضي)' : 'NVIDIA AI'}`);
+        });
+    }
+
+    // NVIDIA API Key input handler
+    const nvidiaKeyInput = document.getElementById('nvidiaApiKeyInput');
+    if (nvidiaKeyInput) {
+        nvidiaKeyInput.addEventListener('change', (e) => {
+            if (e.target.value.trim()) {
+                CONFIG.NVIDIA_API_KEY = e.target.value.trim();
+                localStorage.setItem('nvidiaApiKey', e.target.value.trim());
+                showNotification('success', 'تم حفظ مفتاح NVIDIA API');
+                checkNVIDIAStatus();
+            }
+        });
+        
+        // Restore saved key
+        const savedKey = localStorage.getItem('nvidiaApiKey');
+        if (savedKey) {
+            nvidiaKeyInput.value = savedKey;
+            CONFIG.NVIDIA_API_KEY = savedKey;
+        }
+    }
+
+    // Model selector
+    const modelSelect = document.getElementById('nvidiaModelSelect');
+    if (modelSelect) {
+        modelSelect.addEventListener('change', (e) => {
+            AIImportState.nvidiaModel = e.target.value;
+        });
+    }
+}
+
+// ==========================================
+// Check NVIDIA API Status
+// ==========================================
+async function checkNVIDIAStatus() {
+    const statusEl = document.getElementById('nvidiaStatus');
+    if (!statusEl || !CONFIG.NVIDIA_API_KEY) return;
+
+    try {
+        statusEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري التحقق...';
+        statusEl.className = 'status-badge status-info';
+
+        // Test NVIDIA API with a simple request
+        const testResult = await NVIDIA_AI.chat([{ role: 'user', content: 'Hello, respond with "OK"' }], 'meta/llama3-70b-instruct');
+        
+        if (testResult && testResult.includes('OK')) {
+            statusEl.innerHTML = '<i class="fas fa-check-circle"></i> متصل';
+            statusEl.className = 'status-badge status-success';
+        } else {
+            throw new Error('Invalid response');
+        }
+    } catch (error) {
+        statusEl.innerHTML = '<i class="fas fa-times-circle"></i> غير متصل';
+        statusEl.className = 'status-badge status-danger';
+        console.warn('[NVIDIA] API not available:', error.message);
+    }
+}
 
 // ==========================================
 // Upload Zone Initialization
@@ -174,61 +256,204 @@ async function analyzeFromUrl() {
 }
 
 // ==========================================
-// Analyze Image
+// Analyze Image - Supports Worker + NVIDIA
 // ==========================================
 async function analyzeImage(imageData) {
     showProcessingStatus();
     simulateProgress(10);
 
     try {
-        // First upload the image
-        const formData = new FormData();
-        
-        if (AIImportState.selectedFile) {
-            formData.append('file', AIImportState.selectedFile);
+        let analysisResult;
+
+        if (AIImportState.selectedAIProvider === 'nvidia' && CONFIG.NVIDIA_API_KEY) {
+            // Use NVIDIA AI for analysis
+            console.log('[AI Import] Using NVIDIA AI for image analysis...');
+            analysisResult = await analyzeWithNVIDIA(imageData);
+        } else {
+            // Use default Worker AI
+            console.log('[AI Import] Using Worker AI for image analysis...');
+            analysisResult = await analyzeWithWorker(imageData);
         }
 
-        simulateProgress(30);
-
-        // Upload to R2 via Worker
-        const uploadResponse = await fetch(`${CONFIG.API_URL}/api/upload`, {
-            method: 'POST',
-            body: formData
-        });
-
-        const uploadResult = await uploadResponse.json();
-
-        if (!uploadResult.success) {
-            throw new Error(uploadResult.error || 'فشل رفع الصورة');
-        }
-
-        simulateProgress(50);
-
-        // Now analyze with AI
-        const analysisResponse = await fetch(`${CONFIG.API_URL}/api/ai/analyze`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                imageUrl: uploadResult.url,
-                type: 'menu'
-            })
-        });
-
-        const analysisData = await analysisResponse.json();
-
-        if (analysisData.success) {
+        if (analysisResult.success) {
             simulateProgress(100);
             setTimeout(() => {
                 hideProcessingStatus();
-                displayExtractedData(analysisData.data, uploadResult.url);
-                saveToImportHistory(uploadResult.url, analysisData.data);
+                displayExtractedData(analysisResult.data, analysisResult.imageUrl || AIImportState.imageUrl);
+                saveToImportHistory(analysisResult.imageUrl || AIImportState.imageUrl, analysisResult.data);
+                
+                // Log which provider was used
+                console.log(`[AI Import] Analysis completed using: ${AIImportState.selectedAIProvider}`);
             }, 500);
         } else {
-            throw new Error(analysisData.error || 'فشل تحليل الصورة');
+            throw new Error(analysisResult.error || 'فشل تحليل الصورة');
         }
     } catch (error) {
         hideProcessingStatus();
+        
+        // If primary provider fails, try fallback
+        if (AIImportState.selectedAIProvider === 'nvidia') {
+            showNotification('warning', 'فشل NVIDIA AI، جاري المحاولة بالـ Worker...');
+            AIImportState.selectedAIProvider = 'worker';
+            
+            // Retry with Worker
+            try {
+                const fallbackResult = await analyzeWithWorker(imageData);
+                if (fallbackResult.success) {
+                    hideProcessingStatus();
+                    displayExtractedData(fallbackResult.data, fallbackResult.imageUrl || AIImportState.imageUrl);
+                    saveToImportHistory(fallbackResult.imageUrl || AIImportState.imageUrl, fallbackResult.data);
+                    showNotification('success', 'تم التحليل باستخدام Worker AI (احتياطي)');
+                    return;
+                }
+            } catch (fallbackError) {
+                console.error('[AI Import] Fallback also failed:', fallbackError);
+            }
+        }
+        
         showNotification('error', 'حدث خطأ: ' + error.message);
+    }
+}
+
+// ==========================================
+// Analyze with Worker AI (Default)
+// ==========================================
+async function analyzeWithWorker(imageData) {
+    simulateProgress(30);
+
+    // First upload the image
+    const formData = new FormData();
+    
+    if (AIImportState.selectedFile) {
+        formData.append('file', AIImportState.selectedFile);
+    }
+
+    simulateProgress(30);
+
+    // Upload to R2 via Worker
+    const uploadResponse = await fetch(`${CONFIG.API_URL}/api/upload`, {
+        method: 'POST',
+        body: formData
+    });
+
+    const uploadResult = await uploadResponse.json();
+
+    if (!uploadResult.success) {
+        throw new Error(uploadResult.error || 'فشل رفع الصورة');
+    }
+
+    simulateProgress(50);
+
+    // Now analyze with AI via Worker
+    const analysisResponse = await fetch(`${CONFIG.API_URL}/api/ai/analyze`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+            imageUrl: uploadResult.url,
+            type: 'menu'
+        })
+    });
+
+    const analysisData = await analysisResponse.json();
+
+    if (analysisData.success) {
+        return {
+            success: true,
+            data: analysisData.data,
+            imageUrl: uploadResult.url,
+            provider: 'worker'
+        };
+    } else {
+        throw new Error(analysisData.error || 'فشل تحليل الصورة');
+    }
+}
+
+// ==========================================
+// Analyze with NVIDIA AI (Alternative)
+// ==========================================
+async function analyzeWithNVIDIA(imageData) {
+    simulateProgress(20);
+
+    if (!CONFIG.NVIDIA_API_KEY) {
+        throw new Error('مفتاح NVIDIA API غير مضبوط. أدخل المفتاح في الإعدادات.');
+    }
+
+    try {
+        simulateProgress(40);
+
+        // Use NVIDIA's vision model for menu analysis
+        const prompt = `أنت خبير في تحليل قوائم المطاعم. قم بتحليل هذه الصورة واستخرج:
+1. أسماء الفئات (Categories)
+2. الأصناف في كل فئة مع الأسعار
+3. وصف مختصر لكل صنف
+
+قم بتنسيق النتيجة كـ JSON بهذه البنية:
+{
+  "categories": [
+    {
+      "name": "اسم الفئة",
+      "items": [
+        {
+          "name": "اسم الصنف",
+          "price": السعر كرقم,
+          "description": "وصف مختصر"
+        }
+      ]
+    }
+  ],
+  "confidence": نسبة الثقة من 0 إلى 100
+}
+
+الصورة هي لقائمة مطعم باللغة العربية. استخرج النصوص والأسعار بدقة.`;
+
+        const nvidiaResponse = await NVIDIA_AI.analyzeImage(imageData, prompt);
+        
+        simulateProgress(70);
+
+        if (!nvidiaResponse) {
+            throw new Error('لم يستجيب NVIDIA AI');
+        }
+
+        // Parse the response to extract JSON
+        let parsedData;
+        try {
+            // Try to extract JSON from the response
+            const jsonMatch = nvidiaResponse.match(/\{[\s\S]*\}/);
+            if (jsonMatch) {
+                parsedData = JSON.parse(jsonMatch[0]);
+            } else {
+                throw new Error('No JSON found in response');
+            }
+        } catch (parseError) {
+            console.warn('[NVIDIA] Failed to parse JSON, using raw response:', parseError);
+            
+            // Fallback: create a basic structure from the text
+            parsedData = {
+                categories: [{
+                    name: 'قائمة مستوردة',
+                    items: [{
+                        name: 'قائمة محددة بالذكاء الاصطناعي',
+                        price: 0,
+                        description: nvidiaResponse.substring(0, 200) + '...'
+                    }]
+                }],
+                confidence: 75,
+                rawText: nvidiaResponse
+            };
+        }
+
+        simulateProgress(100);
+
+        return {
+            success: true,
+            data: parsedData,
+            imageData: imageData,
+            provider: 'nvidia'
+        };
+
+    } catch (error) {
+        console.error('[NVIDIA Analysis] Error:', error);
+        throw new Error(`خطأ في NVIDIA AI: ${error.message}`);
     }
 }
 

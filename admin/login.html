@@ -665,42 +665,44 @@
                     throw new Error('يرجى إدخال البريد الإلكتروني وكلمة المرور');
                 }
 
-                console.log('[Login] Attempting login for:', email);
-
-                // Call the real API
-                const response = await fetch(`${CONFIG.API_URL}/api/auth/login`, {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ email, password })
-                });
-
-                const result = await response.json();
-
-                console.log('[Login] API Response:', result);
-
-                if (!response.ok || !result.success) {
-                    throw new Error(result.error || 'فشل تسجيل الدخول');
+                // Validate email format
+                if (!isValidEmail(email)) {
+                    throw new Error('صيغة البريد الإلكتروني غير صحيحة');
                 }
 
-                // Save user data
-                const userData = result.data.user;
-                Storage.set('user_data', userData);
-                Storage.set('auth_token', result.data.token);
-                
-                Toast.success('مرحباً ' + (userData.displayName || userData.email.split('@')[0]) + '! ✅');
-                
-                setTimeout(() => {
-                    window.location.href = 'dashboard.html';
-                }, 1000);
+                console.log('[Login] Attempting REAL login for:', email);
+
+                // Use Auth system for real Worker authentication
+                const result = await Auth.login(email, password);
+
+                if (result.success) {
+                    console.log('[Login] Successful authentication!');
+                    
+                    // Also save in legacy format for compatibility
+                    Storage.set('user_data', result.user);
+                    if (result.token) {
+                        Storage.set('auth_token', result.token);
+                    }
+                    
+                    Toast.success('مرحباً ' + (result.user?.displayName || result.user?.email?.split('@')[0] || 'بك') + '! ✅');
+                    
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';
+                    }, 1000);
+                } else {
+                    throw new Error(result.error || 'فشل تسجيل الدخول');
+                }
 
             } catch (error) {
                 console.error('[Login] Error:', error);
                 
-                // Check if it's a network error
-                if (error.message.includes('fetch') || error.message.includes('network')) {
+                // Check error type
+                if (error.message.includes('fetch') || error.message.includes('network') || error.message.includes('Failed')) {
                     Toast.error('فشل الاتصال بالخادم - تحقق من اتصالك بالإنترنت');
+                } else if (error.message.includes('401') || error.message.includes('403')) {
+                    Toast.error('البريد الإلكتروني أو كلمة المرور غير صحيحة');
+                } else if (error.message.includes('404')) {
+                    Toast.error('الحساب غير موجود - سجل أولاً');
                 } else {
                     Toast.error(error.message || 'فشل تسجيل الدخول');
                 }
@@ -712,16 +714,174 @@
             }
         });
 
-        // Social login handler
-        function socialLogin(provider) {
-            Toast.info(`تسجيل الدخول عبر ${provider} قريباً...`);
+        // Google/Gmail Login Handler - REAL OAuth Integration
+        async function socialLogin(provider) {
+            try {
+                showLoading(`جاري التسجيل عبر ${provider}...`);
+
+                if (provider === 'google' || provider === 'gmail') {
+                    await handleGoogleLogin();
+                } else if (provider === 'apple') {
+                    Toast.info('تسجيل الدخول عبر Apple قريباً...');
+                    hideLoading();
+                } else if (provider === 'facebook') {
+                    Toast.info('تسجيل الدخول عبر Facebook قريباً...');
+                    hideLoading();
+                }
+
+            } catch (error) {
+                hideLoading();
+                console.error(`[Social Login] ${provider} error:`, error);
+                Toast.error('فشل تسجيل الدخول: ' + error.message);
+            }
         }
 
-        // Check if already logged in
+        // Google Sign-In with Firebase/Google OAuth
+        async function handleGoogleLogin() {
+            // Check if Google API is loaded
+            if (typeof google === 'undefined' || !google.accounts) {
+                // Fallback: Manual Google OAuth flow
+                await manualGoogleLogin();
+                return;
+            }
+
+            // Use Google Identity Services
+            google.accounts.id.initialize({
+                client_id: 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com', // Replace with your Google Client ID
+                callback: handleGoogleCredentialResponse,
+                auto_select: false,
+                context: 'signin'
+            });
+
+            // Show Google One Tap or prompt
+            google.accounts.id.prompt((notification) => {
+                if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+                    // Fall back to button click
+                    google.accounts.id.prompt();
+                }
+            });
+        }
+
+        // Handle Google credential response
+        async function handleGoogleCredentialResponse(response) {
+            try {
+                console.log('[Google Login] Received credential, verifying with Worker...');
+                
+                // Send ID token to Worker for verification
+                const authResult = await Auth.registerWithGoogle(response.credential);
+
+                if (authResult.success) {
+                    Toast.success('تم تسجيل الدخول بحساب Google! ✅');
+                    
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';
+                    }, 1000);
+                } else {
+                    throw new Error(authResult.error || 'فشل التحقق من Google');
+                }
+            } catch (error) {
+                hideLoading();
+                Toast.error(error.message);
+            }
+        }
+
+        // Manual Google OAuth fallback (popup-based)
+        async function manualGoogleLogin() {
+            try {
+                // For GitHub Pages / static hosting without backend OAuth
+                // We'll use a simpler approach with Google Sign-In
+                
+                const clientId = prompt(
+                    'أدخل Google Client ID (اختياري - للتطوير فقط)', 
+                    ''
+                );
+
+                if (!clientId) {
+                    Toast.info('سيتم تفعيل تسجيل Google قريباً');
+                    hideLoading();
+                    return;
+                }
+
+                // Load Google API dynamically
+                const script = document.createElement('script');
+                script.src = 'https://accounts.google.com/gsi/client';
+                script.async = true;
+                script.defer = true;
+                script.onload = () => handleGoogleLogin();
+                document.head.appendChild(script);
+
+            } catch (error) {
+                hideLoading();
+                console.error('[Manual Google Login] Error:', error);
+                Toast.error('فشل تحميل Google Sign-In');
+            }
+        }
+
+        // Forgot Password Handler
+        async function forgotPassword() {
+            const email = document.getElementById('email')?.value?.trim();
+            
+            if (!email) {
+                Toast.warning('أدخل بريدك الإلكتروني أولاً');
+                return;
+            }
+
+            if (!isValidEmail(email)) {
+                Toast.error('صيغة البريد الإلكتروني غير صحيحة');
+                return;
+            }
+
+            try {
+                showLoading('جاري إ发送 رابط إعادة تعيين كلمة المرور...');
+
+                // Call Worker API for password reset
+                const response = await fetch(`${CONFIG.API_URL}/api/auth/forgot-password`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+
+                const result = await response.json();
+
+                hideLoading();
+
+                if (result.success) {
+                    Toast.success('تم إرسال رابط إعادة التعيين إلى بريدك الإلكتروني ✅');
+                } else {
+                    // Even if API fails, show success for UX (don't reveal if email exists)
+                    Toast.info('إذا كان البريد مسجلاً، سيتم إرسال رابط إعادة التعيين');
+                }
+
+            } catch (error) {
+                hideLoading();
+                Toast.info('حدث خطأ - حاول مرة أخرى لاحقاً');
+            }
+        }
+
+        // Check if already logged in & redirect
         document.addEventListener('DOMContentLoaded', () => {
+            // Check new Auth system first
+            if (Auth.isAuthenticated()) {
+                console.log('[Login] User already authenticated, redirecting to dashboard...');
+                window.location.href = 'dashboard.html';
+                return;
+            }
+
+            // Check legacy storage
             const savedUser = Storage.get('user_data');
             if (savedUser && savedUser.email) {
-                console.log('User already logged in:', savedUser.email);
+                console.log('[Login] User found in legacy storage, redirecting...');
+                window.location.href = 'dashboard.html';
+            }
+
+            // Add Google Sign-In script if configured
+            const googleClientId = document.querySelector('meta[name="google-signin-client-id"]');
+            if (googleClientId?.content) {
+                const script = document.createElement('script');
+                script.src = 'https://accounts.google.com/gsi/client';
+                script.async = true;
+                script.defer = true;
+                document.head.appendChild(script);
             }
         });
     </script>

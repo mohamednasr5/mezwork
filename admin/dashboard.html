@@ -1348,68 +1348,158 @@
                 }
             }
 
-            // Load real data from API
+            // Load real data from Firebase
             loadDashboardData();
+            
+            // Start auto-refresh every 30 seconds
+            startAutoRefresh();
         });
 
-        // Load dashboard data - Real API Integration
+        // Load dashboard data - REAL Firebase Integration
         async function loadDashboardData() {
             try {
-                const user = Storage.get('user_data');
-                const userId = user?.id || 'default';
-                
-                console.log('[Dashboard] Loading data for user:', userId);
-
                 // Show loading state
                 const statsCards = document.querySelectorAll('.stat-card');
                 statsCards.forEach(card => card.style.opacity = '0.6');
 
-                // Fetch real stats from API
-                const response = await fetch(`${CONFIG.API_URL}/api/stats/dashboard?userId=${userId}`);
+                // Get restaurant ID from authenticated user or storage
+                let restaurantId = null;
                 
-                if (response.ok) {
-                    const result = await response.json();
+                // Try to get from localStorage (set by Auth system)
+                const storedUser = localStorage.getItem('user');
+                if (storedUser) {
+                    const userData = JSON.parse(storedUser);
+                    restaurantId = userData.restaurantId;
+                }
+                
+                // Fallback to legacy storage
+                if (!restaurantId) {
+                    const legacyUser = Storage.get('user_data');
+                    restaurantId = legacyUser?.restaurantId || legacyUser?.id;
+                }
+                
+                // Final fallback
+                if (!restaurantId) {
+                    restaurantId = localStorage.getItem('restaurantId') || 'default';
+                }
+
+                console.log('[Dashboard] Loading REAL data from Firebase for restaurant:', restaurantId);
+
+                // Use DashboardService for real Firebase data
+                const result = await DashboardService.getStats(restaurantId);
+                
+                if (result.success) {
+                    const stats = result.stats;
                     
-                    if (result.success && result.data) {
-                        console.log('[Dashboard] Real data loaded:', result.data);
-                        
-                        // Update stats with real data
-                        const stats = result.data.orders || {};
-                        updateStatWithAnimation('totalOrders', stats.total || 0);
-                        updateStatWithAnimation('totalSales', formatNumber(stats.revenue || 0));
-                        updateStatWithAnimation('newCustomers', stats.today || 0);
-                        updateStatWithAnimation('avgRating', '4.8');
-                        updateStatWithAnimation('menuViews', result.data.menu?.totalItems || 0);
-                        
-                        // Update recent orders if element exists
-                        if (stats.recentOrders && stats.recentOrders.length > 0) {
-                            updateRecentOrders(stats.recentOrders);
+                    console.log('[Dashboard] Real data loaded from Firebase:', stats);
+
+                    // Update stats with REAL data from Firebase
+                    updateStatWithAnimation('totalOrders', stats.totalOrders || 0);
+                    updateStatWithAnimation('totalSales', formatCurrency(stats.totalRevenue).replace('ج.م', '').trim());
+                    updateStatWithAnimation('newCustomers', stats.uniqueCustomers || 0);
+                    updateStatWithAnimation('avgRating', stats.rating || '0.0');
+                    updateStatWithAnimation('menuViews', stats.views || 0);
+                    
+                    // Update trend indicators
+                    updateTrendIndicator('ordersTrend', stats.ordersTrend);
+                    updateTrendIndicator('revenueTrend', stats.revenueTrend);
+                    updateTrendIndicator('customersTrend', 0); // Would need historical data
+                    
+                    // Update recent orders if available
+                    if (stats.recentOrders && stats.recentOrders.length > 0) {
+                        updateRecentOrders(stats.recentOrders);
+                    } else {
+                        // Show empty state for recent orders
+                        const container = document.getElementById('recentOrdersList');
+                        if (container) {
+                            container.innerHTML = `
+                                <div style="padding: 20px; text-align: center; color: #999;">
+                                    <i class="fas fa-inbox" style="font-size: 2rem; margin-bottom: 10px;"></i>
+                                    <p>لا توجد طلبات بعد</p>
+                                    <small>ستظهر الطلبات الجديدة هنا تلقائياً</small>
+                                </div>
+                            `;
                         }
-                        
-                        Toast.success('تم تحديث البيانات ✅');
                     }
+
+                    // Update last sync time
+                    AppState.lastSyncTime = new Date().toISOString();
+                    updateLastSyncTime();
+
+                    showNotification('success', 'تم تحديث البيانات من قاعدة البيانات ✅');
                 } else {
-                    // Fallback to demo data if API fails
-                    console.log('[Dashboard] Using demo data (API not available)');
-                    loadDemoData();
+                    console.warn('[Dashboard] Could not load from Firebase, showing empty state');
+                    loadEmptyState();
                 }
                 
                 // Restore card opacity
                 statsCards.forEach(card => card.style.opacity = '1');
 
             } catch (error) {
-                console.error('[Dashboard] Error loading data:', error);
-                loadDemoData();
+                console.error('[Dashboard] Error loading real data:', error);
+                showNotification('error', 'خطأ في تحميل البيانات: ' + error.message);
+                loadEmptyState();
             }
         }
 
-        // Fallback demo data
-        function loadDemoData() {
-            updateStatWithAnimation('totalOrders', 156);
-            updateStatWithAnimation('totalSales', '12,450');
-            updateStatWithAnimation('newCustomers', 89);
-            updateStatWithAnimation('avgRating', 4.8);
-            updateStatWithAnimation('menuViews', 1234);
+        // Load empty state (no fake data!)
+        function loadEmptyState() {
+            updateStatWithAnimation('totalOrders', 0);
+            updateStatWithAnimation('totalSales', '0.00');
+            updateStatWithAnimation('newCustomers', 0);
+            updateStatWithAnimation('avgRating', '0.0');
+            updateStatWithAnimation('menuViews', 0);
+            
+            // Clear recent orders
+            const container = document.getElementById('recentOrdersList');
+            if (container) {
+                container.innerHTML = `
+                    <div style="padding: 20px; text-align: center; color: #999;">
+                        <i class="fas fa-database" style="font-size: 2rem; margin-bottom: 10px;"></i>
+                        <p>لا توجد بيانات بعد</p>
+                        <small>ابدأ بإضافة عناصر للقائمة أو استقبل أول طلب</small>
+                    </div>
+                `;
+            }
+        }
+
+        // Update trend indicator
+        function updateTrendIndicator(elementId, value) {
+            const el = document.getElementById(elementId);
+            if (!el) return;
+            
+            if (value > 0) {
+                el.innerHTML = `<span style="color: var(--success);">${value}% ↑</span>`;
+            } else if (value < 0) {
+                el.innerHTML = `<span style="color: var(--danger);">${Math.abs(value)}% ↓</span>`;
+            } else {
+                el.innerHTML = `<span style="color: var(--gray-500);">0%</span>`;
+            }
+        }
+
+        // Update last sync time display
+        function updateLastSyncTime() {
+            const syncEl = document.querySelector('.last-sync-time');
+            if (syncEl && AppState.lastSyncTime) {
+                syncEl.textContent = `آخر تحديث: ${formatDateTime(AppState.lastSyncTime)}`;
+            }
+        }
+
+        // Setup auto-refresh every 30 seconds
+        let dashboardRefreshInterval;
+        
+        function startAutoRefresh() {
+            if (dashboardRefreshInterval) clearInterval(dashboardRefreshInterval);
+            dashboardRefreshInterval = setInterval(() => {
+                console.log('[Dashboard] Auto-refreshing...');
+                loadDashboardData();
+            }, 30000); // 30 seconds
+        }
+
+        // Manual refresh button handler
+        function refreshDashboard() {
+            showNotification('info', 'جاري تحديث البيانات...');
+            loadDashboardData();
         }
 
         // Update recent orders list
