@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة القائمة - MezoMenu</title>
+    <link rel="icon" type="image/png" href="../assets/images/favicon.png">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Complete Inline CSS -->
+    <style>
+        :root {
+            --primary-color: #ff6b35;
+            --primary-dark: #e55a2b;
+            --primary-light: #ff8c5a;
+            --secondary-color: #f7931e;
+            --dark-color: #1a1a2e;
+            --dark-light: #16213e;
+            --gray-900: #212529;
+            --gray-800: #343a40;
+            --gray-700: #495057;
+            --gray-600: #6c757d;
+            --gray-500: #adb5bd;
+            --gray-400: #ced4da;
+            --gray-300: #dee2e6;
+            --gray-200: #e9ecef;
+            --gray-100: #f8f9fa;
+            --white: #ffffff;
+            --success: #28a745;
+            --success-light: #d4edda;
+            --warning: #ffc107;
+            --warning-light: #fff3cd;
+            --danger: #dc3545;
+            --danger-light: #f8d7da;
+            --info: #17a2b8;
+            --info-light: #d1ecf1;
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 25px rgba(0,0,0,0.15);
+            --shadow-xl: 0 20px 40px rgba(0,0,0,0.2);
+            --radius-sm: 4px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --radius-xl: 20px;
+            --radius-full: 50%;
+            --transition-fast: 0.15s ease;
+            --transition-normal: 0.3s ease;
+        }
+        
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        html { scroll-behavior: smooth; font-size: 16px; }
+        
+        body {
+            font-family: 'Cairo', sans-serif;
+            line-height: 1.6;
+            color: var(--gray-900);
+            background-color: var(--white);
+            direction: rtl;
+            text-align: right;
+        }
+        
+        [dir="rtl"] { text-align: right; }
+        
+        h1, h2, h3, h4, h5, h6 { font-weight: 700; line-height: 1.3; color: var(--dark-color); margin-bottom: 0.5em; }
+        h1 { font-size: 2.5rem; } h2 { font-size: 2rem; } h3 { font-size: 1.75rem; } h4 { font-size: 1.5rem; }
+        p { margin-bottom: 1rem; color: var(--gray-700); }
+        a { color: var(--primary-color); text-decoration: none; transition: var(--transition-fast); }
+        a:hover { color: var(--primary-dark); }
+        img { max-width: 100%; height: auto; }
+        
+        /* Admin Layout */
+        .admin-layout { display: flex; min-height: 100vh; }
+        
+        .sidebar {
+            width: 280px;
+            background: linear-gradient(180deg, var(--dark-color) 0%, var(--dark-light) 100%);
+            color: var(--white);
+            position: fixed;
+            top: 0; right: 0;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 1000;
+            transition: var(--transition-normal);
+        }
+        
+        .sidebar-header { padding: 24px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        
+        .sidebar-logo { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+        .sidebar-logo img { width: 48px; height: 48px; border-radius: var(--radius-md); object-fit: cover; }
+        .sidebar-logo h2 { font-size: 1.25rem; color: var(--white); margin: 0; }
+        .sidebar-logo small { color: var(--gray-400); font-size: 0.8rem; }
+        
+        .restaurant-selector {
+            background: rgba(255,255,255,0.1);
+            border-radius: var(--radius-md);
+            padding: 12px;
+            cursor: pointer;
+        }
+        
+        .restaurant-selector select {
+            background: transparent;
+            border: none;
+            color: var(--white);
+            width: 100%;
+            font-family: 'Cairo', sans-serif;
+            cursor: pointer;
+        }
+        
+        .restaurant-selector select option { background: var(--dark-color); color: var(--white); }
+        
+        .sidebar-nav { padding: 16px 12px; }
+        .nav-section { margin-bottom: 24px; }
+        .nav-section-title { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--gray-500); padding: 0 12px; margin-bottom: 8px; }
+        
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: var(--radius-md);
+            color: var(--gray-300);
+            transition: var(--transition-fast);
+            margin-bottom: 4px;
+            text-decoration: none;
+        }
+        
+        .nav-item:hover { background: rgba(255,255,255,0.1); color: var(--white); }
+        .nav-item.active { background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: var(--white); box-shadow: 0 4px 15px rgba(255,107,53,0.3); }
+        .nav-item i { width: 20px; text-align: center; font-size: 1.125rem; }
+        .nav-item .badge { margin-right: auto; background: var(--danger); color: var(--white); font-size: 0.7rem; padding: 2px 8px; border-radius: var(--radius-full); }
+        
+        .sidebar-footer { position: absolute; bottom: 0; left: 0; right: 0; padding: 16px 20px; border-top: 1px solid rgba(255,255,255,0.1); }
+        .user-info { display: flex; align-items: center; gap: 12px; }
+        .user-avatar { width: 40px; height: 40px; border-radius: var(--radius-full); background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--white); }
+        .user-details h4 { font-size: 0.9rem; color: var(--white); margin: 0; }
+        .user-details p { font-size: 0.75rem; color: var(--gray-400); margin: 0; }
+        
+        /* Main Content */
+        .main-content { flex: 1; margin-right: 280px; min-height: 100vh; background: var(--gray-100); }
+        
+        .top-header {
+            background: var(--white);
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: var(--shadow-sm);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-left { display: flex; align-items: center; gap: 20px; }
+        .menu-toggle { display: none; background: none; border: none; font-size: 1.5rem; color: var(--gray-700); cursor: pointer; }
+        .header-right { display: flex; align-items: center; gap: 16px; }
+        .header-btn { position: relative; background: none; border: none; font-size: 1.25rem; color: var(--gray-600); cursor: pointer; padding: 8px; border-radius: var(--radius-full); transition: var(--transition-fast); }
+        .header-btn:hover { background: var(--gray-100); color: var(--primary-color); }
+        .header-btn .badge { position: absolute; top: 0; right: 0; font-size: 0.65rem; padding: 2px 6px; background: var(--danger); color: var(--white); border-radius: var(--radius-full); }
+        
+        .page-content { padding: 24px; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px; }
+        .page-title { font-size: 1.75rem; color: var(--dark-color); margin: 0; }
+        .page-subtitle { color: var(--gray-600); margin: 0; }
+        .page-actions { display: flex; gap: 12px; }
+        
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 24px;
+            font-family: 'Cairo', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: var(--transition-normal);
+            text-decoration: none;
+            white-space: nowrap;
+        }
+        
+        .btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+        .btn-primary { background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: var(--white); }
+        .btn-secondary { background: var(--white); color: var(--primary-color); border: 2px solid var(--primary-color); }
+        .btn-success { background: var(--success); color: var(--white); }
+        .btn-danger { background: var(--danger); color: var(--white); }
+        .btn-outline { background: transparent; border: 2px solid currentColor; }
+        .btn-sm { padding: 8px 16px; font-size: 0.875rem; }
+        .btn-lg { padding: 16px 32px; font-size: 1.125rem; }
+        .btn-icon { width: 44px; height: 44px; padding: 0; border-radius: var(--radius-full); }
+        
+        /* Forms */
+        .form-group { margin-bottom: 1.25rem; }
+        .form-label { display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--gray-700); }
+        .form-control {
+            width: 100%; padding: 12px 16px;
+            font-family: 'Cairo', sans-serif;
+            font-size: 1rem;
+            border: 2px solid var(--gray-300);
+            border-radius: var(--radius-md);
+            transition: var(--transition-fast);
+            background: var(--white);
+        }
+        .form-control:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1); }
+        .form-select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236c757d'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: left 12px center; background-size: 20px; padding-left: 40px; }
+        
+        /* Menu Editor Styles */
+        .menu-editor-container { display: grid; grid-template-columns: 350px 1fr; gap: 24px; }
+        
+        .categories-sidebar {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+            height: fit-content;
+            max-height: calc(100vh - 200px);
+            position: sticky;
+            top: 120px;
+        }
+        
+        .categories-header {
+            padding: 20px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: var(--white);
+        }
+        
+        .categories-header h3 { color: var(--white); margin: 0 0 8px 0; font-size: 1.125rem; }
+        .categories-header p { color: rgba(255,255,255,0.9); margin: 0; font-size: 0.9rem; }
+        
+        .categories-list { list-style: none; padding: 12px; max-height: 400px; overflow-y: auto; }
+        
+        .category-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 16px;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: var(--transition-fast);
+            margin-bottom: 8px;
+            background: var(--gray-50);
+            border: 2px solid transparent;
+        }
+        
+        .category-item:hover { background: var(--gray-100); }
+        .category-item.active { background: linear-gradient(135deg, rgba(255,107,53,0.1), rgba(247,147,30,0.1)); border-color: var(--primary-color); }
+        
+        .category-icon {
+            width: 36px; height: 36px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: var(--white);
+        }
+        
+        .category-name { flex: 1; font-weight: 600; }
+        .category-count { font-size: 0.85rem; color: var(--gray-500); }
+        
+        .add-category-btn {
+            margin: 12px;
+            width: calc(100% - 24px);
+        }
+        
+        /* Menu Items Area */
+        .menu-items-area {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+        }
+        
+        .items-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--gray-200);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        
+        .items-header h3 { margin: 0; font-size: 1.125rem; }
+        
+        .items-toolbar { display: flex; gap: 12px; flex-wrap: wrap; }
+        
+        .search-input-wrapper { position: relative; }
+        .search-input-wrapper input { padding-right: 40px; padding-left: 16px; }
+        .search-input-wrapper i { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--gray-500); }
+        
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            padding: 24px;
+        }
+        
+        .menu-item-card {
+            background: var(--white);
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            transition: var(--transition-normal);
+        }
+        
+        .menu-item-card:hover {
+            border-color: var(--primary-color);
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-4px);
+        }
+        
+        .item-image {
+            width: 100%;
+            height: 160px;
+            background: linear-gradient(135deg, var(--gray-100), var(--gray-200));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--gray-500);
+            font-size: 3rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .item-image img { width: 100%; height: 100%; object-fit: cover; }
+        
+        .item-badge {
+            position: absolute;
+            top: 10px; right: 10px;
+            background: var(--primary-color);
+            color: var(--white);
+            padding: 4px 10px;
+            border-radius: var(--radius-full);
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+        
+        .item-body { padding: 16px; }
+        .item-name { font-size: 1.1rem; font-weight: 700; color: var(--dark-color); margin-bottom: 4px; }
+        .item-description { font-size: 0.85rem; color: var(--gray-600); margin-bottom: 12px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        
+        .item-price-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .item-price { font-size: 1.25rem; font-weight: 800; color: var(--primary-color); }
+        
+        .item-availability {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        .item-available { color: var(--success); }
+        .item-unavailable { color: var(--danger); }
+        
+        .item-actions {
+            display: flex;
+            gap: 8px;
+            padding-top: 12px;
+            border-top: 1px solid var(--gray-200);
+        }
+        
+        .item-action-btn {
+            flex: 1;
+            padding: 8px;
+            border: none;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-family: 'Cairo', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: var(--transition-fast);
+        }
+        
+        .item-action-btn.edit { background: var(--info-light); color: var(--info); }
+        .item-action-btn.delete { background: var(--danger-light); color: var(--danger); }
+        .item-action-btn.toggle { background: var(--warning-light); color: #856404; }
+        
+        .item-action-btn:hover { opacity: 0.8; }
+        
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--gray-500);
+        }
+        
+        .empty-state i { font-size: 4rem; margin-bottom: 16px; opacity: 0.5; }
+        .empty-state h3 { color: var(--gray-700); margin-bottom: 8px; }
+        
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition-normal);
+        }
+        
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+        
+        .modal-content {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            transform: scale(0.9);
+            transition: var(--transition-normal);
+        }
+        
+        .modal-overlay.active .modal-content { transform: scale(1); }
+        
+        .modal-header { padding: 20px 24px; border-bottom: 1px solid var(--gray-200); display: flex; align-items: center; justify-content: space-between; }
+        .modal-body { padding: 24px; }
+        .modal-footer { padding: 16px 24px; border-top: 1px solid var(--gray-200); display: flex; gap: 12px; justify-content: flex-start; }
+        .modal-close { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--gray-500); width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-full); }
+        
+        /* Toast */
+        .toast-container { position: fixed; top: 20px; left: 20px; z-index: 99999; display: flex; flex-direction: column; gap: 10px; }
+        .toast { background: var(--white); padding: 16px 20px; border-radius: var(--radius-md); box-shadow: var(--shadow-lg); display: flex; align-items: center; gap: 12px; min-width: 300px; animation: slideIn 0.3s ease; border-right: 4px solid var(--primary-color); }
+        .toast.success { border-right-color: var(--success); }
+        .toast.error { border-right-color: var(--danger); }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(-100%); } to { opacity: 1; transform: translateX(0); } }
+        
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .sidebar { transform: translateX(100%); right: -280px; left: auto; }
+            .sidebar.active { transform: translateX(0); right: 0; }
+            .main-content { margin-right: 0; }
+            .menu-toggle { display: block; }
+            .menu-editor-container { grid-template-columns: 1fr; }
+            .categories-sidebar { position: static; max-height: none; }
+        }
+        
+        @media (max-width: 768px) {
+            .page-content { padding: 16px; }
+            .items-grid { grid-template-columns: 1fr; }
+            .page-header { flex-direction: column; align-items: stretch; }
+        }
+        
+        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 999; }
+        .sidebar-overlay.active { display: block; }
+    </style>
+</head>
+<body>
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <span style="font-size: 2rem;">🍽️</span>
+                    <div><h2>MezoMenu</h2><small>لوحة التحكم</small></div>
+                </div>
+                <div class="restaurant-selector">
+                    <select id="restaurantSelect"><option value="">مطعم المبروك</option></select>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <span class="nav-section-title">الرئيسية</span>
+                    <a href="dashboard.html" class="nav-item"><i class="fas fa-chart-pie"></i><span>لوحة الإحصائيات</span></a>
+                </div>
+                <div class="nav-section">
+                    <span class="nav-section-title">القائمة</span>
+                    <a href="menu.html" class="nav-item active"><i class="fas fa-utensils"></i><span>إدارة القائمة</span></a>
+                    <a href="ai-import.html" class="nav-item"><i class="fas fa-wand-magic-sparkles"></i><span>استيراد ذكي</span></a>
+                </div>
+                <div class="nav-section">
+                    <span class="nav-section-title">الطلبات</span>
+                    <a href="orders.html" class="nav-item"><i class="fas fa-receipt"></i><span>إدارة الطلبات</span><span class="badge">5</span></a>
+                </div>
+                <div class="nav-section">
+                    <span class="nav-section-title">الإعدادات</span>
+                    <a href="settings.html" class="nav-item"><i class="fas fa-cog"></i><span>إعدادات المطعم</span></a>
+                    <a href="notifications.html" class="nav-item"><i class="fas fa-bell"></i><span>الإشعارات</span><span class="badge">3</span></a>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar">م</div>
+                    <div class="user-details"><h4>مدير المطعم</h4><p>admin@mezo.com</p></div>
+                    <button onclick="logout()" class="btn btn-sm btn-danger" style="padding: 6px 10px;"><i class="fas fa-sign-out-alt"></i></button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-header">
+                <div class="header-left">
+                    <button class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+                    <h1 class="page-title" style="margin: 0;">إدارة القائمة</h1>
+                </div>
+                <div class="header-right">
+                    <button onclick="openAddItemModal()" class="btn btn-primary btn-sm"><i class="fas fa-plus"></i> إضافة صنف</button>
+                    <button onclick="window.location.href='ai-import.html'" class="btn btn-secondary btn-sm"><i class="fas fa-wand-magic-sparkles"></i> استيراد ذكي</button>
+                </div>
+            </header>
+
+            <div class="page-content">
+                <div class="page-header">
+                    <div>
+                        <h2 class="page-title">قائمة الطعام</h2>
+                        <p class="page-subtitle">أدرة أصناف قائمة مطعمك بسهولة</p>
+                    </div>
+                    <div class="page-actions">
+                        <select class="form-control form-select" style="width: auto;" onchange="filterByCategory(this.value)">
+                            <option value="">كل التصنيفات</option>
+                            <option value="mains">الأطباق الرئيسية</option>
+                            <option value="appetizers">المقبلات</option>
+                            <option value="drinks">المشروبات</option>
+                            <option value="desserts">الحلويات</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="menu-editor-container">
+                    <!-- Categories Sidebar -->
+                    <div class="categories-sidebar">
+                        <div class="categories-header">
+                            <h3>📂 التصنيفات</h3>
+                            <p>اختر تصنيف لعرض الأصناف</p>
+                        </div>
+                        
+                        <ul class="categories-list" id="categoriesList">
+                            <li class="category-item active" data-category="all" onclick="selectCategory('all')">
+                                <div class="category-icon"><i class="fas fa-th-large"></i></div>
+                                <span class="category-name">جميع الأصناف</span>
+                                <span class="category-count">24</span>
+                            </li>
+                            <li class="category-item" data-category="mains" onclick="selectCategory('mains')">
+                                <div class="category-icon"><i class="fas fa-drumstick-bite"></i></div>
+                                <span class="category-name">الأطباق الرئيسية</span>
+                                <span class="category-count">8</span>
+                            </li>
+                            <li class="category-item" data-category="appetizers" onclick="selectCategory('appetizers')">
+                                <div class="category-icon"><i class="fas fa-cheese"></i></div>
+                                <span class="category-name">المقبلات</span>
+                                <span class="category-count">6</span>
+                            </li>
+                            <li class="category-item" data-category="drinks" onclick="selectCategory('drinks')">
+                                <div class="category-icon"><i class="fas fa-glass-water"></i></div>
+                                <span class="category-name">المشروبات</span>
+                                <span class="category-count">5</span>
+                            </li>
+                            <li class="category-item" data-category="desserts" onclick="selectCategory('desserts')">
+                                <div class="category-icon"><i class="fas fa-ice-cream"></i></div>
+                                <span class="category-name">الحلويات</span>
+                                <span class="category-count">5</span>
+                            </li>
+                        </ul>
+                        
+                        <button onclick="openCategoryModal()" class="btn btn-secondary add-category-btn">
+                            <i class="fas fa-plus"></i> إضافة تصنيف
+                        </button>
+                    </div>
+
+                    <!-- Menu Items Grid -->
+                    <div class="menu-items-area">
+                        <div class="items-header">
+                            <h3 id="currentCategoryTitle">جميع الأصناف (24)</h3>
+                            <div class="items-toolbar">
+                                <div class="search-input-wrapper">
+                                    <input type="text" class="form-control" placeholder="بحث عن صنف..." oninput="searchItems(this.value)" style="width: 250px;">
+                                    <i class="fas fa-search"></i>
+                                </div>
+                                <select class="form-control form-select" style="width: auto;" onchange="sortItems(this.value)">
+                                    <option value="name">ترتيب حسب الاسم</option>
+                                    <option value="price-low">السعر: الأقل أولاً</option>
+                                    <option value="price-high">السعر: الأعلى أولاً</option>
+                                    <option value="newest">الأحدث</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="items-grid" id="itemsGrid">
+                            <!-- Item Card 1 -->
+                            <div class="menu-item-card">
+                                <div class="item-image">
+                                    🍗
+                                    <span class="item-badge">الأكثر مبيعاً</span>
+                                </div>
+                                <div class="item-body">
+                                    <h4 class="item-name">كبدة فراخ</h4>
+                                    <p class="item-description">كبدة فراخ طازجة مع البصل والفلفل الرومي والخل</p>
+                                    <div class="item-price-row">
+                                        <span class="item-price">65 ج.م</span>
+                                        <span class="item-availability item-available"><i class="fas fa-check-circle"></i> متاح</span>
+                                    </div>
+                                    <div class="item-actions">
+                                        <button class="item-action-btn edit" onclick="editItem('1')"><i class="fas fa-edit"></i> تعديل</button>
+                                        <button class="item-action-btn delete" onclick="deleteItem('1')"><i class="fas fa-trash"></i> حذف</button>
+                                        <button class="item-action-btn toggle" onclick="toggleAvailability('1')"><i class="fas fa-eye-slash"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Item Card 2 -->
+                            <div class="menu-item-card">
+                                <div class="item-image">🥙</div>
+                                <div class="item-body">
+                                    <h4 class="item-name">شاورما فراخ</h4>
+                                    <p class="item-description">شاورما فراخ مشوي مع الخبز والطحينة والخضروات</p>
+                                    <div class="item-price-row">
+                                        <span class="item-price">55 ج.م</span>
+                                        <span class="item-availability item-available"><i class="fas fa-check-circle"></i> متاح</span>
+                                    </div>
+                                    <div class="item-actions">
+                                        <button class="item-action-btn edit" onclick="editItem('2')"><i class="fas fa-edit"></i> تعديل</button>
+                                        <button class="item-action-btn delete" onclick="deleteItem('2')"><i class="fas fa-trash"></i> حذف</button>
+                                        <button class="item-action-btn toggle" onclick="toggleAvailability('2')"><i class="fas fa-eye-slash"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Item Card 3 -->
+                            <div class="menu-item-card">
+                                <div class="item-image">🥩</div>
+                                <div class="item-body">
+                                    <h4 class="item-name">محمرة</h4>
+                                    <p class="item-description">لحم محمر بالثوم والبصل والفلفل مع الأرز</p>
+                                    <div class="item-price-row">
+                                        <span class="item-price">85 ج.م</span>
+                                        <span class="item-availability item-available"><i class="fas fa-check-circle"></i> متاح</span>
+                                    </div>
+                                    <div class="item-actions">
+                                        <button class="item-action-btn edit" onclick="editItem('3')"><i class="fas fa-edit"></i> تعديل</button>
+                                        <button class="item-action-btn delete" onclick="deleteItem('3')"><i class="fas fa-trash"></i> حذف</button>
+                                        <button class="item-action-btn toggle" onclick="toggleAvailability('3')"><i class="fas fa-eye-slash"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Item Card 4 -->
+                            <div class="menu-item-card">
+                                <div class="item-image">🥘</div>
+                                <div class="item-body">
+                                    <h4 class="item-name">فتة</h4>
+                                    <p class="item-description">فتة بالأرز والخبز المحمر مع الصلصة والثومية</p>
+                                    <div class="item-price-row">
+                                        <span class="item-price">70 ج.م</span>
+                                        <span class="item-availability item-unavailable"><i class="fas fa-times-circle"></i> غير متاح</span>
+                                    </div>
+                                    <div class="item-actions">
+                                        <button class="item-action-btn edit" onclick="editItem('4')"><i class="fas fa-edit"></i> تعديل</button>
+                                        <button class="item-action-btn delete" onclick="deleteItem('4')"><i class="fas fa-trash"></i> حذف</button>
+                                        <button class="item-action-btn toggle" onclick="toggleAvailability('4')"><i class="fas fa-eye"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Item Card 5 -->
+                            <div class="menu-item-card">
+                                <div class="item-image">🧆</div>
+                                <div class="item-body">
+                                    <h4 class="item-name">كبيبة</h4>
+                                    <p class="item-description">كبيبة بالفراخ أو اللحم مقرمشة بالصنوبر</p>
+                                    <div class="item-price-row">
+                                        <span class="item-price">45 ج.م</span>
+                                        <span class="item-availability item-available"><i class="fas fa-check-circle"></i> متاح</span>
+                                    </div>
+                                    <div class="item-actions">
+                                        <button class="item-action-btn edit" onclick="editItem('5')"><i class="fas fa-edit"></i> تعديل</button>
+                                        <button class="item-action-btn delete" onclick="deleteItem('5')"><i class="fas fa-trash"></i> حذف</button>
+                                        <button class="item-action-btn toggle" onclick="toggleAvailability('5')"><i class="fas fa-eye-slash"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Item Card 6 -->
+                            <div class="menu-item-card">
+                                <div class="item-image">🥗</div>
+                                <div class="item-body">
+                                    <h4 class="item-name">سلطة فتوش</h4>
+                                    <p class="item-description">فتوش طازج بالخضروات والخبز المحمر والرمان</p>
+                                    <div class="item-price-row">
+                                        <span class="item-price">35 ج.م</span>
+                                        <span class="item-availability item-available"><i class="fas fa-check-circle"></i> متاح</span>
+                                    </div>
+                                    <div class="item-actions">
+                                        <button class="item-action-btn edit" onclick="editItem('6')"><i class="fas fa-edit"></i> تعديل</button>
+                                        <button class="item-action-btn delete" onclick="deleteItem('6')"><i class="fas fa-trash"></i> حذف</button>
+                                        <button class="item-action-btn toggle" onclick="toggleAvailability('6')"><i class="fas fa-eye-slash"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Sidebar Overlay -->
+        <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+    </div>
+
+    <!-- Add/Edit Item Modal -->
+    <div class="modal-overlay" id="itemModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">إضافة صنف جديد</h3>
+                <button class="modal-close" onclick="closeModal('itemModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="itemForm">
+                    <div class="form-group">
+                        <label class="form-label">اسم الصنف *</label>
+                        <input type="text" class="form-control" id="itemName" placeholder="مثال: كبدة فراخ" required>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                        <div class="form-group">
+                            <label class="form-label">السعر (ج.م) *</label>
+                            <input type="number" class="form-control" id="itemPrice" placeholder="65" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">التصنيف</label>
+                            <select class="form-control form-select" id="itemCategory">
+                                <option value="mains">الأطباق الرئيسية</option>
+                                <option value="appetizers">المقبلات</option>
+                                <option value="drinks">المشروبات</option>
+                                <option value="desserts">الحلويات</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">الوصف</label>
+                        <textarea class="form-control" id="itemDescription" rows="3" placeholder="وصف موجز للصنف..."></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">صورة الصنف</label>
+                        <input type="file" class="form-control" id="itemImage" accept="image/*">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="checkbox-label" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" id="itemAvailable" checked>
+                            <span>متاح للطلب</span>
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('itemModal')">إلغاء</button>
+                <button class="btn btn-primary" onclick="saveItem()">حفظ الصنف</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Category Modal -->
+    <div class="modal-overlay" id="categoryModal">
+        <div class="modal-content" style="max-width: 450px;">
+            <div class="modal-header">
+                <h3>إضافة تصنيف جديد</h3>
+                <button class="modal-close" onclick="closeModal('categoryModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">اسم التصنيف *</label>
+                    <input type="text" class="form-control" id="categoryName" placeholder="مثال: الحساء" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">الأيقونة</label>
+                    <select class="form-control form-select" id="categoryIcon">
+                        <option value="fa-utensils">🍴 أطباق</option>
+                        <option value="fa-drumstick-bite">🍗 لحوم</option>
+                        <option value="fa-cheese">🧀 ألبان</option>
+                        <option value="fa-glass-water">💧 مشروبات</option>
+                        <option value="fa-ice-cream">🍦 حلويات</option>
+                        <option value="fa-cookie">🍪 مخبوزات</option>
+                        <option value="fa-seedling">🌿 سلطات</option>
+                        <option value="fa-fish">🐟 بحريات</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('categoryModal')">إلغاء</button>
+                <button class="btn btn-primary" onclick="saveCategory()">حفظ التصنيف</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script>
+        // Configuration
+        const CONFIG = { API_URL: 'https://menu.nonm1724.workers.dev', FIREBASE_DB: 'https://menu-b41e6-default-rtdb.firebaseio.com' };
+        
+        // Storage helpers
+        const Storage = { set: (k,v) => localStorage.setItem(k, JSON.stringify(v)), get: (k) => { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } }, remove: (k) => localStorage.removeItem(k) };
+        
+        // Toast notifications
+        const Toast = {
+            show: (msg, t='info') => { const c=document.getElementById('toastContainer'); const el=document.createElement('div'); el.className=`toast ${t}`; const i={success:'check-circle',error:'times-circle',warning:'exclamation-triangle',info:'info-circle'}; el.innerHTML=`<i class="fas fa-${i[t]||'info-circle'}"></i><span>${msg}</span>`; c.appendChild(el); setTimeout(()=>el.remove(),3000); },
+            success: (m)=>Toast.show(m,'success'), error: (m)=>Toast.show(m,'error'), warning: (m)=>Toast.show(m,'warning'), info: (m)=>Toast.show(m,'info')
+        };
+
+        // Toggle sidebar for mobile
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); document.getElementById('sidebarOverlay').classList.toggle('active'); }
+
+        // Logout function
+        function logout() { if(confirm('هل تريد تسجيل الخروج؟')){Storage.remove('user_data');window.location.href='login.html';}}
+
+        // Select category
+        function selectCategory(cat) {
+            document.querySelectorAll('.category-item').forEach(el => el.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            
+            const titles = {'all':'جميع الأصناف','mains':'الأطباق الرئيسية','appetizers':'المقبلات','drinks':'المشروبات','desserts':'الحلويات'};
+            document.getElementById('currentCategoryTitle').textContent = `${titles[cat] || cat} (24)`;
+        }
+
+        // Filter by category
+        function filterByCategory(cat) {
+            document.querySelectorAll('.category-item').forEach(el => {
+                el.classList.toggle('active', el.dataset.category === cat || cat === '');
+            });
+        }
+
+        // Search items
+        function searchItems(query) {
+            query = query.toLowerCase();
+            document.querySelectorAll('.menu-item-card').forEach(card => {
+                const name = card.querySelector('.item-name').textContent.toLowerCase();
+                const desc = card.querySelector('.item-description').textContent.toLowerCase();
+                card.style.display = (name.includes(query) || desc.includes(query)) ? '' : 'none';
+            });
+        }
+
+        // Sort items
+        function sortItems(sortBy) {
+            const grid = document.getElementById('itemsGrid');
+            const cards = Array.from(grid.querySelectorAll('.menu-item-card'));
+            
+            cards.sort((a,b) => {
+                const priceA = parseFloat(a.querySelector('.item-price').textContent);
+                const priceB = parseFloat(b.querySelector('.item-price').textContent);
+                
+                switch(sortBy) {
+                    case 'price-low': return priceA - priceB;
+                    case 'price-high': return priceB - priceA;
+                    default: return 0;
+                }
+            });
+            
+            cards.forEach(card => grid.appendChild(card));
+        }
+
+        // Modal functions
+        function openAddItemModal() {
+            document.getElementById('modalTitle').textContent = 'إضافة صنف جديد';
+            document.getElementById('itemForm').reset();
+            document.getElementById('itemAvailable').checked = true;
+            openModal('itemModal');
+        }
+
+        function editItem(id) {
+            document.getElementById('modalTitle').textContent = 'تعديل الصنف';
+            // Load item data and populate form
+            openModal('itemModal');
+            Toast.info('جاري تحميل بيانات الصنف...');
+        }
+
+        function saveItem() {
+            const name = document.getElementById('itemName').value;
+            const price = document.getElementById('itemPrice').value;
+            
+            if (!name || !price) {
+                Toast.warning('يرجى ملء الحقول المطلوبة');
+                return;
+            }
+            
+            Toast.success('تم حفظ الصنف بنجاح!');
+            closeModal('itemModal');
+        }
+
+        function deleteItem(id) {
+            if(confirm('هل أنت متأكد من حذف هذا الصنف؟')) {
+                Toast.success('تم حذف الصنف');
+            }
+        }
+
+        function toggleAvailability(id) {
+            Toast.info('تم تغيير حالة توفر الصنف');
+        }
+
+        function openCategoryModal() {
+            document.getElementById('categoryName').value = '';
+            openModal('categoryModal');
+        }
+
+        function saveCategory() {
+            const name = document.getElementById('categoryName').value;
+            if (!name) {
+                Toast.warning('يرجى إدخال اسم التصنيف');
+                return;
+            }
+            Toast.success('تم إضافة التصنيف بنجاح!');
+            closeModal('categoryModal');
+        }
+
+        function openModal(id) { document.getElementById(id).classList.add('active'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Menu editor loaded');
+        });
+    </script>
+</body>
+</html>

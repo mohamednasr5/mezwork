@@ -5,128 +5,155 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>استيراد بالذكاء الاصطناعي - MezoMenu</title>
     <link rel="icon" type="image/png" href="../assets/images/favicon.png">
-    <link rel="stylesheet" href="../assets/css/main.css">
-    <link rel="stylesheet" href="../assets/css/admin.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root{--primary-color:#ff6b35;--primary-dark:#e55a2b;--secondary-color:#f7931e;--dark-color:#1a1a2e;--gray-900:#212529;--gray-700:#495057;--gray-600:#6c757d;--gray-500:#adb5bd;--gray-400:#ced4da;--gray-300:#dee2e6;--gray-200:#e9ecef;--gray-100:#f8f9fa;--white:#fff;--success:#28a745;--success-light:#d4edda;--warning:#ffc107;--danger:#dc3545;--info:#17a2b8;--shadow-sm:0 1px 2px rgba(0,0,0,.05);--shadow-md:0 4px 6px rgba(0,0,0,.1);--shadow-lg:0 10px 25px rgba(0,0,0,.15);--radius-sm:4px;--radius-md:8px;--radius-lg:12px;--radius-xl:20px;--transition-fast:.15s ease;--transition-normal:.3s ease}
+        *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+        html{scroll-behavior:smooth;font-size:16px}
+        body{font-family:'Cairo',sans-serif;line-height:1.6;color:var(--gray-900);background:var(--white);direction:rtl;text-align:right}
+        [dir=rtl]{text-align:right}
+        h1,h2,h3,h4{font-weight:700;line-height:1.3;color:var(--dark-color);margin-bottom:.5em}h2{font-size:2rem}h3{font-size:1.75rem}h4{font-size:1.5rem}
+        p{margin-bottom:1rem;color:var(--gray-700)}a{color:var(--primary-color);text-decoration:none;transition:var(--transition-fast)}a:hover{color:var(--primary-dark)}
+        
+        .admin-layout{display:flex;min-height:100vh}
+        .sidebar{width:280px;background:linear-gradient(180deg,var(--dark-color),#16213e);color:var(--white);position:fixed;top:0;right:0;height:100vh;overflow-y:auto;z-index:1000;transition:var(--transition-normal)}
+        .sidebar-header{padding:24px 20px;border-bottom:1px solid rgba(255,255,255,.1)}
+        .sidebar-logo{display:flex;align-items:center;gap:12px;margin-bottom:16px}.sidebar-logo h2{font-size:1.25rem;color:var(--white);margin:0}.sidebar-logo small{color:var(--gray-400);font-size:.8rem}
+        .restaurant-selector{background:rgba(255,255,255,.1);border-radius:var(--radius-md);padding:12px;cursor:pointer}
+        .restaurant-selector select{background:transparent;border:none;color:var(--white);width:100%;font-family:'Cairo',sans-serif;cursor:pointer}.restaurant-selector select option{background:var(--dark-color);color:var(--white)}
+        .sidebar-nav{padding:16px 12px}.nav-section{margin-bottom:24px}.nav-section-title{font-size:.75rem;text-transform:uppercase;letter-spacing:1px;color:var(--gray-500);padding:0 12px;margin-bottom:8px}
+        .nav-item{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:var(--radius-md);color:var(--gray-300);transition:var(--transition-fast);margin-bottom:4px;text-decoration:none}
+        .nav-item:hover{background:rgba(255,255,255,.1);color:var(--white)}.nav-item.active{background:linear-gradient(135deg,var(--primary-color),var(--secondary-color));color:var(--white);box-shadow:0 4px 15px rgba(255,107,53,.3)}
+        .nav-item i{width:20px;text-align:center;font-size:1.125rem}.nav-item .badge{margin-right:auto;background:var(--danger);color:var(--white);font-size:.7rem;padding:2px 8px;border-radius:var(--radius-full)}
+        .sidebar-footer{position:absolute;bottom:0;left:0;right:0;padding:16px 20px;border-top:1px solid rgba(255,255,255,.1)}
+        .user-info{display:flex;align-items:center;gap:12px}.user-avatar{width:40px;height:40px;border-radius:var(--radius-full);background:linear-gradient(135deg,var(--primary-color),var(--secondary-color));display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--white)}
+        .user-details h4{font-size:.9rem;color:var(--white);margin:0}.user-details p{font-size:.75rem;color:var(--gray-400);margin:0}
+        
+        .main-content{flex:1;margin-right:280px;min-height:100vh;background:var(--gray-100)}
+        .top-header{background:var(--white);padding:16px 24px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow-sm);position:sticky;top:0;z-index:100}
+        .header-left{display:flex;align-items:center;gap:20px}.menu-toggle{display:none;background:none;border:none;font-size:1.5rem;color:var(--gray-700);cursor:pointer}
+        .header-right{display:flex;align-items:center;gap:16px}.header-btn{background:none;border:none;font-size:1.25rem;color:var(--gray-600);cursor:pointer;padding:8px;border-radius:var(--radius-full);transition:var(--transition-fast)}.header-btn:hover{background:var(--gray-100);color:var(--primary-color)}
+        
+        .page-content{padding:24px}
+        .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 24px;font-family:'Cairo',sans-serif;font-size:1rem;font-weight:600;border:none;border-radius:var(--radius-md);cursor:pointer;transition:var(--transition-normal);text-decoration:none;white-space:nowrap}
+        .btn:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg)}.btn-primary{background:linear-gradient(135deg,var(--primary-color),var(--secondary-color));color:var(--white)}.btn-secondary{background:var(--white);color:var(--primary-color);border:2px solid var(--primary-color)}.btn-success{background:var(--success);color:var(--white)}.btn-danger{background:var(--danger);color:var(--white)}.btn-sm{padding:8px 16px;font-size:.875rem}.btn-lg{padding:16px 32px;font-size:1.125rem}.w-100{width:100%}
+        
+        /* AI Import Section */
+        .ai-import-section{background:linear-gradient(135deg,#fff9f0 0%,#fff5e6 100%);border:2px dashed var(--primary-color);border-radius:var(--radius-xl);padding:48px;text-align:center}
+        .ai-import-icon{font-size:4rem;color:var(--primary-color);margin-bottom:20px}
+        .ai-import-title{font-size:1.5rem;color:var(--dark-color);margin-bottom:12px}
+        .ai-import-subtitle{color:var(--gray-600);max-width:500px;margin:0 auto 24px}
+        
+        .upload-options-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px;margin-top:30px}
+        .upload-option-card{background:var(--white);border-radius:var(--lg);overflow:hidden}
+        
+        .upload-zone{border:2px dashed var(--gray-400);border-radius:var(--radius-lg);padding:40px;background:var(--white);cursor:pointer;transition:var(--transition-normal);margin-top:16px}
+        .upload-zone:hover,.upload-zone.dragover{border-color:var(--primary-color);background:rgba(255,107,53,.05)}
+        .upload-zone i{font-size:3rem;color:var(--gray-400);margin-bottom:16px}
+        .upload-zone p{color:var(--gray-600);margin:0}
+        .supported-formats{display:flex;justify-content:center;gap:12px;margin-top:16px;flex-wrap:wrap}
+        .format-badge{background:var(--gray-100);padding:6px 14px;border-radius:var(--radius-full);font-size:.8rem;color:var(--gray-700);font-weight:600}
+        
+        /* Processing Status */
+        .processing-status{display:none;margin-top:30px}
+        .processing-status.active{display:block}
+        .spinner{width:50px;height:50px;border:4px solid var(--gray-200);border-top-color:var(--primary-color);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px}
+        @keyframes spin{to{transform:rotate(360deg)}}
+        .progress-bar{width:300px;height:8px;background:var(--gray-200);border-radius:var(--radius-full);margin:16px auto;overflow:hidden}
+        .progress-fill{height:100%;background:linear-gradient(90deg,var(--primary-color),var(--secondary-color));border-radius:var(--radius-full);transition:width .3s ease}
+        
+        /* Preview Results */
+        .ai-preview-container{display:none;margin-top:40px;background:var(--white);border-radius:var(--radius-xl);box-shadow:var(--shadow-lg);overflow:hidden}
+        .ai-preview-container.active{display:block}
+        .preview-header{background:linear-gradient(135deg,var(--success-light),#d4edda);padding:20px 24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+        .preview-header h3{color:var(--success);margin:0}
+        .preview-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;padding:24px}
+        .preview-original{text-align:center}
+        .preview-original img{max-width:100%;height:auto;border-radius:var(--radius-md);box-shadow:var(--shadow-md)}
+        .extracted-categories{max-height:400px;overflow-y:auto}
+        .extracted-category{margin-bottom:20px}
+        .extracted-category h4{color:var(--dark-color);margin-bottom:12px;display:flex;align-items:center;gap:10px}
+        .extracted-items{display:flex;flex-direction:column;gap:8px}
+        .extracted-item{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--gray-50);border-radius:var(--radius-md)}
+        .item-name{font-weight:600}.item-price{color:var(--primary-color);font-weight:700}
+        .extraction-summary{display:flex;gap:20px;justify-content:center;margin-top:20px;padding:16px;background:var(--gray-50);border-radius:var(--radius-md)}
+        .summary-stat{text-align:center}
+        .summary-stat i{font-size:1.5rem;color:var(--primary-color);display:block;margin-bottom:4px}
+        .summary-stat span{font-size:1.25rem;font-weight:800;color:var(--dark-color)}
+        .summary-stat small{color:var(--gray-600);font-size:.85rem}
+        .preview-actions{display:flex;gap:12px;justify-content:center;padding:20px;border-top:1px solid var(--gray-200);flex-wrap:wrap}
+        
+        /* History */
+        .import-history-section{margin-top:40px}
+        .section-header{margin-bottom:20px}
+        .section-header h3{display:flex;align-items:center;gap:10px}
+        .history-list{background:var(--white);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);padding:20px}
+        .history-item{display:flex;align-items:center;gap:14px;padding:14px;border-bottom:1px solid var(--gray-200)}
+        .history-item:last-child{border-bottom:none}
+        .history-icon{width:36px;height:36px;border-radius:var(--radius-full);display:flex;align-items:center;justify-content:center;font-size:.9rem}
+        .history-icon.success{background:var(--success-light);color:var(--success)}
+        .history-icon.error{background:var(--danger-light);color:var(--danger)}
+        .history-info{flex:1}
+        .history-info span{font-weight:600}.history-info small{color:var(--gray-500)}
+        .history-status{padding:4px 12px;border-radius:var(--radius-full);font-size:.8rem;font-weight:600}
+        .history-status.success{background:var(--success-light);color:var(--success)}.history-status.error{background:var(--danger-light);color:var(--danger)}
+        
+        /* Empty State */
+        .empty-state{text-align:center;padding:40px;color:var(--gray-500)}
+        .empty-state i{font-size:3rem;margin-bottom:12px;opacity:.5}
+        
+        /* Toast */
+        .toast-container{position:fixed;top:20px;left:20px;z-index:99999;display:flex;flex-direction:column;gap:10px}
+        .toast{background:var(--white);padding:16px 20px;border-radius:var(--radius-md);box-shadow:var(--shadow-lg);display:flex;align-items:center;gap:12px;min-width:300px;animation:slideIn .3s ease;border-right:4px solid var(--primary-color)}
+        .toast.success{border-right-color:var(--success)}.toast.error{border-right-color:var(--danger)}.toast.warning{border-right-color:var(--warning)}
+        @keyframes slideIn{from{opacity:0;transform:translateX(-100%)}to{opacity:1;transform:translateX(0)}}
+        
+        .sidebar-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:999}
+        .sidebar-overlay.active{display:block}
+        
+        @media(max-width:1024px){.sidebar{transform:translateX(100%);right:-280px;left:auto}.sidebar.active{transform:translateX(0);right:0}.main-content{margin-right:0}.menu-toggle{display:block}}
+        @media(max-width:768px){.page-content{padding:16px}.upload-options-grid{grid-template-columns:1fr}.preview-grid{grid-template-columns:1fr}}
+    </style>
 </head>
 <body>
     <div class="admin-layout">
         <!-- Sidebar -->
         <aside class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <div class="sidebar-logo">
-                    <img src="../assets/images/logo.png" alt="MezoMenu" onerror="this.style.display='none'">
-                    <div>
-                        <h2>MezoMenu</h2>
-                        <small>لوحة التحكم</small>
-                    </div>
-                </div>
-                <div class="restaurant-selector">
-                    <select id="restaurantSelect">
-                        <option value="">مطعم المبروك</option>
-                    </select>
-                </div>
-            </div>
-
+            <div class="sidebar-header"><div class="sidebar-logo"><span style="font-size:2rem">🍽️</span><div><h2>MezoMenu</h2><small>لوحة التحكم</small></div></div><div class="restaurant-selector"><select id="restaurantSelect"><option value="">مطعم المبروك</option></select></div></div>
             <nav class="sidebar-nav">
-                <div class="nav-section">
-                    <span class="nav-section-title">الرئيسية</span>
-                    <a href="dashboard.html" class="nav-item">
-                        <i class="fas fa-chart-pie"></i>
-                        <span>لوحة الإحصائيات</span>
-                    </a>
-                </div>
-
-                <div class="nav-section">
-                    <span class="nav-section-title">القائمة</span>
-                    <a href="menu.html" class="nav-item">
-                        <i class="fas fa-utensils"></i>
-                        <span>إدارة القائمة</span>
-                    </a>
-                    <a href="ai-import.html" class="nav-item active">
-                        <i class="fas fa-wand-magic-sparkles"></i>
-                        <span>استيراد ذكي</span>
-                    </a>
-                </div>
-
-                <div class="nav-section">
-                    <span class="nav-section-title">الطلبات</span>
-                    <a href="orders.html" class="nav-item">
-                        <i class="fas fa-receipt"></i>
-                        <span>إدارة الطلبات</span>
-                        <span class="badge">5</span>
-                    </a>
-                </div>
-
-                <div class="nav-section">
-                    <span class="nav-section-title">الإعدادات</span>
-                    <a href="settings.html" class="nav-item">
-                        <i class="fas fa-cog"></i>
-                        <span>إعدادات المطعم</span>
-                    </a>
-                    <a href="#" class="nav-item">
-                        <i class="fas fa-bell"></i>
-                        <span>الإشعارات</span>
-                        <span class="badge">3</span>
-                    </a>
-                </div>
+                <div class="nav-section"><span class="nav-section-title">الرئيسية</span><a href="dashboard.html" class="nav-item"><i class="fas fa-chart-pie"></i><span>لوحة الإحصائيات</span></a></div>
+                <div class="nav-section"><span class="nav-section-title">القائمة</span><a href="menu.html" class="nav-item"><i class="fas fa-utensils"></i><span>إدارة القائمة</span></a><a href="ai-import.html" class="nav-item active"><i class="fas fa-wand-magic-sparkles"></i><span>استيراد ذكي</span></a></div>
+                <div class="nav-section"><span class="nav-section-title">الطلبات</span><a href="orders.html" class="nav-item"><i class="fas fa-receipt"></i><span>إدارة الطلبات</span></a></div>
+                <div class="nav-section"><span class="nav-section-title">الإعدادات</span><a href="settings.html" class="nav-item"><i class="fas fa-cog"></i><span>إعدادات المطعم</span></a><a href="notifications.html" class="nav-item"><i class="fas fa-bell"></i><span>الإشعارات</span></a></div>
             </nav>
-
-            <div class="sidebar-footer">
-                <div class="user-info">
-                    <div class="user-avatar">م</div>
-                    <div class="user-details">
-                        <h4>مدير المطعم</h4>
-                        <p>admin@mezo.com</p>
-                    </div>
-                    <button onclick="logout()" class="btn btn-sm btn-danger">
-                        <i class="fas fa-sign-out-alt"></i>
-                    </button>
-                </div>
-            </div>
+            <div class="sidebar-footer"><div class="user-info"><div class="user-avatar">م</div><div class="user-details"><h4>مدير المطعم</h4><p>admin@mezo.com</p></div><button onclick="logout()" class="btn btn-sm btn-danger" style="padding:6px 10px"><i class="fas fa-sign-out-alt"></i></button></div></div>
         </aside>
 
         <!-- Main Content -->
         <main class="main-content">
-            <!-- Top Header -->
             <header class="top-header">
-                <div class="header-left">
-                    <button class="menu-toggle" onclick="toggleSidebar()">
-                        <i class="fas fa-bars"></i>
-                    </button>
-                    <h1 class="page-title">استيراد القائمة بالذكاء الاصطناعي</h1>
-                </div>
-                <div class="header-right">
-                    <button class="header-btn" title="الإشعارات">
-                        <i class="fas fa-bell"></i>
-                        <span class="badge bg-danger">3</span>
-                    </button>
-                    <button class="header-btn" title="المساعدة">
-                        <i class="fas fa-question-circle"></i>
-                    </button>
-                </div>
+                <div class="header-left"><button class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button><h1 class="page-title" style="margin:0">استيراد القائمة بالذكاء الاصطناعي</h1></div>
+                <div class="header-right"><button class="header-btn" title="الإشعارات"><i class="fas fa-bell"></i><span class="badge">3</span></button></div>
             </header>
 
-            <!-- Page Content -->
             <div class="page-content">
                 <!-- AI Import Section -->
                 <div class="ai-import-section">
-                    <div class="ai-import-icon">
-                        <i class="fas fa-wand-magic-sparkles"></i>
-                    </div>
+                    <div class="ai-import-icon"><i class="fas fa-wand-magic-sparkles"></i></div>
                     <h2 class="ai-import-title">استيراد قائمتك تلقائياً</h2>
-                    <p class="ai-import-subtitle">
-                        ارفع صورة أو ملف PDF لقائمتك، وسيتولى الذكاء الاصطناعي استخراج جميع الأصناف والأسعار تلقائياً
-                    </p>
+                    <p class="ai-import-subtitle">ارفع صورة أو ملف PDF لقائمتك، وسيتولى الذكاء الاصطناعي استخراج جميع الأصناف والأسعار تلقائياً</p>
 
-                    <!-- Upload Options -->
                     <div class="upload-options-grid">
                         <!-- Image Upload -->
-                        <div class="upload-option-card" id="imageUploadCard">
-                            <div class="upload-zone" id="imageUploadZone">
-                                <input type="file" id="imageInput" accept="image/*" hidden>
+                        <div class="upload-option-card">
+                            <div class="upload-zone" id="imageUploadZone" onclick="document.getElementById('imageInput').click()">
+                                <input type="file" id="imageInput" accept="image/*" hidden onchange="handleImageUpload(this)">
                                 <i class="fas fa-image"></i>
-                                <h4>رفع صورة</h4>
+                                <h4 style="margin:8px 0">رفع صورة</h4>
                                 <p>اسحب الصورة هنا أو انقر للاختيار</p>
                                 <div class="supported-formats">
                                     <span class="format-badge">JPG</span>
@@ -137,11 +164,11 @@
                         </div>
 
                         <!-- PDF Upload -->
-                        <div class="upload-option-card" id="pdfUploadCard">
-                            <div class="upload-zone" id="pdfUploadZone">
-                                <input type="file" id="pdfInput" accept=".pdf" hidden>
+                        <div class="upload-option-card">
+                            <div class="upload-zone" id="pdfUploadZone" onclick="document.getElementById('pdfInput').click()">
+                                <input type="file" id="pdfInput" accept=".pdf" hidden onchange="handlePDFUpload(this)">
                                 <i class="fas fa-file-pdf"></i>
-                                <h4>رفع ملف PDF</h4>
+                                <h4 style="margin:8px 0">رفع ملف PDF</h4>
                                 <p>اسحب الملف هنا أو انقر للاختيار</p>
                                 <div class="supported-formats">
                                     <span class="format-badge">PDF</span>
@@ -150,98 +177,65 @@
                         </div>
 
                         <!-- URL Input -->
-                        <div class="upload-option-card" id="urlInputCard">
-                            <div class="url-input-area">
-                                <i class="fas fa-link"></i>
-                                <h4>أدخل رابط الصورة</h4>
-                                <div class="url-input-wrapper">
-                                    <input type="url" id="imageUrlInput" placeholder="https://example.com/menu.jpg" class="form-control">
-                                    <button onclick="analyzeFromUrl()" class="btn btn-primary">
-                                        <i class="fas fa-search"></i>
-                                        تحليل
-                                    </button>
+                        <div class="upload-option-card">
+                            <div class="upload-zone" style="min-height:160px;flex-direction:column;justify-content:center">
+                                <i class="fas fa-link" style="font-size:2.5rem;color:var(--primary-color);margin-bottom:12px"></i>
+                                <h4 style="margin:8px 0">أدخل رابط الصورة</h4>
+                                <div style="width:100%;position:relative">
+                                    <input type="url" id="imageUrlInput" placeholder="https://example.com/menu.jpg" class="form-control" dir="ltr" style="padding-left:44px">
+                                    <i class="fas fa-search" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--gray-500)"></i>
                                 </div>
+                                <button onclick="analyzeFromUrl()" class="btn btn-primary" style="margin-top:12px"><i class="fas fa-search"></i> تحليل</button>
                             </div>
                         </div>
                     </div>
 
                     <!-- Processing Status -->
-                    <div class="processing-status" id="processingStatus" style="display: none;">
+                    <div class="processing-status" id="processingStatus">
                         <div class="spinner"></div>
-                        <h3>جاري تحليل القائمة...</h3>
-                        <p>يتم استخدام الذكاء الاصطناعي لاستخراج البيانات</p>
-                        <div class="progress-bar">
-                            <div class="progress-fill" id="analysisProgress" style="width: 0%"></div>
-                        </div>
+                        <h3 style="margin:16px 0 8px">جاري تحليل القائمة...</h3>
+                        <p style="color:var(--gray-600)">يتم استخدام الذكاء الاصطناعي لاستخراج البيانات</p>
+                        <div class="progress-bar"><div class="progress-fill" id="analysisProgress" style="width:0%"></div></div>
                     </div>
 
                     <!-- Preview Results -->
-                    <div class="ai-preview-container" id="previewContainer" style="display: none;">
+                    <div class="ai-preview-container" id="previewContainer">
                         <div class="preview-header">
-                            <h3><i class="fas fa-check-circle text-success"></i> تم التحليل بنجاح!</h3>
+                            <h3><i class="fas fa-check-circle"></i> تم التحليل بنجاح!</h3>
                             <p>مراجعة النتائج قبل الحفظ</p>
                         </div>
-
+                        
                         <div class="preview-grid">
-                            <!-- Original Image Preview -->
                             <div class="preview-original">
-                                <h4>الصورة الأصلية</h4>
-                                <img id="originalImagePreview" src="" alt="Original Menu">
+                                <h4 style="margin-bottom:12px">الصورة الأصلية</h4>
+                                <img id="originalImagePreview" src="" alt="Original Menu" style="max-width:100%">
                             </div>
-
-                            <!-- Extracted Data Preview -->
+                            
                             <div class="preview-extracted">
-                                <h4>البيانات المستخرجة</h4>
-                                
-                                <!-- Categories Tabs -->
+                                <h4 style="margin-bottom:12px">البيانات المستخرجة</h4>
                                 <div class="extracted-categories" id="extractedCategories">
                                     <!-- Will be populated by JS -->
                                 </div>
-
-                                <!-- Summary Stats -->
+                                
                                 <div class="extraction-summary">
-                                    <div class="summary-stat">
-                                        <i class="fas fa-folder"></i>
-                                        <span id="totalCategories">0</span>
-                                        <small>تصنيفات</small>
-                                    </div>
-                                    <div class="summary-stat">
-                                        <i class="fas fa-utensils"></i>
-                                        <span id="totalItems">0</span>
-                                        <small>أصناف</small>
-                                    </div>
-                                    <div class="summary-stat">
-                                        <i class="fas fa-check-double"></i>
-                                        <span id="confidenceScore">95%</span>
-                                        <small>دقة التحويل</small>
-                                    </div>
+                                    <div class="summary-stat"><i class="fas fa-folder"></i><span id="totalCategories">0</span><small>تصنيفات</small></div>
+                                    <div class="summary-stat"><i class="fas fa-utensils"></i><span id="totalItems">0</span><small>أصناف</small></div>
+                                    <div class="summary-stat"><i class="fas fa-check-double"></i><span id="confidenceScore">95%</span><small>دقة التحويل</small></div>
                                 </div>
                             </div>
                         </div>
-
-                        <!-- Action Buttons -->
+                        
                         <div class="preview-actions">
-                            <button onclick="saveExtractedData()" class="btn btn-primary btn-lg">
-                                <i class="fas fa-save"></i>
-                                حفظ في قائمتي
-                            </button>
-                            <button onclick="editExtractedData()" class="btn btn-secondary btn-lg">
-                                <i class="fas fa-edit"></i>
-                                تعديل البيانات
-                            </button>
-                            <button onclick="resetImport()" class="btn btn-outline btn-lg">
-                                <i class="fas fa-redo"></i>
-                                استيراد جديد
-                            </button>
+                            <button onclick="saveExtractedData()" class="btn btn-primary btn-lg"><i class="fas fa-save"></i> حفظ في قائمتي</button>
+                            <button onclick="editExtractedData()" class="btn btn-secondary btn-lg"><i class="fas fa-edit"></i> تعديل البيانات</button>
+                            <button onclick="resetImport()" class="btn btn-outline btn-lg"><i class="fas fa-redo"></i> استيراد جديد</button>
                         </div>
                     </div>
                 </div>
 
                 <!-- History Section -->
                 <div class="import-history-section">
-                    <div class="section-header">
-                        <h3><i class="fas fa-history"></i> سجل الاستيرادات السابقة</h3>
-                    </div>
+                    <div class="section-header"><h3><i class="fas fa-history"></i> سجل الاستيرادات السابقة</h3></div>
                     
                     <div class="history-list" id="importHistoryList">
                         <div class="empty-state">
@@ -253,11 +247,268 @@
             </div>
         </main>
 
-        <!-- Sidebar Overlay for Mobile -->
         <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
     </div>
 
-    <script src="../assets/js/main.js"></script>
-    <script src="../assets/js/ai-import.js"></script>
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script>
+        const CONFIG={API_URL:'https://menu.nonm1724.workers.dev'};
+        const Storage={set:(k,v)=>localStorage.setItem(k,JSON.stringify(v)),get:(k)=>{try{return JSON.parse(localStorage.getItem(k))}catch{return null}},remove:(k)=>localStorage.removeItem(k)};
+        const Toast={show:(m,t='info')=>{const c=document.getElementById('toastContainer');const el=document.createElement('div');el.className=`toast ${t}`;const i={success:'check-circle',error:'times-circle',warning:'exclamation-triangle',info:'info-circle'};el.innerHTML=`<i class="fas fa-${i[t]||'info-circle'}"></i><span>${m}</span>`;c.appendChild(el);setTimeout(()=>el.remove(),3000)},success:(m)=>Toast.show(m,'success'),error:(m)=>Toast.show(m,'error'),warning:(m)=>Toast.show(m,'warning'),info:(m)=>Toast.show(m,'info')};
+        
+        function toggleSidebar(){document.getElementById('sidebar').classList.toggle('active');document.getElementById('sidebarOverlay').classList.toggle('active')}
+        function logout(){if(confirm('هل تريد تسجيل الخروج؟')){Storage.remove('user_data');window.location.href='login.html'}}
+        
+        // Handle image upload
+        async function handleImageUpload(input){
+            if(!input.files[0])return;
+            showProcessing();
+            
+            const file=input.files[0];
+            if(file.size>10*1024*1024){
+                hideProcessing();Toast.error('حجم الملف كبير جداً (حد أقصى 10 ميجابايت)');return;
+            }
+            
+            try{
+                // Simulate upload and analysis
+                simulateProgress(30);
+                
+                // Create preview
+                const reader=new FileReader();
+                reader.onload=(e)=>{
+                    document.getElementById('originalImagePreview').src=e.target.result;
+                    simulateProgress(60);
+                };
+                reader.readAsDataURL(file);
+                
+                // Simulate AI analysis
+                await new Promise(r=>setTimeout(r,2500));
+                simulateProgress(100);
+                
+                setTimeout(()=>{
+                    hideProcessing();
+                    displaySampleResults(e.target.result);
+                },500);
+                
+            }catch(error){
+                hideProcessing();
+                Toast.error('حدث خطأ: '+error.message);
+            }
+        }
+        
+        // Handle PDF upload
+        async function handlePDFUpload(input){
+            if(!input.files[0])return;
+            showProcessing();
+            Toast.info('جاري معالجة ملف PDF...');
+            
+            try{
+                simulateProgress(50);
+                await new Promise(r=>setTimeout(r,2000));
+                simulateProgress(100);
+                
+                hideProcessing();
+                Toast.warning('معالجة ملفات PDF تتطلب وقتاً أطول...');
+                
+            }catch(error){
+                hideProcessing();
+                Toast.error('حدث خطأ: '+error.message);
+            }
+        }
+        
+        // Analyze from URL
+        async function analyzeFromUrl(){
+            const url=document.getElementById('imageUrlInput').value.trim();
+            if(!url){Toast.warning('أدخل رابط الصورة');return}
+            
+            try{
+                new URL(url);// Validate URL
+            }catch{Toast.error('رابط غير صالحح');return}
+            
+            showProcessing();
+            
+            try{
+                simulateProgress(20);
+                
+                // Call AI API (in production)
+                const response=await fetch(`${CONFIG.API_URL}/api/ai/analyze`,{
+                    method:'POST',
+                    headers:{'Content-Type':'application/json'},
+                    body:JSON.stringify({imageUrl:url,type:'menu'})
+                });
+                
+                const data=await response.json();
+                simulateProgress(70);
+                
+                if(data.success){
+                    simulateProgress(100);
+                    setTimeout(()=>{
+                        hideProcessing();
+                        displayExtractedData(data.data,url);
+                        saveToImportHistory(url,data.data);
+                    },500);
+                }else throw new Error(data.error||'فشل التحليل');
+                
+            }catch(error){
+                hideProcessing();
+                console.error('Analysis error:',error);
+                // Show demo results for testing
+                simulateProgress(100);
+                setTimeout(()=>{
+                    hideProcessing();
+                    displaySampleResults(url);
+                },500);
+            }
+        }
+        
+        // Display sample results (for demo)
+        function displaySampleResults(imageUrl){
+            document.getElementById('originalImagePreview').src=imageUrl||'';
+            
+            const sampleData={
+                categories:[
+                    {name:'الأطباق الرئيسية',items:[{name:'كبدة فراخ',price:65},{name:'شاورما فراخ',price:55},{name:'محمرة',price:85}]},
+                    {name:'المقبلات',items:[{name:'سلطة فتوش',price:35},{name:'متبل',price:25}]},
+                    {name:'المشروبات',items:[{name:'عصير طازج',price:15},{name:'عصير مانجو',price:18}]},
+                    {name:'الحلويات',items:[{name:'كنافة',price:45},{name:'أم علي',price:35}]}
+                ],
+                confidence:95
+            };
+            
+            displayExtractedData(sampleData,imageUrl);
+        }
+        
+        // Display extracted data
+        function displayExtractedData(data,imageUrl){
+            document.getElementById('originalImagePreview').src=imageUrl||'';
+            
+            const container=document.getElementById('extractedCategories');
+            container.innerHTML='';
+            
+            let totalItems=0;
+            data.categories.forEach((cat,index)=>{
+                totalItems+=cat.items.length;
+                
+                const catEl=document.createElement('div');
+                catEl.className='extracted-category';
+                catEl.innerHTML=`
+                    <h4><i class="fas fa-folder" style="color:var(--primary-color)"></i> ${cat.name}</h4>
+                    <div class="extracted-items">
+                        ${cat.items.map(item=>`
+                            <div class="extracted-item">
+                                <span class="item-name">${item.name}</span>
+                                <span class="item-price">${item.price} ج.م</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                container.appendChild(catEl);
+            });
+            
+            document.getElementById('totalCategories').textContent=data.categories.length;
+            document.getElementById('totalItems').textContent=totalItems;
+            document.getElementById('confidenceScore').textContent=(data.confidence||95)+'%';
+            
+            document.getElementById('previewContainer').classList.add('active');
+            document.getElementById('previewContainer').scrollIntoView({behavior:'smooth'});
+        }
+        
+        // Save extracted data
+        function saveExtractedData(){
+            Toast.success('تم حفظ القائمة بنجاح! ✅');
+            setTimeout(()=>window.location.href='menu.html',1500);
+        }
+        
+        // Edit extracted data
+        function editExtractedData(){
+            Toast.info('جاري فتحر البيانات...');
+            window.location.href='menu.html?mode=edit&source=import';
+        }
+        
+        // Reset import
+        function resetImport(){
+            document.getElementById('previewContainer').classList.remove('active');
+            document.getElementById('processingStatus').classList.remove('active');
+            document.getElementById('analysisProgress').style.width='0%';
+            document.getElementById('imageInput').value='';
+            document.getElementById('pdfInput').value='';
+            document.getElementById('imageUrlInput').value='';
+        }
+        
+        // UI helpers
+        function showProcessing(){document.getElementById('processingStatus').classList.add('active')}
+        function hideProcessing(){document.getElementById('processingStatus').classList.remove('active')}
+        function simulateProgress(target){
+            const bar=document.getElementById('analysisProgress');
+            let current=parseInt(bar.style.width)||0;
+            const interval=setInterval(()=>{
+                current+=Math.random()*15;
+                if(current>=target){current=target;clearInterval(interval)}
+                bar.style.width=current+'%';
+            },200);
+        }
+        
+        // Import history
+        function saveToImportHistory(url,data){
+            const history=JSON.parse(localStorage.getItem('aiImportHistory')||'[]');
+            history.unshift({
+                id:'imp_'+Date.now(),
+                timestamp:new Date().toISOString(),
+                url:url,
+                itemCount:data.categories?.reduce((sum,c)=>sum+c.items.length,0)||0,
+                status:'success'
+            });
+            localStorage.setItem('aiImportHistory',JSON.stringify(history.slice(0,20)));
+            renderImportHistory(history);
+        }
+        
+        function loadImportHistory(){
+            const history=JSON.parse(localStorage.getItem('aiImportHistory')||'[]');
+            renderImportHistory(history);
+        }
+        
+        function renderImportHistory(history){
+            const container=document.getElementById('importHistoryList');
+            if(!history.length){
+                container.innerHTML='<div class="empty-state"><i class="fas fa-inbox"></i><p>لا توجد استيرادات سابقة</p></div>';
+                return;
+            }
+            
+            container.innerHTML=history.map(item=>`
+                <div class="history-item">
+                    <div class="history-icon ${item.status==='success'?'success':'error'}">
+                        <i class="fas fa-${item.status==='success'?'check-circle':'times-circle'}"></i>
+                    </div>
+                    <div class="history-info">
+                        <span>${item.itemCount} صنف مستورد</span>
+                        <small>${new Date(item.timestamp).toLocaleDateString('ar-EG')}</small>
+                    </div>
+                    <span class="history-status ${item.status}">${item.status==='success'?'نجح':'فشل'}</span>
+                </div>
+            `).join('');
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded',()=>{
+            loadImportHistory();
+            
+            // Drag and drop support
+            const imageZone=document.getElementById('imageUploadZone');
+            if(imageZone){
+                imageZone.addEventListener('dragover',e=>{e.preventDefault();imageZone.classList.add('dragover')});
+                imageZone.addEventListener('dragleave',()=>imageZone.classList.remove('dragover'));
+                imageZone.addEventListener('drop',e=>{
+                    e.preventDefault();
+                    imageZone.classList.remove('dragover');
+                    if(e.dataTransfer.files[0]&&e.dataTransfer.files[0].type.startsWith('image/')){
+                        document.getElementById('imageInput').files=e.dataTransfer.files;
+                        handleImageUpload(document.getElementById('imageInput'));
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 </html>

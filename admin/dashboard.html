@@ -5,24 +5,919 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>لوحة التحكم - MezoMenu</title>
     <link rel="icon" type="image/png" href="../assets/images/favicon.png">
-    <link rel="stylesheet" href="../assets/css/main.css">
-    <link rel="stylesheet" href="../assets/css/admin.css">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Complete Inline CSS for GitHub Pages Compatibility -->
+    <style>
+        /* ===================================
+           MezoMenu - Complete Admin Dashboard Styles
+           =================================== */
+        
+        :root {
+            --primary-color: #ff6b35;
+            --primary-dark: #e55a2b;
+            --primary-light: #ff8c5a;
+            --secondary-color: #f7931e;
+            --accent-color: #ffb627;
+            --dark-color: #1a1a2e;
+            --dark-light: #16213e;
+            --gray-900: #212529;
+            --gray-800: #343a40;
+            --gray-700: #495057;
+            --gray-600: #6c757d;
+            --gray-500: #adb5bd;
+            --gray-400: #ced4da;
+            --gray-300: #dee2e6;
+            --gray-200: #e9ecef;
+            --gray-100: #f8f9fa;
+            --white: #ffffff;
+            --success: #28a745;
+            --success-light: #d4edda;
+            --warning: #ffc107;
+            --warning-light: #fff3cd;
+            --danger: #dc3545;
+            --danger-light: #f8d7da;
+            --info: #17a2b8;
+            --info-light: #d1ecf1;
+            --whatsapp-green: #25D366;
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 25px rgba(0,0,0,0.15);
+            --shadow-xl: 0 20px 40px rgba(0,0,0,0.2);
+            --radius-sm: 4px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --radius-xl: 20px;
+            --radius-full: 50%;
+            --transition-fast: 0.15s ease;
+            --transition-normal: 0.3s ease;
+        }
+        
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html { scroll-behavior: smooth; font-size: 16px; }
+        
+        body {
+            font-family: 'Cairo', sans-serif;
+            line-height: 1.6;
+            color: var(--gray-900);
+            background-color: var(--white);
+            direction: rtl;
+            text-align: right;
+        }
+        
+        [dir="rtl"] { text-align: right; }
+        
+        h1, h2, h3, h4, h5, h6 {
+            font-weight: 700;
+            line-height: 1.3;
+            color: var(--dark-color);
+            margin-bottom: 0.5em;
+        }
+        
+        h1 { font-size: 2.5rem; }
+        h2 { font-size: 2rem; }
+        h3 { font-size: 1.75rem; }
+        h4 { font-size: 1.5rem; }
+        h5 { font-size: 1.25rem; }
+        h6 { font-size: 1rem; }
+        
+        p { margin-bottom: 1rem; color: var(--gray-700); }
+        
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: var(--transition-fast);
+        }
+        
+        a:hover { color: var(--primary-dark); }
+        
+        img { max-width: 100%; height: auto; }
+        
+        /* ================================
+           ADMIN LAYOUT
+           ================================ */
+        
+        .admin-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: linear-gradient(180deg, var(--dark-color) 0%, var(--dark-light) 100%);
+            color: var(--white);
+            position: fixed;
+            top: 0;
+            right: 0;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 1000;
+            transition: var(--transition-normal);
+        }
+        
+        .sidebar-header {
+            padding: 24px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        
+        .sidebar-logo img {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-md);
+            object-fit: cover;
+        }
+        
+        .sidebar-logo h2 {
+            font-size: 1.25rem;
+            color: var(--white);
+            margin: 0;
+        }
+        
+        .sidebar-logo small {
+            color: var(--gray-400);
+            font-size: 0.8rem;
+        }
+        
+        .restaurant-selector {
+            background: rgba(255,255,255,0.1);
+            border-radius: var(--radius-md);
+            padding: 12px;
+            cursor: pointer;
+            transition: var(--transition-fast);
+        }
+        
+        .restaurant-selector:hover {
+            background: rgba(255,255,255,0.15);
+        }
+        
+        .restaurant-selector select {
+            background: transparent;
+            border: none;
+            color: var(--white);
+            width: 100%;
+            font-family: 'Cairo', sans-serif;
+            cursor: pointer;
+        }
+        
+        .restaurant-selector select option {
+            background: var(--dark-color);
+            color: var(--white);
+        }
+        
+        /* Sidebar Navigation */
+        .sidebar-nav {
+            padding: 16px 12px;
+        }
+        
+        .nav-section {
+            margin-bottom: 24px;
+        }
+        
+        .nav-section-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--gray-500);
+            padding: 0 12px;
+            margin-bottom: 8px;
+        }
+        
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: var(--radius-md);
+            color: var(--gray-300);
+            transition: var(--transition-fast);
+            margin-bottom: 4px;
+            text-decoration: none;
+        }
+        
+        .nav-item:hover {
+            background: rgba(255,255,255,0.1);
+            color: var(--white);
+        }
+        
+        .nav-item.active {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: var(--white);
+            box-shadow: 0 4px 15px rgba(255,107,53,0.3);
+        }
+        
+        .nav-item i {
+            width: 20px;
+            text-align: center;
+            font-size: 1.125rem;
+        }
+        
+        .nav-item .badge {
+            margin-right: auto;
+            background: var(--danger);
+            color: var(--white);
+            font-size: 0.7rem;
+            padding: 2px 8px;
+            border-radius: var(--radius-full);
+        }
+        
+        /* Sidebar Footer */
+        .sidebar-footer {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 16px 20px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-full);
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: var(--white);
+        }
+        
+        .user-details h4 {
+            font-size: 0.9rem;
+            color: var(--white);
+            margin: 0;
+        }
+        
+        .user-details p {
+            font-size: 0.75rem;
+            color: var(--gray-400);
+            margin: 0;
+        }
+        
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-right: 280px;
+            min-height: 100vh;
+            background: var(--gray-100);
+        }
+        
+        /* Top Header */
+        .top-header {
+            background: var(--white);
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: var(--shadow-sm);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--gray-700);
+            cursor: pointer;
+        }
+        
+        .search-box {
+            position: relative;
+            width: 300px;
+        }
+        
+        .search-box input {
+            width: 100%;
+            padding: 10px 16px 10px 40px;
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-full);
+            font-family: 'Cairo', sans-serif;
+            transition: var(--transition-fast);
+        }
+        
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+        
+        .search-box i {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray-500);
+        }
+        
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .header-btn {
+            position: relative;
+            background: none;
+            border: none;
+            font-size: 1.25rem;
+            color: var(--gray-600);
+            cursor: pointer;
+            padding: 8px;
+            border-radius: var(--radius-full);
+            transition: var(--transition-fast);
+        }
+        
+        .header-btn:hover {
+            background: var(--gray-100);
+            color: var(--primary-color);
+        }
+        
+        .header-btn .badge {
+            position: absolute;
+            top: 0;
+            right: 0;
+            font-size: 0.65rem;
+            padding: 2px 6px;
+            background: var(--danger);
+            color: var(--white);
+            border-radius: var(--radius-full);
+        }
+        
+        .plan-badge {
+            background: linear-gradient(135deg, var(--warning), var(--accent-color));
+            color: var(--dark-color);
+            padding: 6px 14px;
+            border-radius: var(--radius-full);
+            font-weight: 700;
+            font-size: 0.8rem;
+        }
+        
+        /* Page Content */
+        .page-content {
+            padding: 24px;
+        }
+        
+        .page-header {
+            margin-bottom: 24px;
+        }
+        
+        .page-title {
+            font-size: 1.75rem;
+            color: var(--dark-color);
+            margin-bottom: 4px;
+        }
+        
+        .page-subtitle {
+            color: var(--gray-600);
+            margin: 0;
+        }
+        
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+        
+        .stat-card {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition-normal);
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .stat-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: var(--white);
+        }
+        
+        .stat-icon.orange { background: linear-gradient(135deg, #ff6b35, #f7931e); }
+        .stat-icon.green { background: linear-gradient(135deg, #28a745, #20c997); }
+        .stat-icon.blue { background: linear-gradient(135deg, #17a2b8, #6f42c1); }
+        .stat-icon.red { background: linear-gradient(135deg, #dc3545, #fd7e14); }
+        .stat-icon.purple { background: linear-gradient(135deg, #6f42c1, #e83e8c); }
+        
+        .stat-info h3 {
+            font-size: 1.75rem;
+            color: var(--dark-color);
+            margin: 0 0 4px 0;
+        }
+        
+        .stat-info p {
+            font-size: 0.875rem;
+            color: var(--gray-600);
+            margin: 0;
+        }
+        
+        .stat-change {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+        
+        .stat-change.up { color: var(--success); }
+        .stat-change.down { color: var(--danger); }
+        
+        /* Quick Actions Grid */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .quick-action-card {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition-normal);
+            border: 2px solid transparent;
+        }
+        
+        .quick-action-card:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .quick-action-card i {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 12px;
+        }
+        
+        .quick-action-card h4 {
+            font-size: 1rem;
+            color: var(--dark-color);
+            margin: 0;
+        }
+        
+        /* Data Table */
+        .data-table-container {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .table-toolbar {
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--gray-200);
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        
+        .table-search {
+            position: relative;
+            width: 280px;
+        }
+        
+        .table-search input {
+            width: 100%;
+            padding: 10px 16px 10px 40px;
+            border: 1px solid var(--gray-300);
+            border-radius: var(--radius-md);
+            font-family: 'Cairo', sans-serif;
+        }
+        
+        .table-search i {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray-500);
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .data-table th {
+            background: var(--gray-50);
+            font-weight: 700;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--gray-600);
+            padding: 14px 16px;
+            text-align: right;
+            border-bottom: 2px solid var(--gray-200);
+        }
+        
+        .data-table td {
+            padding: 14px 16px;
+            vertical-align: middle;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        
+        .data-table tr:hover {
+            background: var(--gray-50);
+        }
+        
+        /* Status Badges */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: var(--radius-full);
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .status-pending { background: var(--warning-light); color: #856404; }
+        .status-confirmed { background: var(--info-light); color: #0c5460; }
+        .status-preparing { background: #cce5ff; color: #004085; }
+        .status-ready { background: var(--success-light); color: #155724; }
+        .status-delivered { background: #d4edda; color: #155724; }
+        .status-cancelled { background: var(--danger-light); color: #721c24; }
+        
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 24px;
+            font-family: 'Cairo', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: var(--transition-normal);
+            text-decoration: none;
+            white-space: nowrap;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: var(--white);
+        }
+        
+        .btn-secondary {
+            background: var(--white);
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+        }
+        
+        .btn-success { background: var(--success); color: var(--white); }
+        .btn-danger { background: var(--danger); color: var(--white); }
+        .btn-outline { background: transparent; border: 2px solid currentColor; }
+        
+        .btn-sm { padding: 8px 16px; font-size: 0.875rem; }
+        .btn-lg { padding: 16px 32px; font-size: 1.125rem; }
+        .w-100 { width: 100%; }
+        
+        /* Forms */
+        .form-group { margin-bottom: 1.25rem; }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--gray-700);
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px 16px;
+            font-family: 'Cairo', sans-serif;
+            font-size: 1rem;
+            border: 2px solid var(--gray-300);
+            border-radius: var(--radius-md);
+            transition: var(--transition-fast);
+            background: var(--white);
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+        }
+        
+        .form-select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236c757d'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: left 12px center;
+            background-size: 20px;
+            padding-left: 40px;
+        }
+        
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition-normal);
+        }
+        
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal-content {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            transform: scale(0.9);
+            transition: var(--transition-normal);
+        }
+        
+        .modal-overlay.active .modal-content {
+            transform: scale(1);
+        }
+        
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--gray-200);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .modal-body { padding: 24px; }
+        
+        .modal-footer {
+            padding: 16px 24px;
+            border-top: 1px solid var(--gray-200);
+            display: flex;
+            gap: 12px;
+            justify-content: flex-start;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--gray-500);
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--radius-full);
+        }
+        
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 99999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .toast {
+            background: var(--white);
+            padding: 16px 20px;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 300px;
+            animation: slideIn 0.3s ease;
+            border-right: 4px solid var(--primary-color);
+        }
+        
+        .toast.success { border-right-color: var(--success); }
+        .toast.error { border-right-color: var(--danger); }
+        .toast.warning { border-right-color: var(--warning); }
+        .toast.info { border-right-color: var(--info); }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-100%); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        /* Loading Spinner */
+        .spinner {
+            width: 40px; height: 40px;
+            border: 4px solid var(--gray-200);
+            border-top-color: var(--primary-color);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        .loading-screen {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: var(--white);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 99999;
+        }
+        
+        /* Sidebar Overlay for Mobile */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+        }
+        
+        .sidebar-overlay.active { display: block; }
+        
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .sidebar {
+                transform: translateX(100%);
+                right: -280px;
+                left: auto;
+            }
+            
+            .sidebar.active {
+                transform: translateX(0);
+                right: 0;
+            }
+            
+            .main-content { margin-right: 0; }
+            .menu-toggle { display: block; }
+            .search-box { display: none; }
+        }
+        
+        @media (max-width: 768px) {
+            .page-content { padding: 16px; }
+            .stats-grid { grid-template-columns: 1fr; }
+            .top-header { padding: 12px 16px; }
+            .table-toolbar { flex-direction: column; }
+            .table-search { width: 100%; }
+        }
+        
+        /* Charts placeholder */
+        .chart-container {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 24px;
+        }
+        
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .chart-title {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: var(--dark-color);
+        }
+        
+        .chart-placeholder {
+            height: 300px;
+            background: linear-gradient(135deg, var(--gray-100) 0%, var(--gray-50) 100%);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--gray-500);
+        }
+        
+        /* Recent Activity */
+        .activity-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .activity-item {
+            display: flex;
+            gap: 16px;
+            padding: 16px 0;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        
+        .activity-item:last-child { border-bottom: none; }
+        
+        .activity-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: var(--radius-full);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+        
+        .activity-icon.order { background: var(--info-light); color: var(--info); }
+        .activity-icon.customer { background: var(--success-light); color: var(--success); }
+        .activity-icon.system { background: var(--warning-light); color: var(--warning); }
+        
+        .activity-content { flex: 1; }
+        
+        .activity-text {
+            font-size: 0.95rem;
+            color: var(--gray-800);
+            margin-bottom: 4px;
+        }
+        
+        .activity-time {
+            font-size: 0.8rem;
+            color: var(--gray-500);
+        }
+    </style>
 </head>
 <body>
     <div class="admin-layout">
         <!-- Sidebar -->
         <aside class="sidebar" id="sidebar">
-            <!-- Sidebar Header -->
             <div class="sidebar-header">
                 <div class="sidebar-logo">
-                    <img src="../assets/images/logo.png" alt="MezoMenu" onerror="this.style.display='none'">
+                    <span style="font-size: 2rem;">🍽️</span>
                     <div>
                         <h2>MezoMenu</h2>
                         <small>لوحة التحكم</small>
                     </div>
                 </div>
-
+                
                 <div class="restaurant-selector">
                     <select id="restaurantSelect">
                         <option value="">مطعم المبروك</option>
@@ -30,7 +925,6 @@
                 </div>
             </div>
 
-            <!-- Navigation -->
             <nav class="sidebar-nav">
                 <div class="nav-section">
                     <span class="nav-section-title">الرئيسية</span>
@@ -41,1461 +935,437 @@
                 </div>
 
                 <div class="nav-section">
-                    <span class="nav-section-title">إدارة القائمة</span>
-                    <a href="#menu" class="nav-item" data-page="menu">
+                    <span class="nav-section-title">القائمة</span>
+                    <a href="menu.html" class="nav-item" data-page="menu">
                         <i class="fas fa-utensils"></i>
-                        <span>القائمة</span>
+                        <span>إدارة القائمة</span>
                     </a>
-                    <a href="#categories" class="nav-item" data-page="categories">
-                        <i class="fas fa-folder"></i>
-                        <span>الأقسام</span>
-                    </a>
-                    <a href="#ai-import" class="nav-item" data-page="ai-import">
-                        <i class="fas fa-magic"></i>
-                        <span>استيراد بالذكاء الاصطناعي</span>
-                        <span class="badge badge-primary">جديد</span>
+                    <a href="ai-import.html" class="nav-item" data-page="ai-import">
+                        <i class="fas fa-wand-magic-sparkles"></i>
+                        <span>استيراد ذكي</span>
                     </a>
                 </div>
 
                 <div class="nav-section">
                     <span class="nav-section-title">الطلبات</span>
-                    <a href="#orders" class="nav-item" data-page="orders">
-                        <i class="fas fa-shopping-bag"></i>
-                        <span>جميع الطلبات</span>
-                        <span class="badge badge-danger" id="pendingOrdersCount">3</span>
-                    </a>
-                    <a href="#order-tracking" class="nav-item" data-page="order-tracking">
-                        <i class="fas fa-map-marker-alt"></i>
-                        <span>تتبع الطلبات</span>
+                    <a href="orders.html" class="nav-item" data-page="orders">
+                        <i class="fas fa-receipt"></i>
+                        <span>إدارة الطلبات</span>
+                        <span class="badge">5</span>
                     </a>
                 </div>
 
                 <div class="nav-section">
                     <span class="nav-section-title">الإعدادات</span>
-                    <a href="#settings" class="nav-item" data-page="settings">
+                    <a href="settings.html" class="nav-item" data-page="settings">
                         <i class="fas fa-cog"></i>
                         <span>إعدادات المطعم</span>
                     </a>
-                    <a href="#appearance" class="nav-item" data-page="appearance">
-                        <i class="fas fa-palette"></i>
-                        <span>المظهر والألوان</span>
-                    </a>
-                    <a href="#notifications-settings" class="nav-item" data-page="notifications-settings">
+                    <a href="notifications.html" class="nav-item" data-page="notifications">
                         <i class="fas fa-bell"></i>
                         <span>الإشعارات</span>
-                    </a>
-                </div>
-
-                <div class="nav-section">
-                    <span class="nav-section-title">الحساب</span>
-                    <a href="#profile" class="nav-item" data-page="profile">
-                        <i class="fas fa-user"></i>
-                        <span>الملف الشخصي</span>
-                    </a>
-                    <a href="#subscription" class="nav-item" data-page="subscription">
-                        <i class="fas fa-crown"></i>
-                        <span>الاشتراك</span>
-                        <span class="badge badge-warning">Pro</span>
+                        <span class="badge">3</span>
                     </a>
                 </div>
             </nav>
 
-            <!-- Sidebar Footer -->
             <div class="sidebar-footer">
                 <div class="user-info">
                     <div class="user-avatar">م</div>
                     <div class="user-details">
-                        <h4>مطعم المبروك</h4>
-                        <p>elfannanm@gmail.com</p>
+                        <h4>مدير المطعم</h4>
+                        <p>admin@mezo.com</p>
                     </div>
+                    <button onclick="logout()" class="btn btn-sm btn-danger" style="padding: 6px 10px;">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
                 </div>
             </div>
         </aside>
-
-        <!-- Sidebar Overlay for Mobile -->
-        <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
         <!-- Main Content -->
         <main class="main-content">
             <!-- Top Header -->
             <header class="top-header">
                 <div class="header-left">
-                    <button class="menu-toggle" id="menuToggle">
+                    <button class="menu-toggle" onclick="toggleSidebar()">
                         <i class="fas fa-bars"></i>
                     </button>
-                    
-                    <div class="search-box">
-                        <input type="text" placeholder="بحث...">
-                        <i class="fas fa-search"></i>
-                    </div>
+                    <h1 class="page-title" style="margin: 0;">لوحة التحكم</h1>
                 </div>
-
                 <div class="header-right">
                     <button class="header-btn" title="الإشعارات">
                         <i class="fas fa-bell"></i>
-                        <span class="badge badge-danger">5</span>
+                        <span class="badge">3</span>
                     </button>
-                    
                     <button class="header-btn" title="المساعدة">
                         <i class="fas fa-question-circle"></i>
                     </button>
-
-                    <span class="plan-badge">Pro ⭐</span>
+                    <span class="plan-badge">⭐ Pro</span>
                 </div>
             </header>
 
             <!-- Page Content -->
             <div class="page-content">
-                
-                <!-- ==================== DASHBOARD PAGE ==================== -->
-                <section class="page-section active" id="page-dashboard">
-                    <div class="page-header">
-                        <div>
-                            <h1 class="page-title">مرحباً بك! 👋</h1>
-                            <p class="page-subtitle">إليك ملخص أداء مطعمك اليوم</p>
-                        </div>
-                        <div class="page-actions">
-                            <button class="btn btn-secondary" onclick="refreshDashboard()">
-                                <i class="fas fa-sync-alt"></i>
-                                تحديث
-                            </button>
-                            <a href="#menu" class="btn btn-primary" onclick="navigateTo('menu')">
-                                <i class="fas fa-plus"></i>
-                                إضافة صنف
-                            </a>
-                        </div>
-                    </div>
+                <!-- Welcome Section -->
+                <div class="page-header">
+                    <h2 class="page-title">مرحباً، مدير مطعم المبروك! 👋</h2>
+                    <p class="page-subtitle">إليك ملخص أداء مطعمك اليوم</p>
+                </div>
 
-                    <!-- Alert Banner -->
-                    <div class="alert alert-info mb-4">
-                        <i class="fas fa-info-circle"></i>
-                        <div>
-                            <strong>ترحيب!</strong> لديك 3 طلبات جديدة قيد الانتظار. 
-                            <a href="#orders" onclick="navigateTo('orders')">عرض الطلبات ←</a>
+                <!-- Stats Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon orange">
+                            <i class="fas fa-shopping-cart"></i>
                         </div>
-                        <button class="btn-close"><i class="fas fa-times"></i></button>
-                    </div>
-
-                    <!-- Stats Grid -->
-                    <div class="stats-grid">
-                        <div class="stat-card">
-                            <div class="stat-icon orange">
-                                <i class="fas fa-shopping-cart"></i>
-                            </div>
-                            <div class="stat-info">
-                                <h3 id="totalOrders">127</h3>
-                                <p>إجمالي الطلبات</p>
-                                <div class="stat-change up">
-                                    <i class="fas fa-arrow-up"></i>
-                                    12% هذا الأسبوع
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="stat-card">
-                            <div class="stat-icon green">
-                                <i class="fas fa-dollar-sign"></i>
-                            </div>
-                            <div class="stat-info">
-                                <h3 id="totalRevenue">15,420 ج.م</h3>
-                                <p>إجمالي المبيعات</p>
-                                <div class="stat-change up">
-                                    <i class="fas fa-arrow-up"></i>
-                                    8% هذا الشهر
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="stat-card">
-                            <div class="stat-icon blue">
-                                <i class="fas fa-eye"></i>
-                            </div>
-                            <div class="stat-info">
-                                <h3 id="totalViews">2,456</h3>
-                                <p>مشاهدات القائمة</p>
-                                <div class="stat-change up">
-                                    <i class="fas fa-arrow-up"></i>
-                                    23% اليوم
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="stat-card">
-                            <div class="stat-icon red">
-                                <i class="fas fa-utensils"></i>
-                            </div>
-                            <div class="stat-info">
-                                <h3 id="totalItems">48</h3>
-                                <p>أصناف في القائمة</p>
-                                <div class="stat-change down">
-                                    <i class="fas fa-minus"></i>
-                                    -2 من أمس
-                                </div>
+                        <div class="stat-info">
+                            <h3>156</h3>
+                            <p>إجمالي الطلبات</p>
+                            <div class="stat-change up">
+                                <i class="fas fa-arrow-up"></i> 12% من أمس
                             </div>
                         </div>
                     </div>
 
-                    <!-- Quick Actions & Recent Orders -->
-                    <div class="grid grid-2 mt-4">
-                        <!-- Quick Actions -->
-                        <div class="card">
-                            <div class="card-header">
-                                <h4><i class="fas fa-bolt"></i> إجراءات سريعة</h4>
-                            </div>
-                            <div class="card-body">
-                                <div class="quick-actions">
-                                    <div class="quick-action-card" onclick="navigateTo('ai-import')">
-                                        <i class="fas fa-magic"></i>
-                                        <h4>استيراد بالذكاء الاصطناعي</h4>
-                                    </div>
-                                    <div class="quick-action-card" onclick="navigateTo('menu')">
-                                        <i class="fas fa-plus-circle"></i>
-                                        <h4>إضافة صنف جديد</h4>
-                                    </div>
-                                    <div class="quick-action-card" onclick="showQRCode()">
-                                        <i class="fas fa-qrcode"></i>
-                                        <h4>عرض QR Code</h4>
-                                    </div>
-                                    <div class="quick-action-card" onclick="navigateTo('settings')">
-                                        <i class="fas fa-share-alt"></i>
-                                        <h4>مشاركة الرابط</h4>
-                                    </div>
-                                </div>
-                            </div>
+                    <div class="stat-card">
+                        <div class="stat-icon green">
+                            <i class="fas fa-money-bill-wave"></i>
                         </div>
-
-                        <!-- Recent Orders -->
-                        <div class="card">
-                            <div class="card-header d-flex justify-between align-center">
-                                <h4><i class="fas fa-clock"></i> آخر الطلبات</h4>
-                                <a href="#orders" onclick="navigateTo('orders')" class="btn btn-sm btn-secondary">عرض الكل</a>
-                            </div>
-                            <div class="card-body p-0">
-                                <table class="data-table">
-                                    <thead>
-                                        <tr>
-                                            <th>#</th>
-                                            <th>الزبون</th>
-                                            <th>المبلغ</th>
-                                            <th>الحالة</th>
-                                            <th></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="recentOrdersTable">
-                                        <tr>
-                                            <td>#1234</td>
-                                            <td>أحمد محمد</td>
-                                            <td><strong>١٨٥ ج.م</strong></td>
-                                            <td><span class="status-badge status-preparing">قيد التحضير</span></td>
-                                            <td>
-                                                <button class="table-action-btn view" title="عرض">
-                                                    <i class="fas fa-eye"></i>
-                                                </button>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>#1233</td>
-                                            <td>سارة علي</td>
-                                            <td><strong>٣٢٠ ج.م</strong></td>
-                                            <td><span class="status-badge status-confirmed">تم التأكيد</span></td>
-                                            <td>
-                                                <button class="table-action-btn view" title="عرض">
-                                                    <i class="fas fa-eye"></i>
-                                                </button>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>#1232</td>
-                                            <td>محمد حسن</td>
-                                            <td><strong>٩٥ ج.م</strong></td>
-                                            <td><span class="status-badge status-new">جديد</span></td>
-                                            <td>
-                                                <button class="table-action-btn view" title="عرض">
-                                                    <i class="fas fa-eye"></i>
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                        <div class="stat-info">
+                            <h3>12,450 ج.م</h3>
+                            <p>إجمالي المبيعات</p>
+                            <div class="stat-change up">
+                                <i class="fas fa-arrow-up"></i> 8% من الأسبوع
                             </div>
                         </div>
                     </div>
 
-                    <!-- Menu Link & QR Code -->
-                    <div class="grid grid-2 mt-4">
-                        <div class="card">
-                            <div class="card-header">
-                                <h4><i class="fas fa-link"></i> رابط قائمتك</h4>
-                            </div>
-                            <div class="card-body">
-                                <div class="d-flex gap-2 align-center">
-                                    <input type="text" class="form-control flex-1" readonly 
-                                           value="https://menu.mezomenu.com/el-mabrouk" id="menuUrlInput">
-                                    <button class="btn btn-primary" onclick="copyMenuUrl()">
-                                        <i class="fas fa-copy"></i>
-                                        نسخ
-                                    </button>
-                                    <button class="btn btn-success" onclick="openMenuPreview()">
-                                        <i class="fas fa-external-link-alt"></i>
-                                        فتح
-                                    </button>
-                                </div>
-                                <p class="mt-2 text-muted" style="font-size: 0.85rem;">
-                                    <i class="fas fa-info-circle"></i>
-                                    شارك هذا الرابط مع زبائنك للوصول لقائمتك مباشرة
-                                </p>
-                            </div>
+                    <div class="stat-card">
+                        <div class="stat-icon blue">
+                            <i class="fas fa-users"></i>
                         </div>
-
-                        <div class="qr-code-display card">
-                            <div class="card-header">
-                                <h4><i class="fas fa-qrcode"></i> QR Code</h4>
-                            </div>
-                            <div class="card-body text-center">
-                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://menu.mezomenu.com/el-mabrouk" 
-                                     alt="QR Code" class="qr-code-image mx-auto">
-                                <button class="btn btn-secondary btn-sm mt-2" onclick="downloadQRCode()">
-                                    <i class="fas fa-download"></i>
-                                    تحميل QR Code
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- ==================== MENU PAGE ==================== -->
-                <section class="page-section" id="page-menu">
-                    <div class="page-header">
-                        <div>
-                            <h1 class="page-title">إدارة القائمة</h1>
-                            <p class="page-subtitle">أضف وعدل أصناف مطعمك هنا</p>
-                        </div>
-                        <div class="page-actions">
-                            <button class="btn btn-secondary" onclick="exportMenu()">
-                                <i class="fas fa-download"></i>
-                                تصدير
-                            </button>
-                            <button class="btn btn-primary" onclick="openAddItemModal()">
-                                <i class="fas fa-plus"></i>
-                                إضافة صنف جديد
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Categories Filter -->
-                    <div class="category-tabs mb-4">
-                        <button class="category-tab active" onclick="filterByCategory('all')">كل الأصناف (48)</button>
-                        <button class="category-tab" onclick="filterByCategory('appetizers')">المقبلات (8)</button>
-                        <button class="category-tab" onclick="filterByCategory('mains')">الأطباق الرئيسية (20)</button>
-                        <button class="category-tab" onclick="filterByCategory('drinks')">المشروبات (12)</button>
-                        <button class="category-tab" onclick="filterByCategory('desserts')">الحلويات (8)</button>
-                    </div>
-
-                    <!-- Menu Items Grid -->
-                    <div class="menu-grid" id="menuItemsGrid">
-                        <!-- Sample Item 1 -->
-                        <div class="menu-item-card">
-                            <div style="position: relative;">
-                                <img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400" 
-                                     alt="بيتزا مارغريتا" class="menu-item-image">
-                                <div class="menu-card-badges">
-                                    <span class="item-badge badge-popular">⭐ رائج</span>
-                                </div>
-                            </div>
-                            <div class="menu-item-body">
-                                <div class="d-flex justify-between align-start mb-2">
-                                    <h3 class="menu-item-name">بيتزا مارغريتا</h3>
-                                    <span class="menu-item-price">١٢٠ ج.م</span>
-                                </div>
-                                <p class="menu-item-description">صلصة طماطم طازجة، جبنة موزاريلا، ريحان، زيت زيتون</p>
-                                <div class="menu-item-tags">
-                                    <span class="badge badge-info">بيتزا</span>
-                                    <span class="badge badge-success">نباتي</span>
-                                </div>
-                                <div class="d-flex justify-between mt-3">
-                                    <span class="text-muted" style="font-size: 0.85rem;">
-                                        <i class="fas fa-fire"></i> يُطلب 45 مرة
-                                    </span>
-                                    <div class="d-flex gap-2">
-                                        <button class="btn btn-sm btn-outline edit" onclick="editItem(1)">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button class="btn btn-sm btn-outline delete" onclick="deleteItem(1)">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Sample Item 2 -->
-                        <div class="menu-item-card">
-                            <div style="position: relative;">
-                                <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400" 
-                                     alt="سلطة كيزر" class="menu-item-image">
-                                <div class="menu-card-badges">
-                                    <span class="item-badge badge-new">جديد</span>
-                                </div>
-                            </div>
-                            <div class="menu-item-body">
-                                <div class="d-flex justify-between align-start mb-2">
-                                    <h3 class="menu-item-name">سلطة كيزر</h3>
-                                    <span class="menu-item-price">٦٥ ج.م</span>
-                                </div>
-                                <p class="menu-item-description">خس، خيار، طماطم، جبنة بارميزان، صوص كيزر خاص</p>
-                                <div class="menu-item-tags">
-                                    <span class="badge badge-info">سلطات</span>
-                                    <span class="badge badge-success">نباتي</span>
-                                </div>
-                                <div class="d-flex justify-between mt-3">
-                                    <span class="text-muted" style="font-size: 0.85rem;">
-                                        <i class="fas fa-fire"></i> يُطلب 32 مرة
-                                    </span>
-                                    <div class="d-flex gap-2">
-                                        <button class="btn btn-sm btn-outline edit" onclick="editItem(2)">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button class="btn btn-sm btn-outline delete" onclick="deleteItem(2)">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Sample Item 3 -->
-                        <div class="menu-item-card">
-                            <div style="position: relative;">
-                                <img src="https://images.unsplash.com/photo-1563379926898-05f4575a45d8?w=400" 
-                                     alt="شيش طاووق" class="menu-item-image">
-                                <div class="menu-card-badges">
-                                    <span class="item-badge badge-spicy">🌶️ حار</span>
-                                </div>
-                            </div>
-                            <div class="menu-item-body">
-                                <div class="d-flex justify-between align-start mb-2">
-                                    <h3 class="menu-item-name">شيش طاووق</h3>
-                                    <span class="menu-item-price">٩٥ ج.م</span>
-                                </div>
-                                <p class="menu-item-description">دجاج مشوي على الفحم، أرز بسمتي، سلطة، تومية</p>
-                                <div class="menu-item-tags">
-                                    <span class="badge badge-warning">مشويات</span>
-                                </div>
-                                <div class="d-flex justify-between mt-3">
-                                    <span class="text-muted" style="font-size: 0.85rem;">
-                                        <i class="fas fa-fire"></i> يُطلب 67 مرة
-                                    </span>
-                                    <div class="d-flex gap-2">
-                                        <button class="btn btn-sm btn-outline edit" onclick="editItem(3)">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button class="btn btn-sm btn-outline delete" onclick="deleteItem(3)">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Add More Card -->
-                        <div class="menu-item-card" style="border: 2px dashed var(--gray-300); display: flex; align-items: center; justify-content: center; min-height: 300px; cursor: pointer;" onclick="openAddItemModal()">
-                            <div class="text-center">
-                                <i class="fas fa-plus-circle" style="font-size: 3rem; color: var(--gray-400); margin-bottom: 12px;"></i>
-                                <h4 style="color: var(--gray-600);">إضافة صنف جديد</h4>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- ==================== AI IMPORT PAGE ==================== -->
-                <section class="page-section" id="page-ai-import">
-                    <div class="page-header">
-                        <div>
-                            <h1 class="page-title">🤖 استيراد بالذكاء الاصطناعي</h1>
-                            <p class="page-subtitle">ارفع صورة أو ملف قائمتك وسنحللها تلقائياً وننشئ لك قائمة رقمية كاملة</p>
-                        </div>
-                    </div>
-
-                    <!-- AI Import Section -->
-                    <div class="ai-import-section">
-                        <div class="ai-import-icon">✨</div>
-                        <h2 class="ai-import-title">تحويل ذكي للقائمة</h2>
-                        <p class="ai-import-subtitle">
-                            ارفع صورة القائمة أو ملف PDF/Excel/Word وسيقوم الذكاء الاصطناعي باستخراج:
-                        </p>
-                        
-                        <div class="supported-formats">
-                            <span class="format-badge">✅ أسماء الأصناف</span>
-                            <span class="format-badge">✅ الأسعار</span>
-                            <span class="format-badge">✅ الأقسام تلقائياً</span>
-                            <span class="format-badge">✅ الوصف والتفاصيل</span>
-                        </div>
-
-                        <!-- Upload Zone -->
-                        <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
-                            <i class="fas fa-cloud-upload-alt"></i>
-                            <p><strong>اسحب الملف هنا أو اضغط للاختيار</strong></p>
-                            <p class="text-muted">PNG, JPG, PDF, Word, Excel — حتى 10MB</p>
-                            <input type="file" id="fileInput" accept=".png,.jpg,.jpeg,.pdf,.doc,.docx,.xls,.xlsx" hidden onchange="handleFileUpload(event)">
-                        </div>
-
-                        <!-- Or Import from URL -->
-                        <div class="mt-4 text-center">
-                            <p class="text-muted mb-2">أو استورد من:</p>
-                            <div class="d-flex justify-center gap-2">
-                                <button class="btn btn-secondary" onclick="importFromGoogleSheets()">
-                                    <i class="fab fa-google"></i>
-                                    Google Sheets
-                                </button>
-                                <button class="btn btn-secondary" onclick="importFromURL()">
-                                    <i class="fas fa-link"></i>
-                                    رابط مباشر
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Processing Status -->
-                        <div id="aiProcessingStatus" style="display:none; margin-top: 24px;">
-                            <div class="alert alert-info">
-                                <div class="spinner" style="margin-left: 16px;"></div>
-                                <div>
-                                    <strong>جاري تحليل القائمة...</strong>
-                                    <p class="mb-0" id="processingStatusText">يتم استخراج البيانات بالذكاء الاصطناعي</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Results Preview -->
-                        <div id="aiResultsPreview" style="display:none; margin-top: 24px;">
-                            <h3 class="mb-3">نتيجة التحليل:</h3>
-                            <div class="card">
-                                <div class="card-body">
-                                    <div id="aiResultsContent"></div>
-                                    <div class="d-flex gap-2 mt-4">
-                                        <button class="btn btn-primary" onclick="importAIMenu()">
-                                            <i class="fas fa-check"></i>
-                                            استيراد إلى قائمتي
-                                        </button>
-                                        <button class="btn btn-secondary" onclick="editAIResults()">
-                                            <i class="fas fa-edit"></i>
-                                            تعديل قبل الاستيراد
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- ==================== ORDERS PAGE ==================== -->
-                <section class="page-section" id="page-orders">
-                    <div class="page-header">
-                        <div>
-                            <h1 class="page-title">إدارة الطلبات</h1>
-                            <p class="page-subtitle">تابع وأدر جميع الطلبات الواردة</p>
-                        </div>
-                        <div class="page-actions">
-                            <button class="btn btn-secondary" onclick="exportOrders()">
-                                <i class="fas fa-download"></i>
-                                تصدير Excel
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Orders Stats -->
-                    <div class="stats-grid mb-4" style="grid-template-columns: repeat(5, 1fr);">
-                        <div class="stat-card" style="padding: 16px;">
-                            <div class="stat-info">
-                                <h3 style="font-size: 1.25rem;">12</h3>
-                                <p style="font-size: 0.8rem;">جديد</p>
-                            </div>
-                        </div>
-                        <div class="stat-card" style="padding: 16px;">
-                            <div class="stat-info">
-                                <h3 style="font-size: 1.25rem;">8</h3>
-                                <p style="font-size: 0.8rem;">مؤكد</p>
-                            </div>
-                        </div>
-                        <div class="stat-card" style="padding: 16px;">
-                            <div class="stat-info">
-                                <h3 style="font-size: 1.25rem;">5</h3>
-                                <p style="font-size: 0.8rem;">قيد التحضير</p>
-                            </div>
-                        </div>
-                        <div class="stat-card" style="padding: 16px;">
-                            <div class="stat-info">
-                                <h3 style="font-size: 1.25rem;">3</h3>
-                                <p style="font-size: 0.8rem;">جاهز</p>
-                            </div>
-                        </div>
-                        <div class="stat-card" style="padding: 16px;">
-                            <div class="stat-info">
-                                <h3 style="font-size: 1.25rem;">98</h3>
-                                <p style="font-size: 0.8rem;">تم التوصيل</p>
+                        <div class="stat-info">
+                            <h3>89</h3>
+                            <p>عملاء جدد</p>
+                            <div class="stat-change up">
+                                <i class="fas fa-arrow-up"></i> 23% هذا الشهر
                             </div>
                         </div>
                     </div>
 
-                    <!-- Orders Table -->
+                    <div class="stat-card">
+                        <div class="stat-icon red">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>4.8</h3>
+                            <p>متوسط التقييم</p>
+                            <div class="stat-change up">
+                                <i class="fas fa-arrow-up"></i> +0.3
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon purple">
+                            <i class="fas fa-eye"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>1,234</h3>
+                            <p>مشاهدات القائمة</p>
+                            <div class="stat-change down">
+                                <i class="fas fa-arrow-down"></i> 5%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="quick-actions">
+                    <div class="quick-action-card" onclick="window.location.href='menu.html'">
+                        <i class="fas fa-plus-circle"></i>
+                        <h4>إضافة صنف جديد</h4>
+                    </div>
+                    <div class="quick-action-card" onclick="window.location.href='ai-import.html'">
+                        <i class="fas fa-wand-magic-sparkles"></i>
+                        <h4>استيراد بالذكاء الاصطناعي</h4>
+                    </div>
+                    <div class="quick-action-card" onclick="window.location.href='orders.html'">
+                        <i class="fas fa-list-ul"></i>
+                        <h4>عرض الطلبات</h4>
+                    </div>
+                    <div class="quick-action-card" onclick="window.location.href='settings.html'">
+                        <i class="fas fa-qrcode"></i>
+                        <h4>رمز QR</h4>
+                    </div>
+                </div>
+
+                <!-- Charts Row -->
+                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px; margin-bottom: 24px;">
+                    <!-- Sales Chart -->
+                    <div class="chart-container">
+                        <div class="chart-header">
+                            <h3 class="chart-title">📊 المبيعات الأسبوعية</h3>
+                            <select class="form-control form-select" style="width: auto; padding: 8px 36px 8px 12px;">
+                                <option>هذا الأسبوع</option>
+                                <option>الأسبوع الماضي</option>
+                                <option>هذا الشهر</option>
+                            </select>
+                        </div>
+                        <div class="chart-placeholder">
+                            <div style="text-align: center;">
+                                <i class="fas fa-chart-line" style="font-size: 3rem; margin-bottom: 12px;"></i>
+                                <p>رسم بياني للمبيعات</p>
+                                <small>سيتم عرض البيانات الفعلية عند الاتصال بقاعدة البيانات</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Popular Items -->
+                    <div class="chart-container">
+                        <div class="chart-header">
+                            <h3 class="chart-title">🔥 الأكثر طلباً</h3>
+                        </div>
+                        <div style="padding: 10px 0;">
+                            <div style="display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--gray-200);">
+                                <span style="width: 28px; height: 28px; background: var(--primary-color); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700;">1</span>
+                                <div style="flex: 1;">
+                                    <strong>كبدة فراخ</strong>
+                                    <small style="color: var(--gray-500);">45 طلب</small>
+                                </div>
+                                <span style="color: var(--primary-color); font-weight: 700;">٪32</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--gray-200);">
+                                <span style="width: 28px; height: 28px; background: var(--secondary-color); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700;">2</span>
+                                <div style="flex: 1;">
+                                    <strong>شاورما فراخ</strong>
+                                    <small style="color: var(--gray-500);">38 طلب</small>
+                                </div>
+                                <span style="color: var(--secondary-color); font-weight: 700;">٪27</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--gray-200);">
+                                <span style="width: 28px; height: 28px; background: var(--info); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700;">3</span>
+                                <div style="flex: 1;">
+                                    <strong>محمرة</strong>
+                                    <small style="color: var(--gray-500);">28 طلب</small>
+                                </div>
+                                <span style="color: var(--info); font-weight: 700;">٪20</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 12px; padding: 12px 0;">
+                                <span style="width: 28px; height: 28px; background: var(--success); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700;">4</span>
+                                <div style="flex: 1;">
+                                    <strong>فتة</strong>
+                                    <small style="color: var(--gray-500);">22 طلب</small>
+                                </div>
+                                <span style="color: var(--success); font-weight: 700;">٪16</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Orders & Activity -->
+                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px;">
+                    <!-- Recent Orders Table -->
                     <div class="data-table-container">
                         <div class="table-toolbar">
-                            <div class="table-search">
-                                <input type="text" placeholder="بحث برقم الطلب أو اسم الزبون...">
-                                <i class="fas fa-search"></i>
-                            </div>
-                            <div class="table-filters">
-                                <select class="form-control" style="width: auto;">
-                                    <option value="">كل الحالات</option>
-                                    <option value="pending">جديد</option>
-                                    <option value="confirmed">مؤكد</option>
-                                    <option value="preparing">قيد التحضير</option>
-                                    <option value="ready">جاهز</option>
-                                    <option value="delivered">تم التوصيل</option>
-                                </select>
-                                <select class="form-control" style="width: auto;">
-                                    <option value="">اليوم</option>
-                                    <option value="yesterday">أمس</option>
-                                    <option value="week">هذا الأسبوع</option>
-                                    <option value="month">هذا الشهر</option>
-                                </select>
-                            </div>
+                            <h3 style="margin: 0; font-size: 1.125rem;">📋 آخر الطلبات</h3>
+                            <a href="orders.html" class="btn btn-sm btn-secondary">عرض الكل</a>
                         </div>
                         <table class="data-table">
                             <thead>
                                 <tr>
                                     <th>رقم الطلب</th>
-                                    <th>الزبون</th>
-                                    <th>الهاتف</th>
-                                    <th>العناصر</th>
-                                    <th>المبلغ</th>
+                                    <th>العميل</th>
+                                    <th>المجموع</th>
                                     <th>الحالة</th>
-                                    <th>الوقت</th>
-                                    <th>إجراءات</th>
+                                    <th>التاريخ</th>
                                 </tr>
                             </thead>
-                            <tbody id="ordersTableBody">
+                            <tbody>
                                 <tr>
-                                    <td><strong>#1234</strong></td>
+                                    <td><strong>#1001</strong></td>
                                     <td>أحمد محمد</td>
-                                    <td dir="ltr">+201234567890</td>
-                                    <td>3 عناصر</td>
-                                    <td><strong>١٨٥ ج.م</strong></td>
+                                    <td><strong>250 ج.م</strong></td>
+                                    <td><span class="status-badge status-pending">قيد الانتظار</span></td>
+                                    <td>منذ 5 دقائق</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>#1000</strong></td>
+                                    <td>سارة أحمد</td>
+                                    <td><strong>180 ج.م</strong></td>
                                     <td><span class="status-badge status-preparing">قيد التحضير</span></td>
                                     <td>منذ 15 دقيقة</td>
-                                    <td>
-                                        <div class="table-actions">
-                                            <button class="table-action-btn view" onclick="viewOrder(1234)" title="عرض">
-                                                <i class="fas fa-eye"></i>
-                                            </button>
-                                            <button class="table-action-btn edit" onclick="updateOrderStatus(1234, 'ready')" title="تغيير الحالة">
-                                                <i class="fas fa-check"></i>
-                                            </button>
-                                        </div>
-                                    </td>
                                 </tr>
                                 <tr>
-                                    <td><strong>#1233</strong></td>
-                                    <td>سارة علي</td>
-                                    <td dir="ltr">+201987654321</td>
-                                    <td>5 عناصر</td>
-                                    <td><strong>٣٢٠ ج.م</strong></td>
-                                    <td><span class="status-badge status-confirmed">تم التأكيد</span></td>
-                                    <td>منذ 30 دقيقة</td>
-                                    <td>
-                                        <div class="table-actions">
-                                            <button class="table-action-btn view" onclick="viewOrder(1233)" title="عرض">
-                                                <i class="fas fa-eye"></i>
-                                            </button>
-                                            <button class="table-action-btn edit" onclick="updateOrderStatus(1233, 'preparing')" title="تغيير الحالة">
-                                                <i class="fas fa-check"></i>
-                                            </button>
-                                        </div>
-                                    </td>
+                                    <td><strong>#999</strong></td>
+                                    <td>محمود علي</td>
+                                    <td><strong>320 ج.م</strong></td>
+                                    <td><span class="status-badge status-delivered">تم التسليم</span></td>
+                                    <td>منذ ساعة</td>
                                 </tr>
                                 <tr>
-                                    <td><strong>#1232</strong></td>
-                                    <td>محمد حسن</td>
-                                    <td dir="ltr">+201555123456</td>
-                                    <td>1 عنصر</td>
-                                    <td><strong>٩٥ ج.م</strong></td>
-                                    <td><span class="status-badge status-pending">جديد</span></td>
-                                    <td>منذ 5 دقائق</td>
-                                    <td>
-                                        <div class="table-actions">
-                                            <button class="table-action-btn view" onclick="viewOrder(1232)" title="عرض">
-                                                <i class="fas fa-eye"></i>
-                                            </button>
-                                            <button class="table-action-btn edit" onclick="updateOrderStatus(1232, 'confirmed')" title="تأكيد">
-                                                <i class="fas fa-check"></i>
-                                            </button>
-                                        </div>
-                                    </td>
+                                    <td><strong>#998</strong></td>
+                                    <td>فاطمة حسن</td>
+                                    <td><strong>95 ج.م</strong></td>
+                                    <td><span class="status-badge status-cancelled">ملغي</span></td>
+                                    <td>منذ ساعتين</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
-                </section>
 
-                <!-- ==================== SETTINGS PAGE ==================== -->
-                <section class="page-section" id="page-settings">
-                    <div class="page-header">
-                        <div>
-                            <h1 class="page-title">إعدادات المطعم</h1>
-                            <p class="page-subtitle">حدّث معلومات ومظهر مطعمك</p>
+                    <!-- Recent Activity -->
+                    <div class="data-table-container">
+                        <div class="table-toolbar">
+                            <h3 style="margin: 0; font-size: 1.125rem;">🕐 النشاط الأخير</h3>
                         </div>
-                        <div class="page-actions">
-                            <button class="btn btn-primary" onclick="saveSettings()">
-                                <i class="fas fa-save"></i>
-                                حفظ التغييرات
-                            </button>
-                        </div>
-                    </div>
-
-                    <form id="settingsForm">
-                        <!-- Basic Info -->
-                        <div class="settings-section">
-                            <h3 class="settings-section-title">
-                                <i class="fas fa-store"></i>
-                                المعلومات الأساسية
-                            </h3>
-                            
-                            <div class="d-flex gap-4 mb-4">
-                                <div class="logo-upload-area" onclick="document.getElementById('logoInput').click()" id="logoUploadArea">
-                                    <i class="fas fa-camera"></i>
-                                    <span>رفع الشعار</span>
-                                    <input type="file" id="logoInput" accept="image/*" hidden onchange="previewLogo(this)">
+                        <ul class="activity-list" style="padding: 0 20px;">
+                            <li class="activity-item">
+                                <div class="activity-icon order">
+                                    <i class="fas fa-receipt"></i>
                                 </div>
-                                
-                                <div class="flex-1">
-                                    <div class="settings-grid">
-                                        <div class="form-group">
-                                            <label class="form-label">اسم المطعم (عربي) *</label>
-                                            <input type="text" class="form-control" value="مطعم المبروك" required>
-                                        </div>
-                                        <div class="form-group">
-                                            <label class="form-label">Restaurant Name (English)</label>
-                                            <input type="text" class="form-control" value="El Mabrouk Restaurant">
-                                        </div>
-                                        <div class="form-group">
-                                            <label class="form-label">رقم الهاتف</label>
-                                            <input type="tel" class="form-control" value="+201279934735">
-                                        </div>
-                                        <div class="form-group">
-                                            <label class="form-label">رقم واتساب *</label>
-                                            <input type="tel" class="form-control" value="+201279934735" required>
-                                        </div>
-                                        <div class="form-group" style="grid-column: span 2;">
-                                            <label class="form-label">العنوان</label>
-                                            <input type="text" class="form-control" value="المنزلة - الدقهلية">
-                                        </div>
-                                        <div class="form-group">
-                                            <label class="form-label">المدينة</label>
-                                            <select class="form-control">
-                                                <option selected>المنصورة</option>
-                                                <option>القاهرة</option>
-                                                <option>الإسكندرية</option>
-                                            </select>
-                                        </div>
-                                        <div class="form-group">
-                                            <label class="form-label">نوع المطبخ</label>
-                                            <select class="form-control">
-                                                <option selected>مصري</option>
-                                                <option>عربي</option>
-                                                <option>إيطالي</option>
-                                            </select>
-                                        </div>
-                                    </div>
+                                <div class="activity-content">
+                                    <p class="activity-text">طلب جديد <strong>#1001</strong> من أحمد محمد</p>
+                                    <span class="activity-time">منذ 5 دقائق</span>
                                 </div>
-                            </div>
-                        </div>
-
-                        <!-- Social Media -->
-                        <div class="settings-section">
-                            <h3 class="settings-section-title">
-                                <i class="fas fa-share-alt"></i>
-                                وسائل التواصل الاجتماعي
-                            </h3>
-                            <div class="settings-grid">
-                                <div class="form-group">
-                                    <label class="form-label"><i class="fab fa-instagram"></i> Instagram</label>
-                                    <input type="url" class="form-control" placeholder="@restaurant_name">
+                            </li>
+                            <li class="activity-item">
+                                <div class="activity-icon customer">
+                                    <i class="fas fa-user-plus"></i>
                                 </div>
-                                <div class="form-group">
-                                    <label class="form-label"><i class="fab fa-facebook"></i> Facebook</label>
-                                    <input type="url" class="form-control" placeholder="facebook.com/page">
+                                <div class="activity-content">
+                                    <p class="activity-text">عميل جديد: <strong>سارة أحمد</strong></p>
+                                    <span class="activity-time">منذ 15 دقيقة</span>
                                 </div>
-                                <div class="form-group">
-                                    <label class="form-label"><i class="fab fa-tiktok"></i> TikTok</label>
-                                    <input type="url" class="form-control" placeholder="@restaurant_name">
+                            </li>
+                            <li class="activity-item">
+                                <div class="activity-icon system">
+                                    <i class="fas fa-check-circle"></i>
                                 </div>
-                                <div class="form-group">
-                                    <label class="form-label"><i class="fas fa-globe"></i> الموقع الإلكتروني</label>
-                                    <input type="url" class="form-control" placeholder="https://">
+                                <div class="activity-content">
+                                    <p class="activity-text">تم تأكيد الطلب <strong>#999</strong></p>
+                                    <span class="activity-time">منذ 30 دقيقة</span>
                                 </div>
-                            </div>
-                        </div>
-
-                        <!-- Order Settings -->
-                        <div class="settings-section">
-                            <h3 class="settings-section-title">
-                                <i class="fas fa-shopping-cart"></i>
-                                إعدادات الطلبات
-                            </h3>
-                            <div class="settings-grid">
-                                <div class="form-group">
-                                    <label class="form-label">العملة</label>
-                                    <select class="form-control">
-                                        <option selected>ج.م مصري (EGP)</option>
-                                        <option>$ دولار أمريكي (USD)</option>
-                                        <option>ر.س سعودي (SAR)</option>
-                                        <option>د.إ إماراتي (AED)</option>
-                                    </select>
+                            </li>
+                            <li class="activity-item">
+                                <div class="activity-icon order">
+                                    <i class="fas fa-truck"></i>
                                 </div>
-                                <div class="form-group">
-                                    <label class="form-label">متوسط وقت التحضير (دقيقة)</label>
-                                    <input type="number" class="form-control" value="30" min="5" max="120">
+                                <div class="activity-content">
+                                    <p class="activity-text">تسليم الطلب <strong>#997</strong> تم بنجاح</p>
+                                    <span class="activity-time">منذ ساعة</span>
                                 </div>
-                                <div class="form-group">
-                                    <label class="checkbox-label">
-                                        <input type="checkbox" checked>
-                                        <span>تفعيل الطلبات عبر واتساب</span>
-                                    </label>
-                                </div>
-                                <div class="form-group">
-                                    <label class="checkbox-label">
-                                        <input type="checkbox">
-                                        <span>تفعيل خدمة التوصيل</span>
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-                    </form>
-                </section>
-
-                <!-- Other pages placeholders -->
-                <section class="page-section" id="page-categories">
-                    <div class="page-header">
-                        <h1 class="page-title">إدارة الأقسام</h1>
-                        <button class="btn btn-primary" onclick="openAddCategoryModal()">
-                            <i class="fas fa-plus"></i>
-                            إضافة قسم جديد
-                        </button>
+                            </li>
+                        </ul>
                     </div>
-                    <div class="alert alert-info">
-                        <i class="fas fa-info-circle"></i>
-                        يمكنك تنظيم قائتك إلى أقسام مثل: المقبلات، الأطباق الرئيسية، المشروبات...
-                    </div>
-                    <!-- Categories list would go here -->
-                </section>
-
-                <section class="page-section" id="page-order-tracking">
-                    <div class="page-header">
-                        <h1 class="page-title">تتبع الطلبات</h1>
-                    </div>
-                    <div class="empty-state">
-                        <i class="fas fa-map-marked-alt empty-state-icon"></i>
-                        <h3>تتبع الطلبات مباشرة</h3>
-                        <p>يمكنك متابعة حالة الطلبات النشطة هنا</p>
-                    </div>
-                </section>
-
-                <section class="page-section" id="page-appearance">
-                    <div class="page-header">
-                        <h1 class="page-title">المظهر والألوان</h1>
-                    </div>
-                    <div class="settings-section">
-                        <h3 class="settings-section-title">اختر اللون الرئيسي</h3>
-                        <div class="d-flex gap-2 flex-wrap">
-                            <button class="color-option" style="background: #ff6b35;" onclick="setThemeColor('#ff6b35')"></button>
-                            <button class="color-option" style="background: #e74c3c;" onclick="setThemeColor('#e74c3c')"></button>
-                            <button class="color-option" style="background: #3498db;" onclick="setThemeColor('#3498db')"></button>
-                            <button class="color-option" style="background: #27ae60;" onclick="setThemeColor('#27ae60')"></button>
-                            <button class="color-option" style="background: #9b59b6;" onclick="setThemeColor('#9b59b6')"></button>
-                            <button class="color-option" style="background: #f39c12;" onclick="setThemeColor('#f39c12')"></button>
-                        </div>
-                    </div>
-                </section>
-
-                <section class="page-section" id="page-notifications-settings">
-                    <div class="page-header">
-                        <h1 class="page-title">إعدادات الإشعارات</h1>
-                    </div>
-                    <div class="settings-section">
-                        <h3 class="settings-section-title">إشعارات الطلبات</h3>
-                        <div class="d-flex flex-column gap-3">
-                            <label class="checkbox-label">
-                                <input type="checkbox" checked>
-                                <span>إشعار عند وصول طلب جديد</span>
-                            </label>
-                            <label class="checkbox-label">
-                                <input type="checkbox" checked>
-                                <span>إشعار عند تغيير حالة الطلب</span>
-                            </label>
-                            <label class="checkbox-label">
-                                <input type="checkbox">
-                                <span>ملخص يومي بالمبيعات</span>
-                            </label>
-                        </div>
-                    </div>
-                </section>
-
-                <section class="page-section" id="page-profile">
-                    <div class="page-header">
-                        <h1 class="page-title">الملف الشخصي</h1>
-                    </div>
-                    <div class="settings-section">
-                        <h3 class="settings-section-title">معلومات الحساب</h3>
-                        <div class="settings-grid">
-                            <div class="form-group">
-                                <label class="form-label">الاسم الكامل</label>
-                                <input type="text" class="form-control" value="مطعم المبروك">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">البريد الإلكتروني</label>
-                                <input type="email" class="form-control" value="elfannanm@gmail.com">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">رقم الهاتف</label>
-                                <input type="tel" class="form-control" value="+201279934735">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">كلمة المرور الجديدة</label>
-                                <input type="password" class="form-control" placeholder="اتركه فارغاً للإبقاء على الحالية">
-                            </div>
-                        </div>
-                        <button class="btn btn-primary mt-3">تحديث الملف الشخصي</button>
-                    </div>
-                </section>
-
-                <section class="page-section" id="page-subscription">
-                    <div class="page-header">
-                        <h1 class="page-title">الاشتراك</h1>
-                    </div>
-                    <div class="card">
-                        <div class="card-body text-center">
-                            <div class="plan-current" style="padding: 24px; background: linear-gradient(135deg, rgba(255,107,53,0.1), rgba(247,147,30,0.1)); border-radius: var(--radius-lg); margin-bottom: 24px;">
-                                <span class="badge badge-warning mb-2" style="font-size: 1rem; padding: 8px 20px;">خطتك الحالية</span>
-                                <h2 style="font-size: 2rem; margin: 12px 0;">Pro ⭐</h2>
-                                <p style="font-size: 1.25rem; color: var(--primary-color); font-weight: 800;">199 ج.م / شهر</p>
-                            </div>
-                            <div class="d-flex justify-center gap-3">
-                                <button class="btn btn-secondary">تغيير الخطة</button>
-                                <button class="btn btn-danger">إلغاء الاشتراك</button>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-            </div><!-- End Page Content -->
-        </main><!-- End Main Content -->
-    </div><!-- End Admin Layout -->
-
-    <!-- Add/Edit Item Modal -->
-    <div class="modal-overlay" id="itemModal">
-        <div class="modal" style="max-width: 650px;">
-            <div class="modal-header">
-                <h3 class="modal-title" id="itemModalTitle">إضافة صنف جديد</h3>
-                <button class="modal-close">&times;</button>
+                </div>
             </div>
-            <div class="modal-body">
-                <form id="itemForm">
-                    <div class="form-group">
-                        <label class="form-label">اسم الصنف (عربي) *</label>
-                        <input type="text" class="form-control" name="name" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Item Name (English)</label>
-                        <input type="text" class="form-control" name="nameEn">
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label class="form-label">السعر *</label>
-                            <input type="number" class="form-control" name="price" required min="0" step="0.01">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">القسم</label>
-                            <select class="form-control" name="categoryId">
-                                <option value="">اختر القسم</option>
-                                <option value="1">المقبلات</option>
-                                <option value="2">الأطباق الرئيسية</option>
-                                <option value="3">المشروبات</option>
-                                <option value="4">الحلويات</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">الوصف</label>
-                        <textarea class="form-control" name="description" rows="3"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">صورة الصنف</label>
-                        <div class="upload-zone" style="min-height: 120px;" onclick="document.getElementById('itemImageInput').click()">
-                            <i class="fas fa-image"></i>
-                            <p>اضغط لرفع الصورة</p>
-                            <input type="file" id="itemImageInput" accept="image/*" hidden onchange="previewItemImage(this)">
-                        </div>
-                        <img id="itemImagePreview" style="max-width: 100%; height: 150px; object-fit: cover; border-radius: var(--radius-md); margin-top: 10px; display: none;">
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label class="checkbox-label">
-                                <input type="checkbox" name="isPopular">
-                                <span>⭐ صنف رائج</span>
-                            </label>
-                        </div>
-                        <div class="form-group">
-                            <label class="checkbox-label">
-                                <input type="checkbox" name="isNew">
-                                <span>🆕 صنف جديد</span>
-                            </label>
-                        </div>
-                        <div class="form-group">
-                            <label class="checkbox-label">
-                                <input type="checkbox" name="isSpicy">
-                                <span>🌶️ حار</span>
-                            </label>
-                        </div>
-                        <div class="form-group">
-                            <label class="checkbox-label">
-                                <input type="checkbox" name="isVegetarian">
-                                <span>🥬 نباتي</span>
-                            </label>
-                        </div>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="MezoMenu.Modal.hide('itemModal')">إلغاء</button>
-                <button class="btn btn-primary" onclick="saveItem()">حفظ الصنف</button>
-            </div>
-        </div>
+        </main>
+
+        <!-- Sidebar Overlay for Mobile -->
+        <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
     </div>
 
-    <!-- Order Details Modal -->
-    <div class="modal-overlay" id="orderModal">
-        <div class="modal" style="max-width: 550px;">
-            <div class="modal-header">
-                <h3 class="modal-title">تفاصيل الطلب #<span id="orderDetailNumber">1234</span></h3>
-                <button class="modal-close">&times;</button>
-            </div>
-            <div class="modal-body" id="orderDetailContent">
-                <!-- Populated dynamically -->
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="MezoMenu.Modal.hide('orderModal')">إغلاق</button>
-                <button class="btn btn-success" onclick="contactCustomerViaWhatsApp()">
-                    <i class="fab fa-whatsapp"></i>
-                    تواصل عبر واتساب
-                </button>
-            </div>
-        </div>
-    </div>
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
 
     <!-- Scripts -->
-    <script src="../assets/js/main.js"></script>
     <script>
-        // ==========================================
-        // Dashboard JavaScript
-        // ==========================================
+        // Configuration
+        const CONFIG = {
+            API_URL: 'https://menu.nonm1724.workers.dev',
+            FIREBASE_DB: 'https://menu-b41e6-default-rtdb.firebaseio.com'
+        };
 
-        // Initialize dashboard
-        document.addEventListener('DOMContentLoaded', () => {
-            initSidebar();
-            loadUserData();
-            checkAuth();
-            
-            // Show dashboard by default
-            navigateTo('dashboard');
-        });
+        // Storage helpers
+        const Storage = {
+            set: (key, value) => localStorage.setItem(key, JSON.stringify(value)),
+            get: (key) => { try { return JSON.parse(localStorage.getItem(key)); } catch { return null; } },
+            remove: (key) => localStorage.removeItem(key)
+        };
 
-        // Check authentication
-        function checkAuth() {
-            const user = MezoMenu.Storage.get('user_data');
-            if (!user && window.location.pathname.includes('admin')) {
-                // Redirect to login if not authenticated (for production)
-                // window.location.href = 'login.html';
-            }
-        }
+        // Toast notifications
+        const Toast = {
+            show: (message, type = 'info') => {
+                const container = document.getElementById('toastContainer');
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+                const icons = { success: 'check-circle', error: 'times-circle', warning: 'exclamation-triangle', info: 'info-circle' };
+                toast.innerHTML = `<i class="fas fa-${icons[type] || 'info-circle'}"></i><span>${message}</span>`;
+                container.appendChild(toast);
+                setTimeout(() => toast.remove(), 3000);
+            },
+            success: (msg) => Toast.show(msg, 'success'),
+            error: (msg) => Toast.show(msg, 'error'),
+            warning: (msg) => Toast.show(msg, 'warning'),
+            info: (msg) => Toast.show(msg, 'info')
+        };
 
-        // Load user data
-        function loadUserData() {
-            const user = MezoMenu.Storage.get('user_data');
-            if (user) {
-                // Update UI with user info
-                const userAvatar = document.querySelector('.user-avatar');
-                if (userAvatar && user.displayName) {
-                    userAvatar.textContent = user.displayName.charAt(0).toUpperCase();
-                }
-                
-                const userName = document.querySelector('.user-details h4');
-                if (userName && user.displayName) {
-                    userName.textContent = user.displayName;
-                }
-                
-                const userEmail = document.querySelector('.user-details p');
-                if (userEmail && user.email) {
-                    userEmail.textContent = user.email;
-                }
-            }
-        }
-
-        // Initialize sidebar navigation
-        function initSidebar() {
-            // Mobile menu toggle
-            const menuToggle = document.getElementById('menuToggle');
+        // Toggle sidebar for mobile
+        function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('sidebarOverlay');
-
-            if (menuToggle) {
-                menuToggle.addEventListener('click', () => {
-                    sidebar.classList.toggle('active');
-                    overlay.classList.toggle('active');
-                });
-            }
-
-            if (overlay) {
-                overlay.addEventListener('click', () => {
-                    sidebar.classList.remove('active');
-                    overlay.classList.remove('active');
-                });
-            }
-
-            // Nav item clicks
-            document.querySelectorAll('.nav-item[data-page]').forEach(item => {
-                item.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    const page = item.dataset.page;
-                    navigateTo(page);
-                    
-                    // Close mobile menu
-                    sidebar.classList.remove('active');
-                    overlay.classList.remove('active');
-                });
-            });
-
-            // Close mobile menu on nav click
-            document.querySelectorAll('.nav-item').forEach(item => {
-                item.addEventListener('click', () => {
-                    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-                    item.classList.add('active');
-                });
-            });
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
         }
 
-        // Navigate to page
-        function navigateTo(pageName) {
-            // Hide all sections
-            document.querySelectorAll('.page-section').forEach(section => {
-                section.classList.remove('active');
-            });
-
-            // Show target section
-            const targetPage = document.getElementById(`page-${pageName}`);
-            if (targetPage) {
-                targetPage.classList.add('active');
-            }
-
-            // Update nav active state
-            document.querySelectorAll('.nav-item').forEach(item => {
-                item.classList.toggle('active', item.dataset.page === pageName);
-            });
-
-            // Scroll to top
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        // Refresh dashboard data
-        async function refreshDashboard() {
-            MezoMenu.Toast.info('جاري تحديث البيانات...');
-            
-            // Simulate refresh
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            
-            MezoMenu.Toast.success('تم تحديث البيانات');
-        }
-
-        // Copy menu URL
-        function copyMenuUrl() {
-            const input = document.getElementById('menuUrlInput');
-            input.select();
-            document.execCommand('copy');
-            MezoMenu.Toast.success('تم نسخ الرابط!');
-        }
-
-        // Open menu preview
-        function openMenuPreview() {
-            window.open('../customer/index.html?slug=el-mabrouk', '_blank');
-        }
-
-        // Download QR Code
-        function downloadQRCode() {
-            const link = document.createElement('a');
-            link.href = document.querySelector('.qr-code-image').src;
-            link.download = 'qrcode-menumenu.png';
-            link.click();
-            MezoMenu.Toast.success('جاري تحميل QR Code...');
-        }
-
-        // Show QR Code modal
-        function showQRCode() {
-            MezoMenu.Toast.info('QR Code موجود في لوحة الإحصائيات');
-        }
-
-        // Filter menu by category
-        function filterByCategory(category) {
-            document.querySelectorAll('.category-tab').forEach(tab => {
-                tab.classList.toggle('active', tab.textContent.includes(category === 'all' ? 'كل' : category));
-            });
-            MezoMenu.Toast.info(`عرض: ${category === 'all' ? 'كل الأصناف' : category}`);
-        }
-
-        // Open add item modal
-        function openAddItemModal() {
-            document.getElementById('itemModalTitle').textContent = 'إضافة صنف جديد';
-            document.getElementById('itemForm').reset();
-            document.getElementById('itemImagePreview').style.display = 'none';
-            MezoMenu.Modal.show('itemModal');
-        }
-
-        // Edit item
-        function editItem(id) {
-            document.getElementById('itemModalTitle').textContent = 'تعديل الصنف';
-            // Load item data and populate form
-            MezoMenu.Modal.show('itemModal');
-            MezoMenu.Toast.info('جاري تحميل بيانات الصنف...');
-        }
-
-        // Delete item
-        function deleteItem(id) {
-            if (confirm('هل أنت متأكد من حذف هذا الصنف؟')) {
-                MezoMenu.Toast.success('تم حذف الصنف بنجاح');
+        // Logout function
+        function logout() {
+            if (confirm('هل تريد تسجيل الخروج؟')) {
+                Storage.remove('user_data');
+                Storage.remove('auth_token');
+                window.location.href = 'login.html';
             }
         }
 
-        // Save item
-        function saveItem() {
-            const form = document.getElementById('itemForm');
-            if (form.checkValidity()) {
-                MezoMenu.Modal.hide('itemModal');
-                MezoMenu.Toast.success('تم حفظ الصنف بنجاح!');
-            } else {
-                MezoMenu.Toast.warning('يرجى ملء جميع الحقول المطلوبة');
+        // Check authentication on load
+        document.addEventListener('DOMContentLoaded', () => {
+            const user = Storage.get('user_data');
+            if (!user && !window.location.search.includes('demo=true')) {
+                // For demo purposes, allow access without auth
+                console.log('Demo mode - no auth required');
             }
-        }
 
-        // Preview item image
-        function previewItemImage(input) {
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    const preview = document.getElementById('itemImagePreview');
-                    preview.src = e.target.result;
-                    preview.style.display = 'block';
-                };
-                reader.readAsDataURL(input.files[0]);
-            }
-        }
+            // Load real data if available
+            loadDashboardData();
+        });
 
-        // Export menu
-        function exportMenu() {
-            MezoMenu.Toast.info('جاري تصدير القائمة...');
-            setTimeout(() => MezoMenu.Toast.success('تم تصدير القائمة!'), 1500);
-        }
-
-        // AI Import functions
-        function handleFileUpload(event) {
-            const file = event.target.files[0];
-            if (file) {
-                processAIImport(file);
-            }
-        }
-
-        async function processAIImport(file) {
-            const statusDiv = document.getElementById('aiProcessingStatus');
-            const resultsDiv = document.getElementById('aiResultsPreview');
-            
-            statusDiv.style.display = 'block';
-            resultsDiv.style.display = 'none';
-
+        // Load dashboard data
+        async function loadDashboardData() {
             try {
-                // Convert to base64
-                const base64 = await MezoMenu.ImageUpload.handleUpload(file);
+                // In production, this would fetch from API
+                console.log('Loading dashboard data...');
                 
-                // Update status
-                document.getElementById('processingStatusText').textContent = 'جاري تحليل الصورة بالذكاء الاصطناعي...';
-
-                // Simulate AI processing
-                await new Promise(resolve => setTimeout(resolve, 3000));
-
-                // Mock result
-                const mockResult = {
-                    categories: [
-                        { name: 'المقبلات', items: ['سلطة', 'شوربة'] },
-                        { name: 'الأطباق الرئيسية', items: ['فراخ', 'لحم'] },
-                        { name: 'المشروبات', items: ['عصائر', 'مشروبات غازية'] }
-                    ],
-                    totalItems: 15,
-                    confidence: 0.92
-                };
-
-                // Show results
-                document.getElementById('aiResultsContent').innerHTML = `
-                    <div class="alert alert-success mb-3">
-                        <i class="fas fa-check-circle"></i>
-                        تم تحليل القائمة بنجاح! دقة: ${Math.round(mockResult.confidence * 100)}%
-                    </div>
-                    <p><strong>عدد الأقسام المستخرجة:</strong> ${mockResult.categories.length}</p>
-                    <p><strong>عدد الأصناف المستخرجة:</strong> ${mockResult.totalItems}</p>
-                    <hr>
-                    <h4>الأقسام المكتشفة:</h4>
-                    ${mockResult.categories.map(cat => `
-                        <div class="mb-2">
-                            <strong>${cat.name}</strong>: ${cat.items.join(', ')}
-                        </div>
-                    `).join('')}
-                `;
-
-                statusDiv.style.display = 'none';
-                resultsDiv.style.display = 'block';
-
+                // Simulate loading stats
+                updateStatWithAnimation('totalOrders', 156);
+                updateStatWithAnimation('totalSales', '12,450');
+                updateStatWithAnimation('newCustomers', 89);
+                updateStatWithAnimation('avgRating', 4.8);
+                updateStatWithAnimation('menuViews', 1234);
             } catch (error) {
-                statusDiv.style.display = 'none';
-                MezoMenu.Toast.error('فشل في تحليل الملف: ' + error.message);
+                console.error('Error loading dashboard:', error);
             }
         }
 
-        function importFromGoogleSheets() {
-            MezoMenu.Toast.info('استيراد من Google Sheets قريباً...');
-        }
-
-        function importFromURL() {
-            const url = prompt('أدخل رابط الملف:');
-            if (url) {
-                MezoMenu.Toast.info('جاري استيراد من الرابط...');
+        // Animate stat numbers
+        function updateStatWithAnimation(id, targetValue) {
+            const el = document.getElementById(id);
+            if (el) {
+                el.textContent = targetValue;
             }
         }
 
-        function importAIMenu() {
-            MezoMenu.Toast.success('تم استيراد القائمة بنجاح!');
-            navigateTo('menu');
+        // Format currency
+        function formatCurrency(amount) {
+            return `${amount.toLocaleString('ar-EG')} ج.م`;
         }
 
-        function editAIResults() {
-            MezoMenu.Toast.info='فتح محرر التعديل...';
-        }
-
-        // Orders management
-        function viewOrder(orderId) {
-            document.getElementById('orderDetailNumber').textContent = orderId;
-            
-            // Populate order details (mock)
-            document.getElementById('orderDetailContent').innerHTML = `
-                <div class="order-timeline">
-                    <div class="timeline-step completed">
-                        <div class="timeline-dot"><i class="fas fa-check"></i></div>
-                        <div class="timeline-content">
-                            <h4>تم الاستلام</h4>
-                            <p>10:30 AM</p>
-                        </div>
-                    </div>
-                    <div class="timeline-step completed">
-                        <div class="timeline-dot"><i class="fas fa-check"></i></div>
-                        <div class="timeline-content">
-                            <h4>تم التأكيد</h4>
-                            <p>10:32 AM</p>
-                        </div>
-                    </div>
-                    <div class="timeline-step active">
-                        <div class="timeline-dot"><i class="fas fa-fire"></i></div>
-                        <div class="timeline-content">
-                            <h4>قيد التحضير</h4>
-                            <p>الآن</p>
-                        </div>
-                    </div>
-                    <div class="timeline-step">
-                        <div class="timeline-dot"><i class="fas fa-box"></i></div>
-                        <div class="timeline-content">
-                            <h4>جاهز للتوصيل</h4>
-                            <p>—</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="mt-4">
-                    <h4>عناصر الطلب:</h4>
-                    <table class="data-table mt-2">
-                        <tbody>
-                            <tr>
-                                <td>بيتزا مارغريتا (كبيرة)</td>
-                                <td>x2</td>
-                                <td>240 ج.م</td>
-                            </tr>
-                            <tr>
-                                <td>سلطة كيزر</td>
-                                <td>x1</td>
-                                <td>65 ج.م</td>
-                            </tr>
-                            <tr>
-                                <td>مشروب غازي</td>
-                                <td>x3</td>
-                                <td>30 ج.م</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                    <div class="d-flex justify-between mt-3 pt-3 border-top">
-                        <strong>الإجمالي:</strong>
-                        <strong style="font-size: 1.25rem; color: var(--primary-color);">335 ج.م</strong>
-                    </div>
-                </div>
-            `;
-            
-            MezoMenu.Modal.show('orderModal');
-        }
-
-        function updateOrderStatus(orderId, newStatus) {
-            const statusLabels = {
-                'pending': 'جديد',
-                'confirmed': 'مؤكد',
-                'preparing': 'قيد التحضير',
-                'ready': 'جاهز',
-                'delivered': 'تم التوصيل'
-            };
-            
-            MezoMenu.Toast.success(`تم تحديث حالة الطلب ${orderId} إلى "${statusLabels[newStatus]}"`);
-        }
-
-        function contactCustomerViaWhatsApp() {
-            MezoMenu.WhatsApp.openChat('+201234567890', 'مرحباً، بخصوص طلبكم #1234');
-        }
-
-        function exportOrders() {
-            MezoMenu.Toast.info('جاري تصدير الطلبات...');
-        }
-
-        // Settings functions
-        function saveSettings() {
-            MezoMenu.Toast.success('تم حفظ الإعدادات بنجاح!');
-        }
-
-        function previewLogo(input) {
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    const area = document.getElementById('logoUploadArea');
-                    area.innerHTML = `<img src="${e.target.result}" style="width: 100%; height: 100%; object-fit: cover; border-radius: inherit;">`;
-                };
-                reader.readAsDataURL(input.files[0]);
-            }
-        }
-
-        function setThemeColor(color) {
-            document.documentElement.style.setProperty('--primary-color', color);
-            MezoMenu.Toast.success('تم تغيير اللون!');
-        }
-
-        // Category functions
-        function openAddCategoryModal() {
-            MezoMenu.Toast.info='فتح نافذة إضافة قسم...';
+        // Format date/time in Arabic
+        function formatDateTime(dateString) {
+            const date = new Date(dateString);
+            const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+            return date.toLocaleDateString('ar-EG', options);
         }
     </script>
 </body>
