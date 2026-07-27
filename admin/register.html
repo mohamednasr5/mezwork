@@ -5,8 +5,571 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>إنشاء حساب - MezoMenu</title>
     <link rel="icon" type="image/png" href="../assets/images/favicon.png">
-    <link rel="stylesheet" href="assets/css/main.css">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- CRITICAL: Complete Inline CSS for guaranteed loading on GitHub Pages -->
+    <style>
+        /* ===================================
+           MezoMenu - Complete Inline Styles
+           =================================== */
+        
+        :root {
+            --primary-color: #ff6b35;
+            --primary-dark: #e55a2b;
+            --primary-light: #ff8c5a;
+            --secondary-color: #f7931e;
+            --accent-color: #ffb627;
+            --dark-color: #1a1a2e;
+            --dark-light: #16213e;
+            --gray-900: #212529;
+            --gray-800: #343a40;
+            --gray-700: #495057;
+            --gray-600: #6c757d;
+            --gray-500: #adb5bd;
+            --gray-400: #ced4da;
+            --gray-300: #dee2e6;
+            --gray-200: #e9ecef;
+            --gray-100: #f8f9fa;
+            --white: #ffffff;
+            --success: #28a745;
+            --success-light: #d4edda;
+            --warning: #ffc107;
+            --warning-light: #fff3cd;
+            --danger: #dc3545;
+            --danger-light: #f8d7da;
+            --info: #17a2b8;
+            --info-light: #d1ecf1;
+            --whatsapp-green: #25D366;
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 25px rgba(0,0,0,0.15);
+            --shadow-xl: 0 20px 40px rgba(0,0,0,0.2);
+            --radius-sm: 4px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --radius-xl: 20px;
+            --radius-full: 50%;
+            --transition-fast: 0.15s ease;
+            --transition-normal: 0.3s ease;
+        }
+        
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html { scroll-behavior: smooth; font-size: 16px; }
+        
+        body {
+            font-family: 'Cairo', sans-serif;
+            line-height: 1.6;
+            color: var(--gray-900);
+            background-color: var(--white);
+            direction: rtl;
+            text-align: right;
+        }
+        
+        [dir="rtl"] { text-align: right; }
+        
+        h1, h2, h3, h4, h5, h6 {
+            font-weight: 700;
+            line-height: 1.3;
+            color: var(--dark-color);
+            margin-bottom: 0.5em;
+        }
+        
+        h1 { font-size: 2.5rem; }
+        h2 { font-size: 2rem; }
+        h3 { font-size: 1.75rem; }
+        h4 { font-size: 1.5rem; }
+        
+        p { margin-bottom: 1rem; color: var(--gray-700); }
+        
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: var(--transition-fast);
+        }
+        
+        a:hover { color: var(--primary-dark); }
+        
+        img { max-width: 100%; height: auto; }
+        
+        .auth-page {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #fff9f5 0%, #f0f7ff 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .auth-container {
+            display: grid;
+            grid-template-columns: 480px 1fr;
+            max-width: 1100px;
+            width: 100%;
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-xl);
+            overflow: hidden;
+            min-height: 700px;
+        }
+        
+        .auth-card {
+            padding: 48px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .auth-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 32px;
+        }
+        
+        .auth-logo .logo-icon { font-size: 2rem; }
+        
+        .auth-logo h1 {
+            font-size: 1.75rem;
+            color: var(--dark-color);
+            margin: 0;
+        }
+        
+        .auth-logo h1 span { color: var(--primary-color); }
+        
+        .auth-header { margin-bottom: 24px; }
+        
+        .auth-header h2 { font-size: 1.75rem; margin-bottom: 8px; }
+        
+        .auth-header p { color: var(--gray-600); margin: 0; }
+        
+        /* Progress Steps */
+        .progress-steps {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 28px;
+            padding: 16px;
+            background: var(--gray-100);
+            border-radius: var(--radius-lg);
+        }
+        
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: var(--radius-full);
+            background: var(--white);
+            color: var(--gray-500);
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: var(--transition-fast);
+        }
+        
+        .step.active {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: var(--white);
+        }
+        
+        .step.completed {
+            background: var(--success-light);
+            color: var(--success);
+        }
+        
+        .step-number {
+            width: 24px;
+            height: 24px;
+            border-radius: var(--radius-full);
+            background: currentColor;
+            color: var(--white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+        }
+        
+        .step.active .step-number,
+        .step.completed .step-number {
+            background: var(--white);
+            color: inherit;
+        }
+        
+        .step-line {
+            width: 40px;
+            height: 2px;
+            background: var(--gray-300);
+        }
+        
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        
+        .form-group { margin-bottom: 1.25rem; }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--gray-700);
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px 16px;
+            font-family: 'Cairo', sans-serif;
+            font-size: 1rem;
+            border: 2px solid var(--gray-300);
+            border-radius: var(--radius-md);
+            transition: var(--transition-fast);
+            background: var(--white);
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+        }
+        
+        .form-control::placeholder { color: var(--gray-500); }
+        
+        textarea.form-control { min-height: 80px; resize: vertical; }
+        
+        select.form-control {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236c757d'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: left 12px center;
+            background-size: 20px;
+            padding-left: 40px;
+        }
+        
+        .input-group { position: relative; }
+        
+        .input-group .input-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray-500);
+        }
+        
+        .input-group .form-control { padding-left: 45px; }
+        
+        .toggle-password {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--gray-500);
+            padding: 4px;
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 24px;
+            font-family: 'Cairo', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: var(--transition-normal);
+            text-decoration: none;
+            white-space: nowrap;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: var(--white);
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary-color));
+            color: var(--white);
+        }
+        
+        .btn-secondary {
+            background: var(--white);
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+        }
+        
+        .btn-success { background: var(--whatsapp-green); color: var(--white); }
+        .btn-danger { background: var(--danger); color: var(--white); }
+        .btn-outline { background: transparent; border: 2px solid currentColor; }
+        
+        .btn-lg { padding: 16px 32px; font-size: 1.125rem; }
+        .btn-sm { padding: 8px 16px; font-size: 0.875rem; }
+        .w-100 { width: 100%; }
+        
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin: 24px 0;
+            color: var(--gray-500);
+        }
+        
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--gray-200);
+        }
+        
+        .social-login { display: flex; justify-content: center; }
+        
+        .btn-social {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 24px;
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-md);
+            background: var(--white);
+            font-family: 'Cairo', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition-fast);
+        }
+        
+        .btn-social:hover {
+            background: var(--gray-50);
+            border-color: var(--gray-300);
+        }
+        
+        .auth-footer {
+            text-align: center;
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid var(--gray-200);
+        }
+        
+        .auth-footer p { margin: 0; color: var(--gray-600); }
+        
+        .auth-footer a { color: var(--primary-color); font-weight: 700; }
+        
+        /* Pricing Side Panel */
+        .pricing-panel {
+            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 40px;
+            color: var(--white);
+        }
+        
+        .pricing-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .pricing-logo {
+            font-size: 2rem;
+            margin-bottom: 16px;
+        }
+        
+        .pricing-title {
+            font-size: 1.75rem;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+        
+        .pricing-subtitle {
+            opacity: 0.9;
+            font-size: 1rem;
+        }
+        
+        .features-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 18px 20px;
+            margin-bottom: 12px;
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+            border-radius: var(--radius-md);
+            transition: var(--transition-fast);
+        }
+        
+        .feature-item:hover {
+            background: rgba(255,255,255,0.25);
+            transform: translateX(-5px);
+        }
+        
+        .feature-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-full);
+            background: rgba(255,255,255,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+        
+        .feature-text {
+            flex: 1;
+            font-weight: 600;
+        }
+        
+        .feature-check {
+            color: #4ade80;
+            font-size: 1.1rem;
+        }
+        
+        .pricing-card {
+            background: rgba(255,255,255,0.95);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            text-align: center;
+            color: var(--dark-color);
+        }
+        
+        .plan-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: var(--white);
+            padding: 6px 16px;
+            border-radius: var(--radius-full);
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+        
+        .plan-price {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--dark-color);
+            margin: 12px 0;
+        }
+        
+        .plan-price span {
+            font-size: 1rem;
+            color: var(--gray-600);
+            font-weight: 500;
+        }
+        
+        .plan-note {
+            font-size: 0.9rem;
+            color: var(--gray-600);
+            margin-bottom: 16px;
+        }
+        
+        .pricing-panel::before,
+        .pricing-panel::after {
+            content: '';
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .pricing-panel::before {
+            width: 350px; height: 350px;
+            top: -120px; left: -120px;
+        }
+        
+        .pricing-panel::after {
+            width: 250px; height: 250px;
+            bottom: -80px; right: -80px;
+        }
+        
+        @media (max-width: 900px) {
+            .auth-container {
+                grid-template-columns: 1fr;
+                max-width: 500px;
+            }
+            
+            .pricing-panel { display: none; }
+            .auth-card { padding: 32px 24px; }
+            
+            .progress-steps {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            
+            .step-line { display: none; }
+        }
+        
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .toast {
+            background: var(--white);
+            padding: 16px 20px;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 300px;
+            animation: slideIn 0.3s ease;
+            border-right: 4px solid var(--primary-color);
+        }
+        
+        .toast.success { border-right-color: var(--success); }
+        .toast.error { border-right-color: var(--danger); }
+        .toast.warning { border-right-color: var(--warning); }
+        .toast.info { border-right-color: var(--info); }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-100%); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        .spinner {
+            width: 40px; height: 40px;
+            border: 4px solid var(--gray-200);
+            border-top-color: var(--primary-color);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
 </head>
 <body class="auth-page">
     <div class="auth-container">
@@ -42,10 +605,10 @@
                 </div>
             </div>
 
-            <!-- Registration Form -->
+            <!-- Register Form -->
             <form id="registerForm" class="auth-form">
                 <!-- Step 1: Account Info -->
-                <div class="form-step active" id="step1">
+                <div id="step1" class="form-step">
                     <div class="form-group">
                         <label for="fullName" class="form-label">الاسم الكامل</label>
                         <div class="input-group">
@@ -69,7 +632,7 @@
                         <div class="input-group">
                             <i class="fas fa-phone input-icon"></i>
                             <input type="tel" id="phone" name="phone" class="form-control" 
-                                   placeholder="+201234567890" required>
+                                   placeholder="+201234567890" dir="ltr" required>
                         </div>
                     </div>
 
@@ -83,205 +646,140 @@
                                 <i class="fas fa-eye"></i>
                             </button>
                         </div>
-                        <div class="password-strength" id="passwordStrength"></div>
                     </div>
 
                     <div class="form-group">
                         <label for="confirmPassword" class="form-label">تأكيد كلمة المرور</label>
                         <div class="input-group">
                             <i class="fas fa-lock input-icon"></i>
-                            <input type="password" id="confirmPassword" name="confirmPassword" 
-                                   class="form-control" placeholder="••••••••" required>
+                            <input type="password" id="confirmPassword" name="confirmPassword" class="form-control" 
+                                   placeholder="••••••••" required>
                             <button type="button" class="toggle-password" onclick="togglePassword('confirmPassword')">
                                 <i class="fas fa-eye"></i>
                             </button>
                         </div>
                     </div>
 
-                    <button type="button" class="btn btn-primary btn-lg w-100" onclick="nextStep(2)">
-                        التالي: بيانات المطعم
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="terms" required>
+                            <span>أوافق على <a href="#" onclick="event.stopPropagation()">الشروط والأحكام</a></span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Step 2: Restaurant Info (Hidden by default) -->
+                <div id="step2" class="form-step" style="display: none;">
+                    <div class="form-group">
+                        <label for="restaurantName" class="form-label">اسم المطعم</label>
+                        <div class="input-group">
+                            <i class="fas fa-store input-icon"></i>
+                            <input type="text" id="restaurantName" name="restaurantName" class="form-control" 
+                                   placeholder="مطعم المبروك" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="restaurantSlug" class="form-label">رابط القائمة (اختياري)</label>
+                        <div class="input-group">
+                            <i class="fas fa-link input-icon"></i>
+                            <input type="text" id="restaurantSlug" name="restaurantSlug" class="form-control" 
+                                   placeholder="el-mabrouk" dir="ltr">
+                            <small style="color: var(--gray-500); font-size: 0.85rem;">
+                                سيكون الرابط: yoursite.com/r/el-mabrouk
+                            </small>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="city" class="form-label">المدينة</label>
+                        <select id="city" name="city" class="form-control" required>
+                            <option value="">اختر المدينة</option>
+                            <option value="cairo">القاهرة</option>
+                            <option value="alexandria">الإسكندرية</option>
+                            <option value="giza">الجيزة</option>
+                            <option value="mansoura">المنصورة</option>
+                            <option value="tanta">طنطا</option>
+                            <option value="ismailia">إسماعيلية</option>
+                            <option value="port-said">بور سعيد</option>
+                            <option value="suez">السويس</option>
+                            <option value="luxor">الأقصر</option>
+                            <option value="aswan">أسوان</option>
+                            <option value="other">أخرى</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cuisineType" class="form-label">نوع المطبخ</label>
+                        <select id="cuisineType" name="cuisineType" class="form-control" required>
+                            <option value="">اختر نوع المطبخ</option>
+                            <option value="egyptian">مصري</option>
+                            <option value="arabic">عربي</option>
+                            <option value="grill">مشويات</option>
+                            <option value="seafood">مأكولات بحرية</option>
+                            <option value="fast-food">وجبات سريعة</option>
+                            <option value="sweets">حلويات</option>
+                            <option value="drinks">مشروبات</option>
+                            <option value="italian">إيطالي</option>
+                            <option value="asian">آسيوي</option>
+                            <option value="other">أخرى</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Step 3: Confirmation (Hidden by default) -->
+                <div id="step3" class="form-step" style="display: none;">
+                    <div class="confirmation-summary">
+                        <h4 style="margin-bottom: 16px;">ملخص بياناتك:</h4>
+                        <div id="summaryContent" style="background: var(--gray-100); padding: 16px; border-radius: var(--radius-md);">
+                            <!-- Will be populated by JS -->
+                        </div>
+                    </div>
+                    
+                    <div class="form-group" style="margin-top: 20px;">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="newsletter" checked>
+                            <span>أريد استلام عروض ونصائح عبر البريد الإلكتروني</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Navigation Buttons -->
+                <div class="form-navigation" style="display: flex; gap: 12px; margin-top: 24px;">
+                    <button type="button" id="prevBtn" class="btn btn-secondary" style="display: none;" onclick="changeStep(-1)">
+                        <i class="fas fa-arrow-right"></i>
+                        السابق
+                    </button>
+                    <button type="submit" id="submitBtn" class="btn btn-primary btn-lg w-100">
+                        <span class="btn-text">إنشاء الحساب</span>
+                        <span class="btn-loader" style="display:none;">
+                            <i class="fas fa-spinner fa-spin"></i>
+                        </span>
+                    </button>
+                    <button type="button" id="nextBtn" class="btn btn-primary btn-lg w-100">
+                        التالي
                         <i class="fas fa-arrow-left"></i>
                     </button>
                 </div>
-
-                <!-- Step 2: Restaurant Info -->
-                <div class="form-step" id="step2">
-                    <div class="alert alert-info">
-                        <i class="fas fa-info-circle"></i>
-                        <span>يمكنك تعديل هذه البيانات لاحقاً من الإعدادات</span>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="restaurantName" class="form-label">اسم المطعم *</label>
-                        <div class="input-group">
-                            <i class="fas fa-store input-icon"></i>
-                            <input type="text" id="restaurantName" name="restaurantName" 
-                                   class="form-control" placeholder="مطعم السعادة" required>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="restaurantNameEn" class="form-label">Restaurant Name (English)</label>
-                        <div class="input-group">
-                            <i class="fas fa-store input-icon"></i>
-                            <input type="text" id="restaurantNameEn" name="restaurantNameEn" 
-                                   class="form-control" placeholder="Al Saada Restaurant">
-                        </div>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group flex-1">
-                            <label for="city" class="form-label">المدينة</label>
-                            <select id="city" name="city" class="form-control">
-                                <option value="">اختر المدينة</option>
-                                <option value="cairo">القاهرة</option>
-                                <option value="alexandria">الإسكندرية</option>
-                                <option value="giza">الجيزة</option>
-                                <option value="mansoura">المنصورة</option>
-                                <option value="tanta">طنطا</option>
-                                <option value="riyadh">الرياض</option>
-                                <option value="jeddah">جدة</option>
-                                <option value="dammam">الدمام</option>
-                                <option value="other">أخرى</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group flex-1">
-                            <label for="cuisineType" class="form-label">نوع المطبخ</label>
-                            <select id="cuisineType" name="cuisineType" class="form-control">
-                                <option value="">اختر النوع</option>
-                                <option value="egyptian">مصري</option>
-                                <option value="arabic">عربي</option>
-                                <option value="italian">إيطالي</option>
-                                <option value="chinese">صيني</option>
-                                <option value="indian">هندي</option>
-                                <option value="american">أمريكي</option>
-                                <option value="mexican">مكسيكي</option>
-                                <option value="japanese">ياباني</option>
-                                <option value="seafood">مأكولات بحرية</option>
-                                <option value="grill">مشويات</option>
-                                <option value="sweets">حلويات</option>
-                                <option value="cafe">كافيه</option>
-                                <option value="other">أخرى</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="whatsappNumber" class="form-label">رقم واتساب لاستقبال الطلبات *</label>
-                        <div class="input-group">
-                            <i class="fab fa-whatsapp input-icon" style="color: #25D366;"></i>
-                            <input type="tel" id="whatsappNumber" name="whatsappNumber" 
-                                   class="form-control" placeholder="+201234567890" required>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="address" class="form-label">العنوان</label>
-                        <div class="input-group">
-                            <i class="fas fa-map-marker-alt input-icon"></i>
-                            <input type="text" id="address" name="address" class="form-control" 
-                                   placeholder="شارع التحرير، وسط البلد">
-                        </div>
-                    </div>
-
-                    <div class="form-actions-row">
-                        <button type="button" class="btn btn-secondary" onclick="nextStep(1)">
-                            <i class="fas fa-arrow-right"></i>
-                            السابق
-                        </button>
-                        <button type="button" class="btn btn-primary btn-lg" onclick="nextStep(3)">
-                            التالي: المراجعة
-                            <i class="fas fa-arrow-left"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Step 3: Review & Confirm -->
-                <div class="form-step" id="step3">
-                    <div class="review-card">
-                        <h4><i class="fas fa-user"></i> بيانات الحساب</h4>
-                        <div class="review-item">
-                            <span>الاسم:</span>
-                            <strong id="reviewName">-</strong>
-                        </div>
-                        <div class="review-item">
-                            <span>البريد:</span>
-                            <strong id="reviewEmail">-</strong>
-                        </div>
-                        <div class="review-item">
-                            <span>الهاتف:</span>
-                            <strong id="reviewPhone">-</strong>
-                        </div>
-                    </div>
-
-                    <div class="review-card">
-                        <h4><i class="fas fa-store"></i> بيانات المطعم</h4>
-                        <div class="review-item">
-                            <span>اسم المطعم:</span>
-                            <strong id="reviewRestaurant">-</strong>
-                        </div>
-                        <div class="review-item">
-                            <span>المدينة:</span>
-                            <strong id="reviewCity">-</strong>
-                        </div>
-                        <div class="review-item">
-                            <span>نوع المطبخ:</span>
-                            <strong id="reviewCuisine">-</strong>
-                        </div>
-                        <div class="review-item">
-                            <span>واتساب:</span>
-                            <strong id="reviewWhatsapp">-</strong>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="checkbox-label">
-                            <input type="checkbox" id="agreeTerms" required>
-                            <span>أوافق على <a href="#" target="_blank">الشروط والأحكام</a> و<a href="#" target="_blank">سياسة الخصوصية</a></span>
-                        </label>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="checkbox-label">
-                            <input type="checkbox" id="newsletterCheck">
-                            <span>أرغب في استلام العروض والتحديثات عبر البريد الإلكتروني</span>
-                        </label>
-                    </div>
-
-                    <div class="plan-selection">
-                        <p class="plan-label">اختر خطتك:</p>
-                        <div class="plan-options">
-                            <label class="plan-option selected">
-                                <input type="radio" name="plan" value="free" checked>
-                                <div class="plan-info">
-                                    <strong>مجاني</strong>
-                                    <span>للبداية</span>
-                                </div>
-                            </label>
-                            <label class="plan-option popular">
-                                <input type="radio" name="plan" value="pro">
-                                <div class="plan-info">
-                                    <strong>احترافي</strong>
-                                    <span>199 ج.م/شهر</span>
-                                    <small>الأكثر شعبية</small>
-                                </div>
-                            </label>
-                        </div>
-                    </div>
-
-                    <div class="form-actions-row">
-                        <button type="button" class="btn btn-secondary" onclick="nextStep(2)">
-                            <i class="fas fa-arrow-right"></i>
-                            السابق
-                        </button>
-                        <button type="submit" class="btn btn-success btn-lg" id="submitBtn">
-                            <i class="fas fa-check-circle"></i>
-                            إنشاء الحساب
-                        </button>
-                    </div>
-                </div>
             </form>
+
+            <!-- Divider -->
+            <div class="divider">
+                <span>أو</span>
+            </div>
+
+            <!-- Social Login -->
+            <div class="social-login">
+                <button type="button" class="btn btn-social google" onclick="socialLogin('google')">
+                    <svg viewBox="0 0 24 24" width="20" height="20">
+                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/>
+                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                    </svg>
+                    Google
+                </button>
+            </div>
 
             <!-- Footer -->
             <div class="auth-footer">
@@ -289,48 +787,119 @@
             </div>
         </div>
 
-        <!-- Side Illustration -->
-        <div class="auth-illustration register-illustration">
-            <div class="illustration-content">
-                <div class="feature-list-visual">
-                    <div class="feature-item-v">
-                        <i class="fas fa-check-circle"></i>
-                        <span>قائمة رقمية احترافية</span>
-                    </div>
-                    <div class="feature-item-v">
-                        <i class="fas fa-check-circle"></i>
-                        <span>طلبات via WhatsApp</span>
-                    </div>
-                    <div class="feature-item-v">
-                        <i class="fas fa-check-circle"></i>
-                        <span>تحليلات ومتابعة</span>
-                    </div>
-                    <div class="feature-item-v">
-                        <i class="fas fa-check-circle"></i>
-                        <span>دعم فني 24/7</span>
-                    </div>
+        <!-- Pricing Side Panel -->
+        <div class="pricing-panel">
+            <div class="pricing-content">
+                <div class="pricing-header">
+                    <div class="pricing-logo">🍽️</div>
+                    <h2 class="pricing-title">MezoMenu</h2>
+                    <p class="pricing-subtitle">أنشئ حسابك</p>
                 </div>
-                
-                <div class="trial-badge">
-                    <i class="fas fa-gift"></i>
-                    <div>
-                        <strong>تجربة مجانية 14 يوم</strong>
-                        <span>بدون حاجة لبطاقة ائتمان</span>
+
+                <ul class="features-list">
+                    <li class="feature-item">
+                        <div class="feature-icon"><i class="fas fa-infinity"></i></div>
+                        <span class="feature-text">قائمة طعام غير محدودة</span>
+                        <i class="fas fa-check-circle feature-check"></i>
+                    </li>
+                    <li class="feature-item">
+                        <div class="feature-icon"><i class="fab fa-whatsapp"></i></div>
+                        <span class="feature-text">طلبات via WhatsApp</span>
+                        <i class="fas fa-check-circle feature-check"></i>
+                    </li>
+                    <li class="feature-item">
+                        <div class="feature-icon"><i class="fas fa-chart-bar"></i></div>
+                        <span class="feature-text">تحليلات وتقارير</span>
+                        <i class="fas fa-check-circle feature-check"></i>
+                    </li>
+                    <li class="feature-item">
+                        <div class="feature-icon"><i class="fas fa-headset"></i></div>
+                        <span class="feature-text">دعم فني 24/7</span>
+                        <i class="fas fa-check-circle feature-check"></i>
+                    </li>
+                </ul>
+
+                <div class="pricing-card">
+                    <span class="plan-badge">⭐ عرض خاص</span>
+                    <div class="plan-price">
+                        14 ج.م<span>/شهر</span>
                     </div>
+                    <p class="plan-note">بدل 199 ج.م للشهر الأول!</p>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
     <!-- Scripts -->
-    <script src="assets/js/main.js"></script>
     <script>
+        // Configuration
+        const CONFIG = {
+            API_URL: 'https://menu.nonm1724.workers.dev',
+            FIREBASE_DB: 'https://menu-b41e6-default-rtdb.firebaseio.com'
+        };
+
+        // Storage helpers
+        const Storage = {
+            set: (key, value) => localStorage.setItem(key, JSON.stringify(value)),
+            get: (key) => { try { return JSON.parse(localStorage.getItem(key)); } catch { return null; } },
+            remove: (key) => localStorage.removeItem(key)
+        };
+
+        // Toast notifications
+        const Toast = {
+            show: (message, type = 'info') => {
+                const container = document.getElementById('toastContainer');
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+                
+                const icons = { success: 'check-circle', error: 'times-circle', warning: 'exclamation-triangle', info: 'info-circle' };
+                toast.innerHTML = `<i class="fas fa-${icons[type] || 'info-circle'}"></i><span>${message}</span>`;
+                
+                container.appendChild(toast);
+                setTimeout(() => toast.remove(), 3000);
+            },
+            success: (msg) => Toast.show(msg, 'success'),
+            error: (msg) => Toast.show(msg, 'error'),
+            warning: (msg) => Toast.show(msg, 'warning'),
+            info: (msg) => Toast.show(msg, 'info')
+        };
+
+        // Form state
         let currentStep = 1;
+        const totalSteps = 3;
+
+        // Initialize form
+        document.addEventListener('DOMContentLoaded', () => {
+            updateStepUI();
+            
+            // Check URL params for plan selection
+            const urlParams = new URLSearchParams(window.location.search);
+            const plan = urlParams.get('plan');
+            if (plan) {
+                console.log('Selected plan:', plan);
+            }
+
+            // Setup next button handler
+            document.getElementById('nextBtn').addEventListener('click', () => {
+                if (validateCurrentStep()) {
+                    changeStep(1);
+                }
+            });
+
+            // Setup prev button handler
+            document.getElementById('prevBtn').addEventListener('click', () => {
+                changeStep(-1);
+            });
+        });
 
         // Toggle password visibility
         function togglePassword(inputId) {
             const input = document.getElementById(inputId);
-            const icon = event.target.closest('.toggle-password').querySelector('i');
+            const button = event.currentTarget;
+            const icon = button.querySelector('i');
             
             if (input.type === 'password') {
                 input.type = 'text';
@@ -343,418 +912,181 @@
             }
         }
 
-        // Password strength checker
-        document.getElementById('password').addEventListener('input', (e) => {
-            const password = e.target.value;
-            const strengthEl = document.getElementById('passwordStrength');
-            
-            let strength = 0;
-            if (password.length >= 8) strength++;
-            if (/[A-Z]/.test(password)) strength++;
-            if (/[0-9]/.test(password)) strength++;
-            if (/[^A-Za-z0-9]/.test(password)) strength++;
-
-            const levels = ['ضعيفة جداً', 'ضعيفة', 'متوسطة', 'قوية', 'قوية جداً'];
-            const colors = ['#dc3545', '#fd7e14', '#ffc107', '#28a745', '#20c997'];
-            
-            if (password.length > 0) {
-                strengthEl.innerHTML = `<span style="color: ${colors[strength]}">${levels[strength]}</span>`;
-            } else {
-                strengthEl.innerHTML = '';
-            }
-        });
-
-        // Navigation between steps
-        function nextStep(step) {
-            // Validate current step before proceeding
-            if (step > currentStep && !validateStep(currentStep)) {
-                return;
-            }
-
-            currentStep = step;
-            
-            // Update UI
-            document.querySelectorAll('.form-step').forEach(el => el.classList.remove('active'));
-            document.getElementById(`step${step}`).classList.add('active');
-
-            document.querySelectorAll('.progress-steps .step').forEach((el, index) => {
-                el.classList.toggle('active', index + 1 <= step);
-                el.classList.toggle('completed', index + 1 < step);
-            });
-
-            // If going to step 3, populate review
-            if (step === 3) {
-                populateReview();
-            }
-
-            // Scroll to top of form
-            document.querySelector('.auth-card').scrollTo({ top: 0, behavior: 'smooth' });
+        // Change step
+        function changeStep(direction) {
+            currentStep += direction;
+            updateStepUI();
         }
 
-        // Validate step
-        function validateStep(step) {
-            const form = document.getElementById(`step${step}`);
-            const requiredFields = form.querySelectorAll('[required]');
+        // Update step UI
+        function updateStepUI() {
+            // Hide all steps
+            document.querySelectorAll('.form-step').forEach(step => {
+                step.style.display = 'none';
+            });
+
+            // Show current step
+            document.getElementById(`step${currentStep}`).style.display = 'block';
+
+            // Update progress indicators
+            document.querySelectorAll('.progress-steps .step').forEach((step, index) => {
+                step.classList.remove('active', 'completed');
+                if (index + 1 === currentStep) {
+                    step.classList.add('active');
+                } else if (index + 1 < currentStep) {
+                    step.classList.add('completed');
+                }
+            });
+
+            // Update buttons visibility
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const submitBtn = document.getElementById('submitBtn');
+
+            if (currentStep === 1) {
+                prevBtn.style.display = 'none';
+                nextBtn.style.display = 'inline-flex';
+                submitBtn.style.display = 'none';
+            } else if (currentStep === totalSteps) {
+                prevBtn.style.display = 'inline-flex';
+                nextBtn.style.display = 'none';
+                submitBtn.style.display = 'inline-flex';
+                
+                // Populate summary
+                populateSummary();
+            } else {
+                prevBtn.style.display = 'inline-flex';
+                nextBtn.style.display = 'inline-flex';
+                submitBtn.style.display = 'none';
+            }
+        }
+
+        // Validate current step
+        function validateCurrentStep() {
+            const currentForm = document.getElementById(`step${currentStep}`);
+            const requiredFields = currentForm.querySelectorAll('[required]');
             let isValid = true;
 
             requiredFields.forEach(field => {
                 if (!field.value.trim()) {
                     field.style.borderColor = 'var(--danger)';
                     isValid = false;
-                    
-                    // Shake animation
-                    field.style.animation = 'shake 0.5s';
-                    setTimeout(() => field.style.animation = '', 500);
                 } else {
-                    field.style.borderColor = '';
+                    field.style.borderColor = 'var(--gray-300)';
                 }
             });
 
-            // Special validation for passwords in step 1
-            if (step === 1) {
+            // Special validation for password match
+            if (currentStep === 1) {
                 const password = document.getElementById('password').value;
                 const confirmPassword = document.getElementById('confirmPassword').value;
-
-                if (password !== confirmPassword) {
-                    MezoMenu.Toast.error('كلمتا المرور غير متطابقتين');
-                    return false;
+                
+                if (password && confirmPassword && password !== confirmPassword) {
+                    Toast.error('كلمتا المرور غير متطابقتين');
+                    isValid = false;
                 }
-
-                if (password.length < 8) {
-                    MezoMenu.Toast.error('كلمة المرور يجب أن تكون 8 أحرف على الأقل');
-                    return false;
+                
+                if (password && password.length < 8) {
+                    Toast.error('كلمة المرور يجب أن تكون 8 أحرف على الأقل');
+                    isValid = false;
                 }
             }
 
             if (!isValid) {
-                MezoMenu.Toast.warning('يرجى ملء جميع الحقول المطلوبة');
+                Toast.warning('يرجى ملء جميع الحقول المطلوبة');
             }
 
             return isValid;
         }
 
-        // Populate review section
-        function populateReview() {
-            document.getElementById('reviewName').textContent = document.getElementById('fullName').value;
-            document.getElementById('reviewEmail').textContent = document.getElementById('email').value;
-            document.getElementById('reviewPhone').textContent = document.getElementById('phone').value;
-            document.getElementById('reviewRestaurant').textContent = document.getElementById('restaurantName').value;
-            document.getElementById('reviewCity').textContent = document.getElementById('city').options[document.getElementById('city').selectedIndex]?.text || '-';
-            document.getElementById('reviewCuisine').textContent = document.getElementById('cuisineType').options[document.getElementById('cuisineType').selectedIndex]?.text || '-';
-            document.getElementById('reviewWhatsapp').textContent = document.getElementById('whatsappNumber').value;
+        // Populate summary in step 3
+        function populateSummary() {
+            const summary = document.getElementById('summaryContent');
+            summary.innerHTML = `
+                <div style="margin-bottom: 12px;"><strong>👤 الاسم:</strong> ${document.getElementById('fullName').value}</div>
+                <div style="margin-bottom: 12px;"><strong>📧 البريد:</strong> ${document.getElementById('email').value}</div>
+                <div style="margin-bottom: 12px;"><strong>📱 الهاتف:</strong> ${document.getElementById('phone').value}</div>
+                <div style="margin-bottom: 12px;"><strong>🏪 المطعم:</strong> ${document.getElementById('restaurantName').value || 'غير محدد'}</div>
+                <div><strong>🍽️ النوع:</strong> ${document.getElementById('cuisineType').options[document.getElementById('cuisineType').selectedIndex]?.text || 'غير محدد'}</div>
+            `;
         }
 
         // Handle form submission
         document.getElementById('registerForm').addEventListener('submit', async (e) => {
             e.preventDefault();
 
-            // Final validation
-            if (!document.getElementById('agreeTerms').checked) {
-                MezoMenu.Toast.warning('يجب الموافقة على الشروط والأحكام');
-                return;
-            }
+            if (!validateCurrentStep()) return;
 
-            const btn = document.getElementById('submitBtn');
-            const originalText = btn.innerHTML;
-            
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري إنشاء الحساب...';
+            const submitBtn = document.getElementById('submitBtn');
+            const btnText = submitBtn.querySelector('.btn-text');
+            const btnLoader = submitBtn.querySelector('.btn-loader');
+
+            // Show loading state
+            submitBtn.disabled = true;
+            btnText.style.display = 'none';
+            btnLoader.style.display = 'inline-flex';
 
             try {
                 // Collect form data
-                const userData = {
+                const formData = {
                     fullName: document.getElementById('fullName').value,
                     email: document.getElementById('email').value,
                     phone: document.getElementById('phone').value,
                     password: document.getElementById('password').value,
                     restaurant: {
                         name: document.getElementById('restaurantName').value,
-                        nameEn: document.getElementById('restaurantNameEn').value,
+                        slug: document.getElementById('restaurantSlug').value || generateSlug(document.getElementById('restaurantName').value),
                         city: document.getElementById('city').value,
-                        cuisineType: document.getElementById('cuisineType').value,
-                        whatsappNumber: document.getElementById('whatsappNumber').value,
-                        address: document.getElementById('address').value,
-                        slug: MezoMenu.slugify(document.getElementById('restaurantName').value)
-                    },
-                    plan: document.querySelector('input[name="plan"]:checked').value,
-                    newsletter: document.getElementById('newsletterCheck').checked,
-                    createdAt: new Date().toISOString()
+                        cuisineType: document.getElementById('cuisineType').value
+                    }
                 };
+
+                console.log('Registration data:', formData);
 
                 // Simulate API call
                 await new Promise(resolve => setTimeout(resolve, 2000));
 
-                // Save to Firebase (or local storage for demo)
-                try {
-                    await MezoMenu.Firebase.register(userData);
-                } catch (error) {
-                    // For demo, save locally
-                    MezoMenu.Storage.set('user_data', {
-                        id: 'new_user',
-                        ...userData,
-                        displayName: userData.fullName
-                    });
-                }
+                // Demo mode - create user locally
+                const user = {
+                    id: 'user_' + Date.now(),
+                    email: formData.email,
+                    displayName: formData.fullName,
+                    phone: formData.phone,
+                    restaurant: formData.restaurant,
+                    createdAt: new Date().toISOString()
+                };
 
-                MezoMenu.Toast.success('تم إنشاء حسابك بنجاح! مرحباً بك 🎉');
+                Storage.set('user_data', user);
+                Storage.set('auth_token', 'demo_token_' + Date.now());
 
-                // Redirect to dashboard after delay
+                Toast.success('تم إنشاء الحساب بنجاح! 🎉');
+
                 setTimeout(() => {
                     window.location.href = 'dashboard.html';
                 }, 1500);
 
             } catch (error) {
-                MezoMenu.Toast.error(error.message || 'حدث خطأ أثناء إنشاء الحساب');
-                btn.disabled = false;
-                btn.innerHTML = originalText;
+                Toast.error(error.message || 'حدث خطأ أثناء التسجيل');
+                
+                submitBtn.disabled = false;
+                btnText.style.display = 'inline';
+                btnLoader.style.display = 'none';
             }
         });
 
-        // Plan selection UI
-        document.querySelectorAll('.plan-option input').forEach(radio => {
-            radio.addEventListener('change', () => {
-                document.querySelectorAll('.plan-option').forEach(opt => opt.classList.remove('selected'));
-                radio.closest('.plan-option').classList.add('selected');
-            });
-        });
+        // Generate slug from name
+        function generateSlug(name) {
+            return name
+                .toLowerCase()
+                .replace(/[^a-z0-9\s]/g, '')
+                .replace(/\s+/g, '-')
+                .substring(0, 30) || 'my-restaurant';
+        }
 
-        // Check URL params for pre-selected plan
-        document.addEventListener('DOMContentLoaded', () => {
-            const params = new URLSearchParams(window.location.search);
-            const plan = params.get('plan');
-            if (plan) {
-                const radio = document.querySelector(`input[name="plan"][value="${plan}"]`);
-                if (radio) {
-                    radio.checked = true;
-                    radio.dispatchEvent(new Event('change'));
-                }
-            }
-        });
+        // Social login handler
+        function socialLogin(provider) {
+            Toast.info(`تسجيل الدخول عبر ${provider} قريباً...`);
+        }
     </script>
-
-    <style>
-        /* Reuse auth page styles */
-        .auth-page {
-            min-height: 100vh;
-            background: linear-gradient(135deg, #fff9f5 0%, #f0f7ff 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-
-        .auth-container {
-            display: grid;
-            grid-template-columns: 520px 1fr;
-            max-width: 1150px;
-            width: 100%;
-            background: var(--white);
-            border-radius: var(--radius-xl);
-            box-shadow: var(--shadow-xl);
-            overflow: hidden;
-            min-height: 750px;
-        }
-
-        .auth-card {
-            padding: 40px;
-            overflow-y: auto;
-            max-height: 90vh;
-        }
-
-        .auth-logo { margin-bottom: 20px; }
-        .auth-logo h1 { font-size: 1.5rem; }
-        
-        .auth-header { margin-bottom: 24px; }
-        .auth-header h2 { font-size: 1.5rem; margin-bottom: 8px; }
-
-        /* Progress Steps */
-        .progress-steps {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            margin-bottom: 28px;
-            padding: 16px;
-            background: var(--gray-50);
-            border-radius: var(--radius-lg);
-        }
-
-        .step {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            color: var(--gray-500);
-            font-weight: 600;
-            font-size: 0.85rem;
-        }
-
-        .step.active { color: var(--primary-color); }
-        .step.completed { color: var(--success); }
-
-        .step-number {
-            width: 26px; height: 26px;
-            border-radius: var(--radius-full);
-            background: var(--gray-300);
-            color: var(--white);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 0.8rem;
-            font-weight: 700;
-        }
-
-        .step.active .step-number { background: var(--primary-color); }
-        .step.completed .step-number { background: var(--success); }
-
-        .step-line {
-            width: 30px;
-            height: 2px;
-            background: var(--gray-300);
-        }
-
-        /* Form Steps */
-        .form-step { display: none; }
-        .form-step.active { display: block; animation: fadeIn 0.3s ease; }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateX(-10px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
-        }
-
-        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-        .flex-1 { flex: 1; }
-
-        .password-strength {
-            margin-top: 4px;
-            font-size: 0.85rem;
-            min-height: 20px;
-        }
-
-        .form-actions-row {
-            display: flex;
-            justify-content: space-between;
-            gap: 12px;
-            margin-top: 24px;
-        }
-
-        /* Review Cards */
-        .review-card {
-            background: var(--gray-50);
-            border-radius: var(--radius-md);
-            padding: 16px;
-            margin-bottom: 16px;
-        }
-
-        .review-card h4 {
-            font-size: 1rem;
-            color: var(--dark-color);
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .review-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid var(--gray-200);
-            font-size: 0.9rem;
-        }
-
-        .review-item:last-child { border-bottom: none; }
-        .review-item span { color: var(--gray-600); }
-
-        /* Plan Selection */
-        .plan-selection {
-            background: var(--gray-50);
-            border-radius: var(--radius-md);
-            padding: 16px;
-            margin-bottom: 20px;
-        }
-
-        .plan-label {
-            font-weight: 700;
-            margin-bottom: 12px;
-            color: var(--dark-color);
-        }
-
-        .plan-options {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
-
-        .plan-option {
-            cursor: pointer;
-            padding: 16px;
-            border: 2px solid var(--gray-200);
-            border-radius: var(--radius-md);
-            transition: var(--transition-fast);
-        }
-
-        .plan-option:hover { border-color: var(--primary-color); }
-        .plan-option.selected { border-color: var(--primary-color); background: rgba(255,107,53,0.05); }
-        .plan-option.popular { position: relative; }
-
-        .plan-option input { display: none; }
-
-        .plan-info strong { display: block; color: var(--dark-color); }
-        .plan-info span { font-size: 0.9rem; color: var(--gray-600); }
-        .plan-info small { font-size: 0.75rem; color: var(--primary-color); font-weight: 600; }
-
-        /* Register Illustration */
-        .register-illustration {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-
-        .feature-list-visual {
-            text-align: right;
-            margin-bottom: 32px;
-        }
-
-        .feature-item-v {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 14px 20px;
-            background: rgba(255,255,255,0.15);
-            backdrop-filter: blur(10px);
-            border-radius: var(--radius-md);
-            margin-bottom: 12px;
-            color: var(--white);
-            font-weight: 600;
-        }
-
-        .feature-item-v i { color: #4ade80; }
-
-        .trial-badge {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            background: rgba(255,255,255,0.2);
-            backdrop-filter: blur(10px);
-            padding: 20px 24px;
-            border-radius: var(--radius-lg);
-            text-align: right;
-        }
-
-        .trial-badge i { font-size: 2.5rem; }
-        .trial-badge strong { display: block; font-size: 1.1rem; margin-bottom: 4px; }
-        .trial-badge span { opacity: 0.9; font-size: 0.9rem; }
-
-        .auth-footer { margin-top: 20px; }
-
-        @media (max-width: 1000px) {
-            .auth-container { grid-template-columns: 1fr; max-width: 520px; }
-            .register-illustration { display: none; }
-            .auth-card { max-height: none; overflow-y: visible; }
-            .form-row { grid-template-columns: 1fr; }
-        }
-    </style>
 </body>
 </html>
