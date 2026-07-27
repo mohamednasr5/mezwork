@@ -1011,7 +1011,7 @@
             `;
         }
 
-        // Handle form submission
+        // Handle form submission - Real API Integration
         document.getElementById('registerForm').addEventListener('submit', async (e) => {
             e.preventDefault();
 
@@ -1029,44 +1029,58 @@
             try {
                 // Collect form data
                 const formData = {
-                    fullName: document.getElementById('fullName').value,
-                    email: document.getElementById('email').value,
-                    phone: document.getElementById('phone').value,
+                    fullName: document.getElementById('fullName').value.trim(),
+                    email: document.getElementById('email').value.trim(),
+                    phone: document.getElementById('phone').value.trim(),
                     password: document.getElementById('password').value,
+                    displayName: document.getElementById('fullName').value.trim(),
                     restaurant: {
-                        name: document.getElementById('restaurantName').value,
+                        name: document.getElementById('restaurantName').value.trim(),
                         slug: document.getElementById('restaurantSlug').value || generateSlug(document.getElementById('restaurantName').value),
                         city: document.getElementById('city').value,
-                        cuisineType: document.getElementById('cuisineType').value
+                        cuisineType: document.getElementById('cuisineType').value,
+                        whatsappNumber: document.getElementById('phone').value.trim()
                     }
                 };
 
-                console.log('Registration data:', formData);
+                console.log('[Register] Sending registration data...');
 
-                // Simulate API call
-                await new Promise(resolve => setTimeout(resolve, 2000));
+                // Call the real API
+                const response = await fetch(`${CONFIG.API_URL}/api/auth/register`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
 
-                // Demo mode - create user locally
-                const user = {
-                    id: 'user_' + Date.now(),
-                    email: formData.email,
-                    displayName: formData.fullName,
-                    phone: formData.phone,
-                    restaurant: formData.restaurant,
-                    createdAt: new Date().toISOString()
-                };
+                const result = await response.json();
 
-                Storage.set('user_data', user);
-                Storage.set('auth_token', 'demo_token_' + Date.now());
+                console.log('[Register] API Response:', result);
 
-                Toast.success('تم إنشاء الحساب بنجاح! 🎉');
+                if (!response.ok || !result.success) {
+                    throw new Error(result.error || 'فشل إنشاء الحساب');
+                }
+
+                // Save user data from response
+                const userData = result.data.user;
+                Storage.set('user_data', userData);
+                Storage.set('auth_token', result.data.token);
+
+                Toast.success('مرحباً ' + (userData.displayName || '') + '! تم إنشاء الحساب بنجاح 🎉');
 
                 setTimeout(() => {
                     window.location.href = 'dashboard.html';
                 }, 1500);
 
             } catch (error) {
-                Toast.error(error.message || 'حدث خطأ أثناء التسجيل');
+                console.error('[Register] Error:', error);
+                
+                if (error.message.includes('fetch') || error.message.includes('network')) {
+                    Toast.error('فشل الاتصال بالخادم - تحقق من اتصالك بالإنترنت');
+                } else {
+                    Toast.error(error.message || 'حدث خطأ أثناء التسجيل');
+                }
                 
                 submitBtn.disabled = false;
                 btnText.style.display = 'inline';

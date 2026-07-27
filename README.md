@@ -9,9 +9,10 @@
 [🌐 موقع المعاينة](#) | [📖 التوثيق](docs/) | [🐛 الإبلاغ عن مشكلة](issues) | [💬 الدعم](#)
 
 [![License: MIT](https://img.shields.io/badge/LICENSE-MIT-green.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/VERSION-3.0.0-blue.svg)](package.json)
+[![Version](https://img.shields.io/badge/VERSION-4.1.0-blue.svg)](package.json)
 [![Cloudflare Workers](https://img.shields.io/badge/BACKEND-CLOUDFLARE_WORKERS-orange.svg)](worker/)
 [![Firebase](https://img.shields.io/badge/DATABASE-FIREBASE-yellow.svg)](firebase.json)
+[![API Connected](https://img.shields.io/badge/API-CONNECTED-success.svg)](worker/index.js)
 
 </div>
 
@@ -165,6 +166,52 @@ python -m http.server 8080
 - **الصفحة الرئيسية**: http://localhost:8080
 - **لوحة التحكم**: http://localhost:8080/admin/dashboard.html
 - **قائمة العميل**: http://localhost:8080/customer/index.html?slug=el-mabrouk
+
+---
+
+## 🔌 API Endpoints (v4.1)
+
+> **Base URL**: `https://menu.nonm1724.workers.dev`
+
+### المصادقة (Auth)
+| Endpoint | Method | الوصف |
+|----------|--------|-------|
+| `/api/auth/login` | POST | تسجيل الدخول |
+| `/api/auth/register` | POST | إنشاء حساب جديد |
+| `/api/auth/user` | GET | جلب بيانات المستخدم |
+
+### القائمة (Menu)
+| Endpoint | Method | الوصف |
+|----------|--------|-------|
+| `/api/menu?restaurantId={id}` | GET | جلب القائمة |
+| `/api/menu` | POST | حفظ/إنشاء قائمة |
+| `/api/menu?restaurantId={id}` | PUT | تحديث قائمة |
+
+### الطلبات (Orders)
+| Endpoint | Method | الوصف |
+|----------|--------|-------|
+| `/api/orders?restaurantId={id}` | GET | جلب الطلبات |
+| `/api/orders` | POST | إنشاء طلب جديد |
+| `/api/orders/{orderId}?restaurantId={id}` | PUT | تحديث حالة الطلب |
+
+### الذكاء الاصطناعي (AI)
+| Endpoint | Method | الوصف |
+|----------|--------|-------|
+| `/api/ai/chat` | POST | محادثة مع AI |
+| `/api/ai/image` | POST | توليد صور بالAI |
+| `/api/ai/analyze` | POST | تحليل صورة القائمة (OCR) |
+| `/api/ai/status` | GET | حالة خدمات AI |
+
+### الإشعارات (Notifications)
+| Endpoint | Method | الوصف |
+|----------|--------|-------|
+| `/api/notifications?userId={id}` | GET | جلب الإشعارات |
+| `/api/notifications?userId={id}` | DELETE | مسح جميع الإشعارات |
+
+### الإحصائيات (Dashboard)
+| Endpoint | Method | الوصف |
+|----------|--------|-------|
+| `/api/stats/dashboard?userId={id}` | GET | إحصائيات لوحة التحكم |
 
 ---
 

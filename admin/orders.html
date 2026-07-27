@@ -356,7 +356,187 @@
         
         function getStatusText(s){return{pending:'قيد الانتظار',confirmed:'تم التأكيد',preparing:'قيد التحضير',ready:'جاهز',delivered:'تم التسليم',cancelled:'ملغي'}[s]||s}
         
-        document.addEventListener('DOMContentLoaded',()=>{console.log('Orders page loaded')});
+        document.addEventListener('DOMContentLoaded',()=>{
+            console.log('Orders page loaded');
+            
+            // Load user info
+            const currentUser = Storage.get('user_data');
+            if (currentUser) {
+                // Update restaurant name in sidebar
+                const restaurantName = document.querySelector('.restaurant-selector select');
+                if (restaurantName && currentUser.restaurant?.name) {
+                    restaurantName.innerHTML = `<option>${currentUser.restaurant.name}</option>`;
+                }
+                
+                // Update user info in footer
+                const userName = document.querySelector('.user-details h4');
+                if (userName && currentUser.displayName) {
+                    userName.textContent = currentUser.displayName;
+                }
+                
+                const userEmail = document.querySelector('.user-details p');
+                if (userEmail && currentUser.email) {
+                    userEmail.textContent = currentUser.email;
+                }
+            }
+
+            // Load orders from API
+            loadOrdersFromAPI();
+        });
+
+        // Load Orders from Real API
+        async function loadOrdersFromAPI(statusFilter = null) {
+            try {
+                const user = Storage.get('user_data');
+                const userId = user?.id || 'default';
+                
+                console.log('[Orders] Loading for:', userId);
+
+                let url = `${CONFIG.API_URL}/api/orders?restaurantId=${userId}`;
+                if (statusFilter && statusFilter !== 'all') {
+                    url += `&status=${statusFilter}`;
+                }
+
+                const response = await fetch(url);
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    
+                    if (result.success && result.data) {
+                        console.log('[Orders] Loaded:', result.data.orders?.length || 0, 'orders');
+                        
+                        renderOrdersTable(result.data.orders);
+                        updateOrderStats(result.data.orders);
+                        
+                        Toast.success(`تم تحميل ${result.data.orders?.length || 0} طلب`);
+                    }
+                } else {
+                    console.log('[Orders] Using demo data');
+                }
+
+            } catch (error) {
+                console.error('[Orders] Error:', error);
+                Toast.warning('جاري تحميل البيانات التجريبية...');
+            }
+        }
+
+        // Render orders table
+        function renderOrdersTable(orders) {
+            const tbody = document.getElementById('ordersTableBody') || document.querySelector('.orders-table tbody');
+            if (!tbody || !orders || !orders.length) return;
+
+            tbody.innerHTML = orders.map(order => `
+                <tr data-id="${order.id}" class="order-row" style="border-bottom: 1px solid #eee;">
+                    <td>
+                        <strong>#${order.id?.substr(-6) || order.id}</strong>
+                        <br><small style="color:#666">${formatDate(order.createdAt)}</small>
+                    </td>
+                    <td>${order.customer?.name || 'عميل'}</td>
+                    <td>${order.customer?.phone || '-'}</td>
+                    <td>${(order.items || []).length} صنف</td>
+                    <td><strong>${(order.total || 0).toLocaleString()} ج.م</strong></td>
+                    <td>
+                        <span class="badge badge-${getOrderStatusClass(order.status)}">
+                            ${getOrderStatusText(order.status)}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="action-buttons" style="display:flex;gap:5px;">
+                            <button onclick="viewOrder('${order.id}')" class="btn btn-sm btn-secondary" title="عرض">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <select onchange="updateOrderStatus('${order.id}', this.value)" class="form-control" style="padding:4px 8px;font-size:0.85rem;">
+                                <option value="" disabled ${!order.status ? 'selected' : ''}>الحالة</option>
+                                <option value="pending" ${order.status === 'pending' ? 'selected' : ''}>قيد الانتظار</option>
+                                <option value="confirmed" ${order.status === 'confirmed' ? 'selected' : ''}>مؤكد</option>
+                                <option value="preparing" ${order.status === 'preparing' ? 'selected' : ''}>جاري التحضير</option>
+                                <option value="ready" ${order.status === 'ready' ? 'selected' : ''}>جاهز</option>
+                                <option value="delivered" ${order.status === 'delivered' ? 'selected' : ''}>تم التسليم</option>
+                                <option value="cancelled" ${order.status === 'cancelled' ? 'selected' : ''}>ملغي</option>
+                            </select>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Update order statistics
+        function updateOrderStats(orders) {
+            if (!orders) return;
+            
+            const stats = {
+                total: orders.length,
+                pending: orders.filter(o => o.status === 'pending').length,
+                preparing: orders.filter(o => o.status === 'preparing').length,
+                delivered: orders.filter(o => o.status === 'delivered').length,
+                revenue: orders.reduce((sum, o) => sum + (o.total || 0), 0)
+            };
+
+            // Update stat elements if they exist
+            const updateEl = (id, value) => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = value;
+            };
+
+            updateEl('totalOrdersCount', stats.total);
+            updateEl('pendingOrdersCount', stats.pending);
+            updateEl('preparingOrdersCount', stats.preparing);
+            updateEl('deliveredOrdersCount', stats.delivered);
+            updateEl('totalRevenue', stats.revenue.toLocaleString() + ' ج.م');
+        }
+
+        // View order details
+        function viewOrder(orderId) {
+            console.log('[Orders] Viewing order:', orderId);
+            Toast.info(`جاري عرض تفاصيل الطلب #${orderId?.substr(-6)}`);
+            // In production: open modal with order details
+        }
+
+        // Update order status via API
+        async function updateOrderStatus(orderId, newStatus) {
+            if (!newStatus) return;
+            
+            try {
+                const user = Storage.get('user_data');
+                const userId = user?.id || 'default';
+
+                const response = await fetch(`${CONFIG.API_URL}/api/orders/${orderId}?restaurantId=${userId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: newStatus })
+                });
+
+                if (response.ok) {
+                    Toast.success(`تم تحديث حالة الطلب إلى "${getOrderStatusText(newStatus)}" ✅`);
+                    loadOrdersFromAPI(); // Reload
+                } else {
+                    throw new Error('فشل تحديث الحالة');
+                }
+
+            } catch (error) {
+                Toast.error(error.message);
+            }
+        }
+
+        // Helper functions
+        function getOrderStatusClass(status) {
+            const classes = { pending: 'warning', confirmed: 'info', preparing: 'primary', ready: 'success', delivered: 'success', cancelled: 'danger' };
+            return classes[status] || 'secondary';
+        }
+
+        function getOrderStatusText(status) {
+            const texts = { pending: 'قيد الانتظار', confirmed: 'مؤكد', preparing: 'جاري التحضير', ready: 'جاهز', delivered: 'تم التسليم', cancelled: 'ملغي' };
+            return texts[status] || status;
+        }
+
+        function formatDate(timestamp) {
+            if (!timestamp) return '-';
+            const date = new Date(timestamp);
+            return date.toLocaleDateString('ar-EG', { 
+                year: 'numeric', month: 'short', day: 'numeric',
+                hour: '2-digit', minute: '2-digit'
+            });
+        }
     </script>
 </body>
 </html>

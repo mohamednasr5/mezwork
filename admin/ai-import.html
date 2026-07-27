@@ -272,25 +272,71 @@
             }
             
             try{
-                // Simulate upload and analysis
-                simulateProgress(30);
+                console.log('[AI Import] Processing image:', file.name);
                 
                 // Create preview
                 const reader=new FileReader();
-                reader.onload=(e)=>{
+                reader.onload=async (e)=>{
                     document.getElementById('originalImagePreview').src=e.target.result;
-                    simulateProgress(60);
+                    simulateProgress(30);
+                    
+                    try {
+                        // Call Real AI API
+                        console.log('[AI Import] Sending to AI for analysis...');
+                        
+                        const response = await fetch(`${CONFIG.API_URL}/api/ai/analyze`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                image: e.target.result,
+                                type: 'menu-ocr',
+                                options: {
+                                    language: 'ar',
+                                    extractPrices: true,
+                                    extractCategories: true
+                                }
+                            })
+                        });
+                        
+                        const result = await response.json();
+                        simulateProgress(70);
+                        
+                        console.log('[AI Import] Response:', result);
+                        
+                        if (response.ok && result.success) {
+                            simulateProgress(100);
+                            
+                            setTimeout(() => {
+                                hideProcessing();
+                                
+                                // Display results from AI
+                                if (result.data.isFallback) {
+                                    displaySampleResults(e.target.result, result.data.data);
+                                    Toast.info('تم التحليل بالوضع الأساسي (AI API غير متاح)');
+                                } else {
+                                    displayAIResults(result.data.data, e.target.result);
+                                    Toast.success('تم تحليل القائمة بالذكاء الاصطناعي! 🎉');
+                                }
+                            }, 500);
+                        } else {
+                            throw new Error(result.error || 'فشل في تحليل الصورة');
+                        }
+                        
+                    } catch (apiError) {
+                        console.warn('[AI Import] API failed, using fallback:', apiError.message);
+                        
+                        // Fallback to demo mode
+                        await new Promise(r=>setTimeout(r,1500));
+                        simulateProgress(100);
+                        
+                        setTimeout(()=>{
+                            hideProcessing();
+                            displaySampleResults(e.target.result);
+                            Toast.warning('جاري استخدام وضع العرض التجريبي');
+                        },500);
+                    }
                 };
                 reader.readAsDataURL(file);
-                
-                // Simulate AI analysis
-                await new Promise(r=>setTimeout(r,2500));
-                simulateProgress(100);
-                
-                setTimeout(()=>{
-                    hideProcessing();
-                    displaySampleResults(e.target.result);
-                },500);
                 
             }catch(error){
                 hideProcessing();
@@ -509,6 +555,109 @@
                 });
             }
         });
+        
+        // Display results from Real AI
+        function displayAIResults(aiData, imageUrl) {
+            console.log('[AI Import] Displaying AI results:', aiData);
+            
+            document.getElementById('originalImagePreview').src = imageUrl || '';
+            
+            // Parse AI data - it could be structured or text
+            let parsedData = aiData;
+            
+            // If it's a string, try to parse as JSON
+            if (typeof aiData === 'string') {
+                try {
+                    parsedData = JSON.parse(aiData);
+                } catch (e) {
+                    // If not JSON, show as text analysis
+                    document.getElementById('resultsSection').style.display='block';
+                    document.getElementById('analysisText').innerHTML = `
+                        <div style="background:#f8f9fa;padding:20px;border-radius:12px;white-space:pre-wrap;direction:rtl;text-align:right;">
+                            <h4 style="margin-bottom:10px;">📋 تحليل الذكاء الاصطناعي:</h4>
+                            ${aiData}
+                        </div>
+                    `;
+                    return;
+                }
+            }
+            
+            // If structured data with items
+            if (parsedData.items || parsedData.categories) {
+                const categories = parsedData.categories || [{
+                    name: 'الأصناف المستخرجة',
+                    items: parsedData.items || []
+                }];
+                
+                renderExtractedItems(categories);
+                
+                // Show import button
+                document.getElementById('importActions').innerHTML = `
+                    <button onclick="importToMenuFromAI()" class="btn btn-primary btn-lg">
+                        <i class="fas fa-plus"></i> استيراد للقائمة (${parsedData.items?.length || 0} صنف)
+                    </button>
+                `;
+            } else {
+                // Show raw text
+                document.getElementById('analysisText').innerHTML = `
+                    <div style="background:#f8f9fa;padding:20px;border-radius:12px;">
+                        <pre style="direction:rtl;text-align:right;white-space:pre-wrap;">${JSON.stringify(parsedData, null, 2)}</pre>
+                    </div>
+                `;
+            }
+        }
+        
+        // Import extracted items to menu
+        async function importToMenuFromAI() {
+            try {
+                Toast.info('جاري استيراد الأصناف...');
+                
+                const user = Storage.get('user_data');
+                const userId = user?.id || 'default';
+                
+                // Get the extracted items from the UI
+                const items = [];
+                document.querySelectorAll('.extracted-item').forEach(item => {
+                    items.push({
+                        id: 'item_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
+                        name: item.querySelector('.item-name')?.textContent || '',
+                        price: parseFloat(item.querySelector('.item-price')?.textContent) || 0,
+                        category: item.dataset.category || 'general',
+                        description: item.querySelector('.item-desc')?.textContent || ''
+                    });
+                });
+                
+                if (items.length === 0) {
+                    throw new Error('لا توجد أصناف لاستيرادها');
+                }
+                
+                // Save to API
+                const response = await fetch(`${CONFIG.API_URL}/api/menu`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        restaurantId: userId,
+                        categories: [{ id: 'cat_imported', name: 'مستورد', order: 1 }],
+                        items: items
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    Toast.success(`تم استيراد ${items.length} صنف بنجاح! 🎉`);
+                    
+                    setTimeout(() => {
+                        window.location.href = 'menu.html';
+                    }, 1500);
+                } else {
+                    throw new Error(result.error || 'فشل الاستيراد');
+                }
+                
+            } catch (error) {
+                Toast.error(error.message);
+            }
+        }
     </script>
 </body>
 </html>

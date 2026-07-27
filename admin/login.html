@@ -644,7 +644,7 @@
             }
         }
 
-        // Handle login form submission
+        // Handle login form submission - Real API Integration
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -657,35 +657,53 @@
             btnText.style.display = 'none';
             btnLoader.style.display = 'inline-flex';
 
-            const email = document.getElementById('email').value;
+            const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
 
             try {
-                // Simulate API call
-                await new Promise(resolve => setTimeout(resolve, 1500));
-
-                // Demo mode - allow any login
-                if (email && password) {
-                    const user = {
-                        id: 'demo_user',
-                        email: email,
-                        displayName: email.split('@')[0],
-                        restaurant: { name: 'مطعم تجريبي', slug: 'demo' }
-                    };
-                    
-                    Storage.set('user_data', user);
-                    Storage.set('auth_token', 'demo_token_' + Date.now());
-                    
-                    Toast.success('تم تسجيل الدخول بنجاح!');
-                    
-                    setTimeout(() => {
-                        window.location.href = 'dashboard.html';
-                    }, 1000);
-                } else {
-                    throw new Error('يرجى إدخال البريد وكلمة المرور');
+                if (!email || !password) {
+                    throw new Error('يرجى إدخال البريد الإلكتروني وكلمة المرور');
                 }
+
+                console.log('[Login] Attempting login for:', email);
+
+                // Call the real API
+                const response = await fetch(`${CONFIG.API_URL}/api/auth/login`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const result = await response.json();
+
+                console.log('[Login] API Response:', result);
+
+                if (!response.ok || !result.success) {
+                    throw new Error(result.error || 'فشل تسجيل الدخول');
+                }
+
+                // Save user data
+                const userData = result.data.user;
+                Storage.set('user_data', userData);
+                Storage.set('auth_token', result.data.token);
+                
+                Toast.success('مرحباً ' + (userData.displayName || userData.email.split('@')[0]) + '! ✅');
+                
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 1000);
+
             } catch (error) {
-                Toast.error(error.message || 'فشل تسجيل الدخول');
+                console.error('[Login] Error:', error);
+                
+                // Check if it's a network error
+                if (error.message.includes('fetch') || error.message.includes('network')) {
+                    Toast.error('فشل الاتصال بالخادم - تحقق من اتصالك بالإنترنت');
+                } else {
+                    Toast.error(error.message || 'فشل تسجيل الدخول');
+                }
                 
                 // Reset button
                 btn.disabled = false;

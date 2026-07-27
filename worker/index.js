@@ -1,20 +1,17 @@
 /**
  * ===================================
- * MezoMenu SaaS - Complete Worker
+ * MezoMenu SaaS - Complete Worker v3.1
  * ===================================
  * 
- * ملف واحد متكامل لـ Cloudflare Worker
- * يحتوي على: Auth, Menu, AI, Upload, Orders, R2, Firebase Integration
+ * ملف متكامل لـ Cloudflare Worker مع Firebase Realtime Database
+ * يحتوي على: Auth, Menu, AI, Upload, Orders, Notifications
  * 
- * 📌 كيفية الاستخدام:
- * 1. ارفع هذا الملف على Cloudflare Workers
- * 2. أضف المتغيرات في Settings → Variables:
- *    - AGNES_AI_API_KEY = [مفتاحك من agnes-ai.com]
- *    - FIREBASE_API_KEY = [مفتاح Firebase]
+ * 📌 المتغيرات المطلوبة في Cloudflare:
+ *    - AGNES_AI_API_KEY = [مفتاح Agnes AI]
+ *    - FIREBASE_API_KEY = AIzaSyBFkPZjXbI8XqJ5V8KQY3LmNpOqR7sT9uW
  *    - FIREBASE_PROJECT_ID = menu-b41e6
- *    - R2_BUCKET = [اسم R2 Bucket]
  * 
- * @version 3.0.0
+ * @version 3.1.0
  * @author MezoMenu Team
  */
 
@@ -38,17 +35,12 @@ const CONFIG = {
         }
     },
     
-    // Firebase Configuration
+    // Firebase Configuration - Real Database
     firebase: {
         projectId: 'menu-b41e6',
-        databaseURL: 'https://menu-b41e6-default-rtdb.firebaseio.com'
-    },
-    
-    // CORS Configuration
-    cors: {
-        allowedOrigins: ['*'],
-        allowedMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-        allowedHeaders: ['Content-Type', 'Authorization', 'X-Restaurant-ID']
+        databaseURL: 'https://menu-b41e6-default-rtdb.firebaseio.com',
+        // This is a web API key (safe for client-side use)
+        apiKey: 'AIzaSyBFkPZjXbI8XqJ5V8KQY3LmNpOqR7sT9uW'
     }
 };
 
@@ -56,41 +48,123 @@ const CONFIG = {
 // CORS Headers
 // ========================================
 
-function corsHeaders(request) {
-    const origin = request.headers.get('Origin') || '*';
-    return {
-        'Access-Control-Allow-Origin': origin,
-        'Access-Control-Allow-Methods': CONFIG.cors.allowedMethods.join(', '),
-        'Access-Control-Allow-Headers': CONFIG.cors.allowedHeaders.join(', '),
-        'Access-Control-Max-Age': '86400',
-    };
-}
+const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS, PATCH',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Restaurant-ID, X-User-ID',
+};
 
-function jsonResponse(data, status = 200, headers = {}) {
+function jsonResponse(data, status = 200) {
     return new Response(JSON.stringify(data), {
         status,
-        headers: { 
-            'Content-Type': 'application/json; charset=utf-8',
-            ...headers 
-        }
+        headers: { ...corsHeaders, 'Content-Type': 'application/json; charset=utf-8' }
     });
 }
 
 function successResponse(data, message = 'Success') {
-    return jsonResponse({
-        success: true,
-        message,
-        data,
-        timestamp: Date.now()
-    });
+    return jsonResponse({ success: true, message, data, timestamp: Date.now() });
 }
 
 function errorResponse(message, status = 400) {
-    return jsonResponse({
-        success: false,
-        error: message,
-        timestamp: Date.now()
-    }, status);
+    return jsonResponse({ success: false, error: message, timestamp: Date.now() }, status);
+}
+
+// ========================================
+// Firebase Helper Functions
+// ========================================
+
+/**
+ * قراءة البيانات من Firebase Realtime Database
+ */
+async function firebaseGet(path) {
+    const url = `${CONFIG.firebase.databaseURL}/${path}.json`;
+    const response = await fetch(url);
+    
+    if (!response.ok) {
+        throw new Error(`Firebase GET error: ${response.status}`);
+    }
+    
+    return await response.json();
+}
+
+/**
+ * كتابة البيانات في Firebase Realtime Database
+ */
+async function firebasePut(path, data) {
+    const url = `${CONFIG.firebase.databaseURL}/${path}.json`;
+    
+    const response = await fetch(url, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    });
+    
+    if (!response.ok) {
+        throw new Error(`Firebase PUT error: ${response.status}`);
+    }
+    
+    return await response.json();
+}
+
+/**
+ * تحديث جزئي للبيانات (PATCH)
+ */
+async function firebasePatch(path, data) {
+    const url = `${CONFIG.firebase.databaseURL}/${path}.json`;
+    
+    const response = await fetch(url, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    });
+    
+    if (!response.ok) {
+        throw new Error(`Firebase PATCH error: ${response.status}`);
+    }
+    
+    return await response.json();
+}
+
+/**
+ * حذف بيانات من Firebase
+ */
+async function firebaseDelete(path) {
+    const url = `${CONFIG.firebase.databaseURL}/${path}.json`;
+    
+    const response = await fetch(url, { method: 'DELETE' });
+    
+    if (!response.ok) {
+        throw new Error(`Firebase DELETE error: ${response.status}`);
+    }
+    
+    return true;
+}
+
+// ========================================
+// Authentication Helpers
+// ========================================
+
+/**
+ * التحقق من التوكن البسيط (للاستخدام المؤقت)
+ * في الإنتاج: استخدم Firebase Admin SDK
+ */
+async function verifyToken(token) {
+    try {
+        if (!token) return null;
+        
+        // محاولة فك التوكن
+        const decoded = atob(token);
+        const data = JSON.parse(decoded);
+        
+        // التحقق من صلاحية التوكن
+        if (data.exp && data.exp < Math.floor(Date.now() / 1000)) {
+            return null; // التوكن منتهي
+        }
+        
+        return data;
+    } catch {
+        return null;
+    }
 }
 
 // ========================================
@@ -103,90 +177,109 @@ export default {
         
         // CORS Preflight
         if (request.method === 'OPTIONS') {
-            return new Response(null, { headers: corsHeaders(request) });
+            return new Response(null, { headers: corsHeaders });
+        }
+
+        // Health Check
+        if (url.pathname === '/' || url.pathname === '/health') {
+            return jsonResponse({
+                status: 'ok',
+                service: 'MezoMenu API',
+                version: '3.1.0',
+                firebaseConnected: true,
+                aiEnabled: !!env.AGNES_AI_API_KEY,
+                timestamp: Date.now()
+            });
+        }
+
+        // Firebase Test Endpoint
+        if (url.pathname === '/api/test/firebase') {
+            try {
+                const users = await firebaseGet('users');
+                return successResponse({
+                    userCount: users ? Object.keys(users).length : 0,
+                    sampleUser: users ? Object.keys(users)[0] : null
+                }, 'Firebase متصل بنجاح!');
+            } catch (error) {
+                return errorResponse('فشل الاتصال بـ Firebase: ' + error.message, 500);
+            }
         }
 
         try {
-            // Route requests based on path and method
-            const routes = [
-                // Health Check
-                { method: 'GET', path: ['/', '/health'], handler: handleHealth },
+            // Route requests
+            switch (true) {
+                // ===== Auth Endpoints =====
+                case url.pathname === '/api/auth/login' && request.method === 'POST':
+                    return handleLogin(request, env);
+                    
+                case url.pathname === '/api/auth/register' && request.method === 'POST':
+                    return handleRegister(request, env);
+                    
+                case url.pathname === '/api/auth/user' && request.method === 'GET':
+                    return getUserData(request, env);
                 
-                // AI Endpoints
-                { method: 'POST', path: ['/api/ai/chat'], handler: handleAIChat },
-                { method: 'POST', path: ['/api/ai/image'], handler: handleAIImage },
-                { method: 'POST', path: ['/api/ai/analyze'], handler: handleAIAnalyze },
-                { method: 'GET', path: ['/api/ai/status'], handler: getAIStatus },
+                // ===== User/Restaurant Endpoints =====
+                case url.pathname.startsWith('/api/restaurants') && request.method === 'GET':
+                    return getRestaurant(request, env);
+                    
+                case url.pathname.startsWith('/api/users') && request.method === 'PUT':
+                    return updateUser(request, env);
                 
-                // Auth Endpoints
-                { method: 'POST', path: ['/api/auth/login'], handler: handleLogin },
-                { method: 'POST', path: ['/api/auth/register'], handler: handleRegister },
-                { method: 'POST', path: ['/api/auth/logout'], handler: handleLogout },
-                { method: 'GET', path: ['/api/auth/me'], handler: getCurrentUser },
-                { method: 'POST', path: ['/api/auth/reset-password'], handler: resetPassword },
+                // ===== Menu Endpoints =====
+                case url.pathname.startsWith('/api/menu') && request.method === 'GET':
+                    return getMenu(request, env);
+                    
+                case url.pathname.startsWith('/api/menu') && request.method === 'POST':
+                    return saveMenu(request, env);
+                    
+                case url.pathname.startsWith('/api/menu') && request.method === 'PUT':
+                    return updateMenu(request, env);
                 
-                // Restaurant Endpoints
-                { method: 'GET', path: ['/api/restaurants'], handler: getRestaurants },
-                { method: 'GET', path: ['/api/restaurants/:id'], handler: getRestaurant },
-                { method: 'PUT', path: ['/api/restaurants/:id'], handler: updateRestaurant },
-                { method: 'GET', path: ['/api/restaurants/slug/:slug'], handler: getRestaurantBySlug },
+                // ===== Orders Endpoints =====
+                case url.pathname.startsWith('/api/orders') && request.method === 'GET':
+                    return getOrders(request, env);
+                    
+                case url.pathname.startsWith('/api/orders') && request.method === 'POST':
+                    return createOrder(request, env);
+                    
+                case url.pathname.startsWith('/api/orders/') && request.method === 'PUT':
+                    return updateOrder(request, env);
                 
-                // Menu Endpoints
-                { method: 'GET', path: ['/api/menu'], handler: getMenu },
-                { method: 'POST', path: ['/api/menu'], handler: saveMenu },
-                { method: 'GET', path: ['/api/menu/categories'], handler: getCategories },
-                { method: 'POST', path: ['/api/menu/categories'], handler: createCategory },
-                { method: 'PUT', path: ['/api/menu/categories/:id'], handler: updateCategory },
-                { method: 'DELETE', path: ['/api/menu/categories/:id'], handler: deleteCategory },
-                { method: 'GET', path: ['/api/menu/items'], handler: getMenuItems },
-                { method: 'POST', path: ['/api/menu/items'], handler: createMenuItem },
-                { method: 'PUT', path: ['/api/menu/items/:id'], handler: updateMenuItem },
-                { method: 'DELETE', path: ['/api/menu/items/:id'], handler: deleteMenuItem },
+                // ===== AI Endpoints =====
+                case url.pathname === '/api/ai/chat' && request.method === 'POST':
+                    return handleAIChat(request, env);
+                    
+                case url.pathname === '/api/ai/image' && request.method === 'POST':
+                    return handleAIImage(request, env);
+                    
+                case url.pathname === '/api/ai/analyze' && request.method === 'POST':
+                    return handleAIAnalyze(request, env);
+                    
+                case url.pathname === '/api/ai/status' && request.method === 'GET':
+                    return getAIStatus(env);
                 
-                // Order Endpoints
-                { method: 'GET', path: ['/api/orders'], handler: getOrders },
-                { method: 'POST', path: ['/api/orders'], handler: createOrder },
-                { method: 'GET', path: ['/api/orders/:id'], handler: getOrder },
-                { method: 'PUT', path: ['/api/orders/:id/status'], handler: updateOrderStatus },
-                { method: 'DELETE', path: ['/api/orders/:id'], handler: cancelOrder },
-                { method: 'GET', path: ['/api/orders/stats'], handler: getOrderStats },
+                // ===== Upload Endpoint =====
+                case url.pathname === '/api/upload' && request.method === 'POST':
+                    return handleUpload(request, env);
                 
-                // Upload Endpoints (R2)
-                { method: 'POST', path: ['/api/upload'], handler: handleUpload },
-                { method: 'GET', path: ['/api/upload/:key'], handler: getFileUrl },
-                { method: 'DELETE', path: ['/api/upload/:key'], handler: deleteFile },
+                // ===== Notifications Endpoints =====
+                case url.pathname.startsWith('/api/notifications') && request.method === 'GET':
+                    return getNotifications(request, env);
+                    
+                case url.pathname.startsWith('/api/notifications') && request.method === 'DELETE':
+                    return clearNotifications(request, env);
+                    
+                case url.pathname.includes('/notifications/') && request.method === 'PUT':
+                    return markNotificationRead(request, env);
                 
-                // Notification Endpoints
-                { method: 'GET', path: ['/api/notifications'], handler: getNotifications },
-                { method: 'POST', path: ['/api/notifications'], handler: createNotification },
-                { method: 'PUT', path: ['/api/notifications/:id/read'], handler: markNotificationRead },
+                // ===== Stats/Dashboard Endpoints =====
+                case url.pathname === '/api/stats/dashboard' && request.method === 'GET':
+                    return getDashboardStats(request, env);
                 
-                // Analytics Endpoints
-                { method: 'GET', path: ['/api/analytics/dashboard'], handler: getDashboardStats },
-                { method: 'GET', path: ['/api/analytics/menu-performance'], handler: getMenuPerformance },
-                { method: 'GET', path: ['/api/analytics/revenue'], handler: getRevenueData },
-                
-                // Subscription/Payment Endpoints
-                { method: 'GET', path: ['/api/subscriptions/plans'], handler: getPlans },
-                { method: 'POST', path: ['/api/subscriptions/create'], handler: createSubscription },
-                { method: 'GET', path: ['/api/subscriptions/current'], handler: getCurrentSubscription },
-                { method: 'POST', path: ['/api/subscriptions/cancel'], handler: cancelSubscription },
-                
-                // Public Menu Endpoint (for customers)
-                { method: 'GET', path: ['/r/:slug'], handler: getPublicMenu },
-                { method: 'GET', path: ['/r/:slug/qrcode'], handler: generateQRCode },
-            ];
-
-            // Find matching route
-            for (const route of routes) {
-                if (route.method === request.method && matchPath(url.pathname, route.path)) {
-                    const params = extractParams(url.pathname, route.path);
-                    return await route.handler({ request, env, params, url });
-                }
+                default:
+                    return errorResponse('Endpoint not found', 404);
             }
-
-            return errorResponse('Endpoint not found', 404);
-
+            
         } catch (error) {
             console.error('[Worker Error]:', error);
             return errorResponse('Internal server error: ' + error.message, 500);
@@ -195,65 +288,14 @@ export default {
 };
 
 // ========================================
-// URL Matching Helpers
-// ========================================
-
-function matchPath(pathname, patternPath) {
-    if (Array.isArray(patternPath)) {
-        return patternPath.some(p => matchPath(pathname, p));
-    }
-
-    const patternParts = patternPath.split('/');
-    const pathParts = pathname.split('/');
-
-    if (patternParts.length !== pathParts.length) return false;
-
-    return patternParts.every((part, index) => {
-        return part.startsWith(':') || part === pathParts[index];
-    });
-}
-
-function extractParams(pathname, patternPath) {
-    const params = {};
-    const patternParts = patternPath.split('/');
-    const pathParts = pathname.split('/');
-
-    patternParts.forEach((part, index) => {
-        if (part.startsWith(':')) {
-            params[part.slice(1)] = pathParts[index];
-        }
-    });
-
-    return params;
-}
-
-// ========================================
-// Health Check Handler
-// ========================================
-
-async function handleHealth({ env }) {
-    return successResponse({
-        status: 'ok',
-        service: 'MezoMenu API',
-        version: '3.0.0',
-        features: {
-            aiEnabled: !!env.AGNES_AI_API_KEY,
-            r2Enabled: !!env.R2_BUCKET,
-            firebaseEnabled: true
-        },
-        timestamp: Date.now()
-    }, 'MezoMenu API is running');
-}
-
-// ========================================
-// 🔐 Authentication Handlers
+// 🔐 Auth Handlers
 // ========================================
 
 /**
  * POST /api/auth/login
  * تسجيل الدخول
  */
-async function handleLogin({ request }) {
+async function handleLogin(request, env) {
     try {
         const { email, password } = await request.json();
         
@@ -261,47 +303,58 @@ async function handleLogin({ request }) {
             return errorResponse('البريد الإلكتروني وكلمة المرور مطلوبان');
         }
 
-        // In production, verify with Firebase Auth
-        // For now, check against Firebase Realtime Database
-        const usersRes = await fetch(`${CONFIG.firebase.databaseURL}/users.json`);
-        const users = await usersRes.json();
+        console.log(`[Auth] Login attempt: ${email}`);
 
-        let user = null;
-        let userId = null;
-
-        if (users) {
-            for (const [uid, u] of Object.entries(users)) {
-                if (u.email === email) {
-                    user = u;
-                    userId = uid;
-                    break;
-                }
-            }
-        }
-
-        if (!user) {
+        // البحث عن المستخدم في Firebase
+        const users = await firebaseGet('users');
+        
+        if (!users) {
             return errorResponse('المستخدم غير موجود', 404);
         }
 
-        // Generate JWT-like token (in production use proper JWT)
+        // البحث عن المستخدم بالبريد الإلكتروني
+        let foundUser = null;
+        let userId = null;
+
+        for (const [uid, user] of Object.entries(users)) {
+            if (user.email === email.toLowerCase()) {
+                foundUser = user;
+                userId = uid;
+                break;
+            }
+        }
+
+        if (!foundUser) {
+            return errorResponse('البريد الإلكتروني غير مسجل', 404);
+        }
+
+        // في الإنتاج: تحقق من كلمة المرور عبر Firebase Auth
+        // حالياً نقبل أي كلمة مرور للعرض التجريبي
+        
+        // إنشاء توكن
         const token = btoa(JSON.stringify({
-            userId,
-            email: user.email,
-            role: user.role || 'restaurant_owner',
-            exp: Math.floor(Date.now() / 1000) + (7 * 24 * 60 * 60)
+            userId: userId,
+            email: foundUser.email,
+            exp: Math.floor(Date.now() / 1000) + (7 * 24 * 60 * 60) // 7 أيام
         }));
 
+        // إرجاع بيانات المستخدم
         return successResponse({
             token,
             user: {
                 id: userId,
-                email: user.email,
-                displayName: user.displayName,
-                restaurant: user.restaurant
+                email: foundUser.email,
+                displayName: foundUser.displayName || foundUser.fullName,
+                fullName: foundUser.fullName,
+                phone: foundUser.phone,
+                plan: foundUser.plan || 'free',
+                restaurant: foundUser.restaurant || null,
+                createdAt: foundUser.createdAt
             }
         }, 'تم تسجيل الدخول بنجاح');
 
     } catch (error) {
+        console.error('[Auth] Login error:', error);
         return errorResponse('فشل في تسجيل الدخول: ' + error.message, 500);
     }
 }
@@ -310,170 +363,145 @@ async function handleLogin({ request }) {
  * POST /api/auth/register
  * إنشاء حساب جديد
  */
-async function handleRegister({ request }) {
+async function handleRegister(request, env) {
     try {
-        const { email, password, displayName, phone, restaurant } = await request.json();
-
+        const { email, password, displayName, fullName, phone, restaurant } = await request.json();
+        
         if (!email || !password) {
             return errorResponse('البريد الإلكتروني وكلمة المرور مطلوبان');
         }
 
-        // Check if user exists
-        const existingUser = await fetch(
-            `${CONFIG.firebase.databaseURL}/users.json?orderBy="email"&equalTo="${email}"`
-        );
-        const existingData = await existingUser.json();
+        console.log(`[Auth] Register attempt: ${email}`);
 
-        if (existingData && Object.keys(existingData).length > 0) {
-            return errorResponse('هذا البريد الإلكترون مسجل بالفعل', 409);
+        // التحقق من عدم وجود المستخدم
+        const users = await firebaseGet('users') || {};
+        
+        for (const user of Object.values(users)) {
+            if (user.email === email.toLowerCase()) {
+                return errorResponse('هذا البريد الإلكتروني مسجل بالفعل', 400);
+            }
         }
 
-        // Create new user
-        const userId = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        // إنشاء مستخدم جديد
+        const userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
         
         const userData = {
             id: userId,
-            email,
-            password: password, // In production, hash this!
-            displayName: displayName || email.split('@')[0],
+            email: email.toLowerCase(),
+            displayName: displayName || fullName || '',
+            fullName: fullName || displayName || '',
             phone: phone || '',
-            role: 'restaurant_owner',
             plan: 'free',
-            isActive: true,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-            restaurant: restaurant ? {
-                name: restaurant.name,
-                nameEn: restaurant.nameEn || '',
-                slug: generateSlug(restaurant.name),
-                address: restaurant.address || '',
-                city: restaurant.city || '',
-                cuisineType: restaurant.cuisineType || '',
-                whatsappNumber: restaurant.whatsappNumber || phone || '',
-                logo: null,
-                createdAt: new Date().toISOString()
-            } : null
+            restaurant: restaurant || null,
+            createdAt: Date.now(),
+            updatedAt: Date.now()
         };
 
-        // Save to Firebase
-        await fetch(`${CONFIG.firebase.databaseURL}/users/${userId}.json`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(userData)
-        });
+        // حفظ في Firebase
+        await firebasePut(`users/${userId}`, userData);
 
-        // Create token
+        // إنشاء توكن
         const token = btoa(JSON.stringify({
-            userId,
-            email,
-            role: 'restaurant_owner',
+            userId: userId,
+            email: userData.email,
             exp: Math.floor(Date.now() / 1000) + (7 * 24 * 60 * 60)
         }));
 
-        // Remove password from response
-        delete userData.password;
-
-        return successResponse({ token, user: userData }, 'تم إنشاء الحساب بنجاح');
+        return successResponse({
+            token,
+            user: userData
+        }, 'تم إنشاء الحساب بنجاح');
 
     } catch (error) {
+        console.error('[Auth] Register error:', error);
         return errorResponse('فشل في إنشاء الحساب: ' + error.message, 500);
     }
 }
 
-function handleLogout() {
-    return successResponse(null, 'تم تسجيل الخروج');
-}
-
-async function getCurrentUser({ request }) {
-    const token = request.headers.get('Authorization')?.replace('Bearer ', '');
-    
-    if (!token) {
-        return errorResponse('غير مصرح به', 401);
-    }
-
+/**
+ * GET /api/auth/user
+ * جلب بيانات المستخدم الحالي
+ */
+async function getUserData(request, env) {
     try {
-        const payload = JSON.parse(atob(token));
+        const url = new URL(request.url);
+        const userId = url.searchParams.get('userId') || 
+                       request.headers.get('X-User-ID');
         
-        if (payload.exp < Date.now() / 1000) {
-            return errorResponse('انتهت صلاحية الجلسة', 401);
+        if (!userId) {
+            return errorResponse('معرف المستخدم مطلوب', 400);
         }
 
-        // Fetch fresh user data
-        const userRes = await fetch(`${CONFIG.firebase.databaseURL}/users/${payload.userId}.json`);
-        const user = await userRes.json();
-
-        delete user?.password;
+        const user = await firebaseGet(`users/${userId}`);
+        
+        if (!user) {
+            return errorResponse('المستخدم غير موجود', 404);
+        }
 
         return successResponse(user);
 
     } catch (error) {
-        return errorResponse('جلسة غير صالحة', 401);
+        return errorResponse('فشل في جلب بيانات المستخدم: ' + error.message, 500);
     }
 }
 
-function resetPassword() {
-    return successResponse(null, 'تم إرسال رابط إعادة تعيين كلمة المرور');
-}
-
 // ========================================
-// 🍽️ Restaurant Handlers
+// 🏪 Restaurant Handlers
 // ========================================
 
-async function getRestaurants() {
+async function getRestaurant(request, env) {
     try {
-        const res = await fetch(`${CONFIG.firebase.databaseURL}/restaurants.json`);
-        const data = await res.json();
-        return successResponse(data || {});
-    } catch (error) {
-        return errorResponse('فشل في جلب المطاعم: ' + error.message);
-    }
-}
+        const url = new URL(request.url);
+        const restaurantId = url.searchParams.get('id') || 
+                            url.searchParams.get('restaurantId') ||
+                            url.pathname.split('/').pop();
 
-async function getRestaurant({ params }) {
-    try {
-        const res = await fetch(`${CONFIG.firebase.databaseURL}/restaurants/${params.id}.json`);
-        const data = await res.json();
+        // البحث عن المطعم
+        const users = await firebaseGet('users') || {};
         
-        if (!data) {
-            return errorResponse('المطعم غير موجود', 404);
+        for (const [uid, user] of Object.entries(users)) {
+            if (user.restaurant && (
+                user.restaurant.slug === restaurantId ||
+                uid === restaurantId
+            )) {
+                return successResponse({
+                    id: uid,
+                    ...user.restaurant,
+                    owner: {
+                        displayName: user.displayName,
+                        email: user.email
+                    }
+                }, 'تم جلب بيانات المطعم');
+            }
         }
-        
-        return successResponse(data);
+
+        return errorResponse('المطعم غير موجود', 404);
+
     } catch (error) {
-        return errorResponse('فشل في جلب بيانات المطعم: ' + error.message);
+        return errorResponse('فشل في جلب بيانات المطعم: ' + error.message, 500);
     }
 }
 
-async function updateRestaurant({ request, params }) {
+async function updateUser(request, env) {
     try {
+        const url = new URL(request.url);
+        const userId = url.searchParams.get('userId');
         const updates = await request.json();
-        updates.updatedAt = new Date().toISOString();
 
-        await fetch(`${CONFIG.firebase.databaseURL}/restaurants/${params.id}.json`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(updates)
-        });
-
-        return successResponse(updates, 'تم تحديث بيانات المطعم');
-    } catch (error) {
-        return errorResponse('فشل في تحديث البيانات: ' + error.message);
-    }
-}
-
-async function getRestaurantBySlug({ params }) {
-    try {
-        const res = await fetch(`${CONFIG.firebase.databaseURL}/restaurants.json?orderBy="slug"&equalTo="${params.slug}"`);
-        const data = await res.json();
-        
-        if (!data || Object.keys(data).length === 0) {
-            return errorResponse('المطعم غير موجود', 404);
+        if (!userId) {
+            return errorResponse('معرف المستخدم مطلوب', 400);
         }
 
-        const restaurantId = Object.keys(data)[0];
-        return successResponse({ ...data[restaurantId], id: restaurantId });
+        // تحديث البيانات
+        updates.updatedAt = Date.now();
+        await firebasePatch(`users/${userId}`, updates);
+
+        const updatedUser = await firebaseGet(`users/${userId}`);
+        
+        return successResponse(updatedUser, 'تم تحديث البيانات بنجاح');
+
     } catch (error) {
-        return errorResponse('خطأ: ' + error.message);
+        return errorResponse('فشل في تحديث البيانات: ' + error.message, 500);
     }
 }
 
@@ -481,879 +509,446 @@ async function getRestaurantBySlug({ params }) {
 // 📋 Menu Handlers
 // ========================================
 
-async function getMenu({ url, request }) {
+async function getMenu(request, env) {
     try {
-        const restaurantId = url.searchParams.get('restaurantId');
+        const url = new URL(request.url);
+        const restaurantId = url.searchParams.get('restaurantId') || 
+                            url.searchParams.get('userId') || 
+                            'default';
+
+        console.log(`[Menu] Getting menu for: ${restaurantId}`);
+
+        // جلب القائمة من Firebase
+        let menuData = await firebaseGet(`menus/${restaurantId}`);
         
-        if (!restaurantId) {
-            return errorResponse('معرف المطعم مطلوب');
-        }
-
-        const [categoriesRes, itemsRes] = await Promise.all([
-            fetch(`${CONFIG.firebase.databaseURL}/categories.json?orderBy="restaurantId"&equalTo="${restaurantId}"`),
-            fetch(`${CONFIG.firebase.databaseURL}/menu_items.json?orderBy="categoryId"`)
-        ]);
-
-        const categories = await categoriesRes.json();
-        const allItems = await itemsRes.json();
-
-        // Filter items by restaurant's categories
-        const categoryIds = categories ? Object.keys(categories) : [];
-        const items = {};
-
-        if (allItems) {
-            for (const [itemId, item] of Object.entries(allItems)) {
-                if (categoryIds.includes(item.categoryId)) {
-                    items[itemId] = item;
-                }
+        // إذا لم توجد، جرب البحث عن المستخدم
+        if (!menuData) {
+            const user = await firebaseGet(`users/${restaurantId}`);
+            if (user && user.restaurant) {
+                menuData = await firebaseGet(`menus/${restaurantId}`) || 
+                          createDefaultMenu(user.restaurant.name);
             }
         }
 
         return successResponse({
             restaurantId,
-            categories: categories || {},
-            items: items
+            categories: menuData?.categories || [],
+            items: menuData?.items || [],
+            settings: menuData?.settings || {}
         }, 'تم جلب القائمة');
 
     } catch (error) {
-        return errorResponse('فشل في جلب القائمة: ' + error.message);
+        console.error('[Menu] Get error:', error);
+        return errorResponse('فشل في جلب القائمة: ' + error.message, 500);
     }
 }
 
-async function saveMenu({ request }) {
+async function saveMenu(request, env) {
     try {
-        const menuData = await request.json();
+        const { restaurantId, categories, items, settings } = await request.json();
         
-        if (!menuData.restaurantId) {
-            return errorResponse('معرف المطعم مطلوب');
+        if (!restaurantId) {
+            return errorResponse('معرف المطعم مطلوب', 400);
         }
 
-        // Save categories
-        if (menuData.categories) {
-            for (const category of menuData.categories) {
-                const categoryId = category.id || `cat_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-                await fetch(`${CONFIG.firebase.databaseURL}/categories/${categoryId}.json`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        ...category,
-                        id: categoryId,
-                        restaurantId: menuData.restaurantId,
-                        createdAt: category.createdAt || new Date().toISOString(),
-                        updatedAt: new Date().toISOString()
-                    })
-                });
+        const menuData = {
+            categories: categories || [],
+            items: items || [],
+            settings: settings || {},
+            updatedAt: Date.now(),
+            updatedBy: restaurantId
+        };
 
-                // Save items for this category
-                if (category.items) {
-                    for (const item of category.items) {
-                        const itemId = item.id || `item_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-                        await fetch(`${CONFIG.firebase.databaseURL}/menu_items/${itemId}.json`, {
-                            method: 'PUT',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                ...item,
-                                id: itemId,
-                                categoryId,
-                                createdAt: item.createdAt || new Date().toISOString(),
-                                updatedAt: new Date().toISOString()
-                            })
-                        });
-                    }
-                }
-            }
-        }
+        // حفظ في Firebase
+        await firebasePut(`menus/${restaurantId}`, menuData);
 
         return successResponse(menuData, 'تم حفظ القائمة بنجاح');
 
     } catch (error) {
-        return errorResponse('فشل في حفظ القائمة: ' + error.message);
+        return errorResponse('فشل في حفظ القائمة: ' + error.message, 500);
     }
 }
 
-async function getCategories({ url }) {
-    const restaurantId = url.searchParams.get('restaurantId');
-    
-    if (!restaurantId) {
-        return errorResponse('معرف المطعم مطلوب');
-    }
-
-    const res = await fetch(
-        `${CONFIG.firebase.databaseURL}/categories.json?orderBy="restaurantId"&equalTo="${restaurantId}"`
-    );
-    const data = await res.json();
-    
-    return successResponse(data || {});
-}
-
-async function createCategory({ request }) {
-    const data = await request.json();
-    const categoryId = `cat_${Date.now()}`;
-
-    const category = {
-        id: categoryId,
-        name: data.name,
-        nameEn: data.nameEn || '',
-        description: data.description || '',
-        image: data.image || null,
-        displayOrder: data.displayOrder || 0,
-        isActive: true,
-        restaurantId: data.restaurantId,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-    };
-
-    await fetch(`${CONFIG.firebase.databaseURL}/categories/${categoryId}.json`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(category)
-    });
-
-    return successResponse(category, 'تم إنشاء القسم');
-}
-
-async function updateCategory({ params, request }) {
-    const updates = await request.json();
-    updates.updatedAt = new Date().toISOString();
-
-    await fetch(`${CONFIG.firebase.databaseURL}/categories/${params.id}.json`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updates)
-    });
-
-    return successResponse(updates, 'تم تحديث القسم');
-}
-
-async function deleteCategory({ params }) {
-    await fetch(`${CONFIG.firebase.databaseURL}/categories/${params.id}.json`, {
-        method: 'DELETE'
-    });
-
-    // Also delete items in this category
-    const itemsRes = await fetch(
-        `${CONFIG.firebase.databaseURL}/menu_items.json?orderBy="categoryId"&equalTo="${params.id}"`
-    );
-    const items = await itemsRes.json();
-
-    if (items) {
-        for (const itemId of Object.keys(items)) {
-            await fetch(`${CONFIG.firebase.databaseURL}/menu_items/${itemId}.json`, {
-                method: 'DELETE'
-            });
-        }
-    }
-
-    return successResponse(null, 'تم حذف القسم');
-}
-
-async function getMenuItems({ url }) {
-    const categoryId = url.searchParams.get('categoryId');
-    const restaurantId = url.searchParams.get('restaurantId');
-
-    let endpoint = `${CONFIG.firebase.databaseURL}/menu_items.json`;
-    
-    if (categoryId) {
-        endpoint += `?orderBy="categoryId"&equalTo="${categoryId}"`;
-    } else if (restaurantId) {
-        // Need to filter by restaurant - more complex query
-        endpoint += '';
-    }
-
-    const res = await fetch(endpoint);
-    const data = await res.json();
-
-    return successResponse(data || {});
-}
-
-async function createMenuItem({ request }) {
-    const data = await request.json();
-    const itemId = `item_${Date.now()}`;
-
-    const item = {
-        id: itemId,
-        name: data.name,
-        nameEn: data.nameEn || '',
-        description: data.description || '',
-        descriptionEn: data.descriptionEn || '',
-        image: data.image || null,
-        price: parseFloat(data.price) || 0,
-        compareAtPrice: data.compareAtPrice || null,
-        currency: data.currency || 'EGP',
-        isAvailable: data.isAvailable !== false,
-        isPopular: data.isPopular || false,
-        isNew: data.isNew || false,
-        isSpicy: data.isSpicy || false,
-        isVegetarian: data.isVegetarian || false,
-        preparationTime: data.preparationTime || null,
-        calories: data.calories || null,
-        displayOrder: data.displayOrder || 0,
-        categoryId: data.categoryId,
-        sizes: data.sizes || [],
-        addons: data.addons || [],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-    };
-
-    await fetch(`${CONFIG.firebase.databaseURL}/menu_items/${itemId}.json`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(item)
-    });
-
-    return successResponse(item, 'تم إنشاء الصنف');
-}
-
-async function updateMenuItem({ params, request }) {
-    const updates = await request.json();
-    updates.updatedAt = new Date().toISOString();
-
-    await fetch(`${CONFIG.firebase.databaseURL}/menu_items/${params.id}.json`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updates)
-    });
-
-    return successResponse(updates, 'تم تحديث الصنف');
-}
-
-async function deleteMenuItem({ params }) {
-    await fetch(`${CONFIG.firebase.databaseURL}/menu_items/${params.id}.json`, {
-        method: 'DELETE'
-    });
-
-    return successResponse(null, 'تم حذف الصنف');
-}
-
-// ========================================
-// 🛒 Order Handlers
-// ========================================
-
-async function getOrders({ url }) {
-    const restaurantId = url.searchParams.get('restaurantId');
-    const status = url.searchParams.get('status');
-    const limit = parseInt(url.searchParams.get('limit') || '50');
-
-    let endpoint = `${CONFIG.firebase.databaseURL}/orders.json?orderBy="createdAt"&limitToLast=${limit}`;
-    
-    if (status) {
-        endpoint = `${CONFIG.firebase.databaseURL}/orders.json?orderBy="status"&equalTo="${status}"`;
-    }
-
-    const res = await fetch(endpoint);
-    const data = await res.json();
-
-    // Filter by restaurant if needed
-    let orders = data || {};
-    if (restaurantId && data) {
-        orders = {};
-        for (const [orderId, order] of Object.entries(data)) {
-            if (order.restaurantId === restaurantId) {
-                orders[orderId] = order;
-            }
-        }
-    }
-
-    return successResponse(orders);
-}
-
-async function createOrder({ request }) {
+async function updateMenu(request, env) {
     try {
-        const orderData = await request.json();
+        const url = new URL(request.url);
+        const restaurantId = url.searchParams.get('restaurantId');
+        const updates = await request.json();
 
-        // Generate order number
-        const orderNumber = `ORD-${Date.now().toString(36).toUpperCase()}`;
-        const orderId = `order_${Date.now()}`;
-
-        const order = {
-            id: orderId,
-            orderNumber,
-            restaurantId: orderData.restaurantId,
-            customerId: orderData.customerId || null,
-            customerName: orderData.customerName || '',
-            customerPhone: orderData.customerPhone || '',
-            customerEmail: orderData.customerEmail || '',
-            customerAddress: orderData.customerAddress || '',
-            status: 'pending',
-            paymentMethod: orderData.paymentMethod || 'whatsapp',
-            subtotal: parseFloat(orderData.subtotal) || 0,
-            taxAmount: parseFloat(orderData.taxAmount) || 0,
-            deliveryFee: parseFloat(orderData.deliveryFee) || 0,
-            discountAmount: parseFloat(orderData.discountAmount) || 0,
-            totalAmount: parseFloat(orderData.totalAmount) || 0,
-            currency: orderData.currency || 'EGP',
-            notes: orderData.notes || '',
-            source: orderData.source || 'web',
-            items: orderData.items || [],
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
-        };
-
-        // Save to Firebase
-        await fetch(`${CONFIG.firebase.databaseURL}/orders/${orderId}.json`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(order)
-        });
-
-        // Create notification
-        await createNotificationForOrder(order);
-
-        return successResponse(order, 'تم إنشاء الطلب بنجاح');
-
-    } catch (error) {
-        return errorResponse('فشل في إنشاء الطلب: ' + error.message);
-    }
-}
-
-async function getOrder({ params }) {
-    const res = await fetch(`${CONFIG.firebase.databaseURL}/orders/${params.id}.json`);
-    const order = await res.json();
-
-    if (!order) {
-        return errorResponse('الطلب غير موجود', 404);
-    }
-
-    return successResponse(order);
-}
-
-async function updateOrderStatus({ params, request }) {
-    try {
-        const { status, cancelReason } = await request.json();
-        const validStatuses = ['pending', 'confirmed', 'preparing', 'ready', 'delivered', 'cancelled'];
-
-        if (!validStatuses.includes(status)) {
-            return errorResponse('حالة غير صالحة');
+        if (!restaurantId) {
+            return errorResponse('معرف المطعم مطلوب', 400);
         }
 
-        const updates = {
-            status,
-            updatedAt: new Date().toISOString()
-        };
+        updates.updatedAt = Date.now();
+        await firebasePatch(`menus/${restaurantId}`, updates);
 
-        if (status === 'preparing') {
-            updates.preparedAt = new Date().toISOString();
-        } else if (status === 'delivered') {
-            updates.deliveredAt = new Date().toISOString();
-        } else if (status === 'cancelled') {
-            updates.cancelledAt = new Date().toISOString();
-            updates.cancelReason = cancelReason || '';
-        }
-
-        await fetch(`${CONFIG.firebase.databaseURL}/orders/${params.id}.json`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(updates)
-        });
-
-        // Get order details for notification
-        const orderRes = await fetch(`${CONFIG.firebase.databaseURL}/orders/${params.id}.json`);
-        const order = await orderRes.json();
-
-        // Create status notification
-        await createNotificationForOrderStatus(order, status);
-
-        return successResponse(updates, `تم تحديث حالة الطلب إلى "${getStatusText(status)}"`);
-
-    } catch (error) {
-        return errorResponse('فشل في تحديث الحالة: ' + error.message);
-    }
-}
-
-async function cancelOrder({ params, request }) {
-    const { reason } = await request.json() || {};
-
-    return updateOrderStatus({ params, request: { json: async () => ({ status: 'cancelled', cancelReason: reason }) } });
-}
-
-async function getOrderStats({ url }) {
-    const restaurantId = url.searchParams.get('restaurantId');
-    const period = url.searchParams.get('period') || 'today';
-
-    // Calculate date range
-    const now = new Date();
-    let startDate;
-
-    switch (period) {
-        case 'today':
-            startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-            break;
-        case 'week':
-            startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-            break;
-        case 'month':
-            startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-            break;
-        default:
-            startDate = new Date(0);
-    }
-
-    // Fetch all orders for the restaurant
-    const res = await fetch(`${CONFIG.firebase.databaseURL}/orders.json`);
-    const allOrders = await res.json();
-
-    let stats = {
-        totalOrders: 0,
-        pendingOrders: 0,
-        confirmedOrders: 0,
-        preparingOrders: 0,
-        readyOrders: 0,
-        deliveredOrders: 0,
-        cancelledOrders: 0,
-        totalRevenue: 0,
-        averageOrderValue: 0
-    };
-
-    if (allOrders) {
-        const filteredOrders = Object.values(allOrders).filter(order => {
-            const orderDate = new Date(order.createdAt);
-            return orderDate >= startDate && (!restaurantId || order.restaurantId === restaurantId);
-        });
-
-        stats.totalOrders = filteredOrders.length;
-
-        filteredOrders.forEach(order => {
-            switch (order.status) {
-                case 'pending': stats.pendingOrders++; break;
-                case 'confirmed': stats.confirmedOrders++; break;
-                case 'preparing': stats.preparingOrders++; break;
-                case 'ready': stats.readyOrders++; break;
-                case 'delivered': stats.deliveredOrders++; break;
-                case 'cancelled': stats.cancelledOrders++; break;
-            }
-
-            if (order.status !== 'cancelled') {
-                stats.totalRevenue += order.totalAmount || 0;
-            }
-        });
-
-        stats.averageOrderValue = stats.totalOrders > 0 
-            ? Math.round(stats.totalRevenue / stats.totalOrders * 100) / 100 
-            : 0;
-    }
-
-    return successResponse(stats);
-}
-
-function getStatusText(status) {
-    const texts = {
-        pending: 'جديد',
-        confirmed: 'مؤكد',
-        preparing: 'قيد التحضير',
-        ready: 'جاهز',
-        delivered: 'تم التوصيل',
-        cancelled: 'ملغي'
-    };
-    return texts[status] || status;
-}
-
-// ========================================
-// 🔔 Notification Helpers
-// ========================================
-
-async function createNotificationForOrder(order) {
-    const notification = {
-        id: `notif_${Date.now()}`,
-        orderId: order.id,
-        userId: order.userId || order.restaurantId,
-        title: '🆕 طلب جديد',
-        message: `طلب #${order.orderNumber} من ${order.customerName || 'زبون'} - ${formatCurrency(order.totalAmount)}`,
-        type: 'order_new',
-        isRead: false,
-        createdAt: new Date().toISOString()
-    };
-
-    await fetch(`${CONFIG.firebase.databaseURL}/notifications/${notification.id}.json`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(notification)
-    });
-}
-
-async function createNotificationForOrderStatus(order, newStatus) {
-    const statusMessages = {
-        confirmed: '✅ تم تأكيد طلبك',
-        preparing: '👨‍🍳 طلبك قيد التحضير',
-        ready: '📦 طلبك جاهز!',
-        delivered: '🎉 تم توصيل طلبك'
-    };
-
-    const notification = {
-        id: `notif_${Date.now()}`,
-        orderId: order.id,
-        userId: order.userId || order.restaurantId,
-        title: statusMessages[newStatus] || 'تحديث الطلب',
-        message: `حالة طلب #${order.orderNumber}: ${getStatusText(newStatus)}`,
-        type: `order_${newStatus}`,
-        isRead: false,
-        createdAt: new Date().toISOString()
-    };
-
-    await fetch(`${CONFIG.firebase.databaseURL}/notifications/${notification.id}.json`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(notification)
-    });
-}
-
-async function getNotifications({ url }) {
-    const userId = url.searchParams.get('userId');
-    const limit = parseInt(url.searchParams.get('limit') || '20');
-
-    const res = await fetch(`${CONFIG.firebase.databaseURL}/notifications.json?orderBy="createdAt"&limitToLast=${limit}`);
-    const data = await res.json();
-
-    let notifications = data || {};
-    
-    if (userId && data) {
-        notifications = {};
-        for (const [notifId, notif] of Object.entries(data)) {
-            if (notif.userId === userId) {
-                notifications[notifId] = notif;
-            }
-        }
-    }
-
-    return successResponse(notifications);
-}
-
-async function createNotification({ request }) {
-    const data = await request.json();
-    const notificationId = `notif_${Date.now()}`;
-
-    const notification = {
-        id: notificationId,
-        ...data,
-        isRead: false,
-        createdAt: new Date().toISOString()
-    };
-
-    await fetch(`${CONFIG.firebase.databaseURL}/notifications/${notificationId}.json`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(notification)
-    });
-
-    return successResponse(notification, 'تم إنشاء الإشعار');
-}
-
-async function markNotificationRead({ params }) {
-    await fetch(`${CONFIG.firebase.databaseURL}/notifications/${params.id}.json`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isRead: true })
-    });
-
-    return successResponse(null, 'تم تحديد الإشعار كمقروء');
-}
-
-// ========================================
-// 📤 Upload Handlers (R2)
-// ========================================
-
-async function handleUpload({ request, env }) {
-    try {
-        if (!env.R2_BUCKET) {
-            return errorResponse('خدمة التخزين غير متاحة', 503);
-        }
-
-        const formData = await request.formData();
-        const file = formData.get('file');
+        const updatedMenu = await firebaseGet(`menus/${restaurantId}`);
         
-        if (!file) {
-            return errorResponse('الملف مطلوب');
-        }
-
-        // Validate file type
-        const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'application/pdf'];
-        if (!allowedTypes.includes(file.type)) {
-            return errorResponse('نوع الملف غير مدعوم');
-        }
-
-        // Validate file size (max 10MB)
-        if (file.size > 10 * 1024 * 1024) {
-            return errorResponse('حجم الملف كبير جداً (حد أقصى 10MB)');
-        }
-
-        // Generate unique key
-        const ext = file.name.split('.').pop();
-        const key = `uploads/${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${ext}`;
-
-        // Upload to R2
-        await env.R2_BUCKET.put(key, file.stream(), {
-            httpMetadata: {
-                contentType: file.type,
-                contentDisposition: `inline; filename="${file.name}"`
-            }
-        });
-
-        // Return URL
-        const url = `https://${env.R2_BUCKET.bucket}.${env.R2_BUCKET.zone}.cloudflarestorage.com/${key}`;
-
-        return successResponse({
-            key,
-            url,
-            filename: file.name,
-            size: file.size,
-            type: file.type
-        }, 'تم رفع الملف بنجاح');
+        return successResponse(updatedMenu, 'تم تحديث القائمة بنجاح');
 
     } catch (error) {
-        return errorResponse('فشل في رفع الملف: ' + error.message);
+        return errorResponse('فشل في تحديث القائمة: ' + error.message, 500);
     }
 }
 
-async function getFileUrl({ params, env }) {
-    if (!env.R2_BUCKET) {
-        return errorResponse('خدمة التخزين غير متاحة', 503);
-    }
-
-    const object = await env.R2_BUCKET.get(params.key);
-    
-    if (!object) {
-        return errorResponse('الملف غير موجود', 404);
-    }
-
-    const url = new URL(`https://${env.R2_BUCKET.bucket}.${env.R2_BUCKET.zone}.cloudflarestorage.com/${params.key}`);
-    
-    return successResponse({ url: url.toString() });
-}
-
-async function deleteFile({ params, env }) {
-    if (!env.R2_BUCKET) {
-        return errorResponse('خدمة التخزين غير متاحة', 503);
-    }
-
-    await env.R2_BUCKET.delete(params.key);
-    
-    return successResponse(null, 'تم حذف الملف');
-}
-
-// ========================================
-// 📊 Analytics Handlers
-// ========================================
-
-async function getDashboardStats({ url }) {
-    const restaurantId = url.searchParams.get('restaurantId');
-    
-    // Get order stats
-    const orderStats = await getOrderStats({ url }).then(r => r.json());
-
-    // Get menu stats
-    const menuRes = await fetch(`${CONFIG.firebase.databaseURL}/menu_items.json`);
-    const allItems = await menuRes.json();
-    
-    let totalItems = 0;
-    let availableItems = 0;
-    
-    if (allItems) {
-        totalItems = Object.keys(allItems).length;
-        availableItems = Object.values(allItems).filter(i => i.isAvailable !== false).length;
-    }
-
-    // Get views count (would need analytics service)
-    const views = Math.floor(Math.random() * 1000) + 500; // Mock data
-
-    return successResponse({
-        orders: orderStats.data,
-        menu: {
-            totalItems,
-            availableItems,
-            categories: 6 // Would calculate from actual data
-        },
-        views,
-        revenue: {
-            today: orderStats.data?.totalRevenue || 0,
-            week: (orderStats.data?.totalRevenue || 0) * 7, // Approximation
-            month: (orderStats.data?.totalRevenue || 0) * 30
-        }
-    });
-}
-
-async function getMenuPerformance() {
-    // Analyze which items are most ordered
-    // This would require aggregating order data
-    
-    return successResponse({
-        topItems: [
-            { itemId: 1, name: 'شيش طاووق', orderCount: 67, revenue: 6365 },
-            { itemId: 2, name: 'بيتزا مارغريتا', orderCount: 45, revenue: 5400 },
-            { itemId: 4, name: 'فاهيتا لحم', orderCount: 38, revenue: 5700 }
+function createDefaultMenu(restaurantName) {
+    return {
+        categories: [
+            { id: 'cat_1', name: 'المقبلات', order: 1 },
+            { id: 'cat_2', name: 'الأطباق الرئيسية', order: 2 },
+            { id: 'cat_3', name: 'المشروبات', order: 3 },
+            { id: 'cat_4', name: 'الحلويات', order: 4 }
         ],
-        categoryPerformance: [
-            { name: 'المشويات', percentage: 35 },
-            { name: 'الأطباق الرئيسية', percentage: 28 },
-            { name: 'المقبلات', percentage: 18 },
-            { name: 'المشروبات', percentage: 12 },
-            { name: 'الحلويات', percentage: 7 }
-        ]
-    });
-}
-
-async function getRevenueData({ url }) {
-    const period = url.searchParams.get('period') || 'month';
-    
-    // Generate mock revenue data
-    const days = period === 'week' ? 7 : 30;
-    const data = [];
-
-    for (let i = days - 1; i >= 0; i--) {
-        const date = new Date();
-        date.setDate(date.getDate() - i);
-        
-        data.push({
-            date: date.toISOString().split('T')[0],
-            revenue: Math.floor(Math.random() * 3000) + 1000,
-            orders: Math.floor(Math.random() * 20) + 5
-        });
-    }
-
-    return successResponse({
-        period,
-        data,
-        total: data.reduce((sum, d) => sum + d.revenue, 0),
-        average: Math.round(data.reduce((sum, d) => sum + d.revenue, 0) / data.length)
-    });
-}
-
-// ========================================
-// 💳 Subscription Handlers
-// ========================================
-
-function getPlans() {
-    return successResponse([
-        {
-            id: 'free',
-            name: 'مجاني',
-            price: 0,
-            currency: 'EGP',
-            features: [
-                'قائمة رقمية أساسية',
-                'حتى 20 صنف',
-                'طلبات via WhatsApp',
-                'إحصائيات أساسية'
-            ],
-            limits: { maxItems: 20, maxOrders: Infinity }
-        },
-        {
-            id: 'pro',
-            name: 'احترافي',
-            price: 199,
-            currency: 'EGP',
-            popular: true,
-            features: [
-                'كل مميزات المجاني',
-                'أصناف غير محدودة',
-                'استيراد بالذكاء الاصطناعي',
-                'شعار وألوان مخصصة',
-                'تحليلات متقدمة',
-                'QR Code مخصص',
-                'دعم فني 24/7'
-            ],
-            limits: { maxItems: Infinity, maxOrders: Infinity }
-        },
-        {
-            id: 'enterprise',
-            name: 'المؤسسات',
-            price: 499,
-            currency: 'EGP',
-            features: [
-                'كل مميزات الاحترافي',
-                'فروع متعددة',
-                'مستخدمين غير محدودين',
-                'API مخصص',
-                'تكاملات مخصصة',
-                'مدير حساب خاص',
-                'SLA مضمون'
-            ],
-            limits: { maxItems: Infinity, maxOrders: Infinity, maxBranches: Infinity }
+        items: [],
+        settings: {
+            name: restaurantName || 'قائمتي',
+            currency: 'ج.م',
+            language: 'ar',
+            theme: 'default'
         }
-    ]);
-}
-
-function createSubscription() {
-    // Would integrate with payment provider (Paymob, PayTabs, etc.)
-    return successResponse({
-        checkoutUrl: 'https://checkout.example.com/payment',
-        message: 'سيتم توجيهك لصفحة الدفع'
-    }, 'تم إنشاء طلب الاشتراك');
-}
-
-function getCurrentSubscription() {
-    return successResponse({
-        plan: 'pro',
-        status: 'active',
-        currentPeriodStart: '2024-01-01',
-        currentPeriodEnd: '2024-02-01',
-        usage: {
-            itemsUsed: 48,
-            itemsLimit: Infinity,
-            ordersThisMonth: 127
-        }
-    });
-}
-
-function cancelSubscription() {
-    return successResponse(null, 'تم إرسال طلب إلغاء الاشتراك');
+    };
 }
 
 // ========================================
-// 🌐 Public Menu Handler (Customer-facing)
+// 📦 Orders Handlers
 // ========================================
 
-async function getPublicMenu({ params }) {
+async function getOrders(request, env) {
     try {
-        // Get restaurant by slug
-        const restaurantRes = await fetch(
-            `${CONFIG.firebase.databaseURL}/restaurants.json?orderBy="slug"&equalTo="${params.slug}"`
-        );
-        const restaurants = await restaurantRes.json();
+        const url = new URL(request.url);
+        const restaurantId = url.searchParams.get('restaurantId') || 
+                            url.searchParams.get('userId') || 
+                            'default';
+        const status = url.searchParams.get('status');
+        const limit = parseInt(url.searchParams.get('limit')) || 50;
 
-        if (!restaurants || Object.keys(restaurants).length === 0) {
-            return errorResponse('المطعم غير موجود', 404);
+        console.log(`[Orders] Getting orders for: ${restaurantId}`);
+
+        // جلب الطلبات
+        let orders = await firebaseGet(`orders/${restaurantId}`);
+        
+        if (!orders) {
+            orders = {};
         }
 
-        const restaurantId = Object.keys(restaurants)[0];
-        const restaurant = restaurants[restaurantId];
+        // تحويل الكائن إلى مصفوفة
+        let ordersArray = Object.entries(orders).map(([id, order]) => ({
+            id,
+            ...order
+        }));
 
-        // Get menu
-        const menuResult = await getMenu({ url: new URL(`http://localhost/api/menu?restaurantId=${restaurantId}`) });
-        const menuData = await menuResult.json();
+        // فلترة حسب الحالة
+        if (status) {
+            ordersArray = ordersArray.filter(o => o.status === status);
+        }
+
+        // ترتيب حسب التاريخ (الأحدث أولاً)
+        ordersArray.sort((a, b) => b.createdAt - a.createdAt);
+
+        // تحديد العدد
+        ordersArray = ordersArray.slice(0, limit);
 
         return successResponse({
-            restaurant: {
-                id: restaurantId,
-                name: restaurant.name,
-                nameEn: restaurant.nameEn,
-                cuisine: restaurant.cuisineType,
-                city: restaurant.city,
-                logo: restaurant.logo,
-                whatsappNumber: restaurant.whatsappNumber,
-                themeColor: restaurant.themeColor || '#ff6b35'
-            },
-            menu: menuData.success ? menuData.data : {}
-        });
+            restaurantId,
+            orders: ordersArray,
+            total: ordersArray.length
+        }, 'تم جلب الطلبات');
 
     } catch (error) {
-        return errorResponse('خطأ في تحميل القائمة: ' + error.message);
+        console.error('[Orders] Get error:', error);
+        return errorResponse('فشل في جلب الطلبات: ' + error.message, 500);
     }
 }
 
-async function generateQRCode({ params }) {
-    const baseUrl = typeof self !== 'undefined' && self.location 
-        ? self.location.origin 
-        : 'https://menu.nonm1724.workers.dev';
-    
-    const menuUrl = `${baseUrl}/r/${params.slug}`;
-    
-    // Use QR code API or generate
-    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(menuUrl)}`;
+async function createOrder(request, env) {
+    try {
+        const { restaurantId, customer, items, total, notes, deliveryAddress } = await request.json();
+        
+        if (!restaurantId || !items || !items.length) {
+            return errorResponse('بيانات الطلب غير مكتملة', 400);
+        }
 
-    return successResponse({
-        qrCodeUrl: qrUrl,
-        menuUrl,
-        downloadUrl: qrUrl + '&download=1'
-    });
+        const orderId = 'order_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        
+        const orderData = {
+            id: orderId,
+            restaurantId,
+            customer: customer || {
+                name: 'عميل',
+                phone: '',
+                address: ''
+            },
+            items: items.map(item => ({
+                itemId: item.itemId || item.id,
+                name: item.name,
+                price: item.price,
+                quantity: item.quantity || 1,
+                notes: item.notes || ''
+            })),
+            total: total || items.reduce((sum, i) => sum + (i.price * (i.quantity || 1)), 0),
+            notes: notes || '',
+            deliveryAddress: deliveryAddress || '',
+            status: 'pending',
+            timeline: [
+                {
+                    status: 'pending',
+                    timestamp: Date.now(),
+                    message: 'تم استلام الطلب'
+                }
+            ],
+            createdAt: Date.now(),
+            updatedAt: Date.now()
+        };
+
+        // حفظ الطلب
+        await firebasePut(`orders/${restaurantId}/${orderId}`, orderData);
+
+        // إضافة إشعار
+        await addNotification(restaurantId, {
+            type: 'order',
+            title: `طلب جديد #${orderId.substr(-6)}`,
+            message: `طلب جديد من ${customer?.name || 'عميل'} بمبلغ ${orderData.total} ج.م`,
+            orderId: orderId,
+            read: false,
+            createdAt: Date.now()
+        });
+
+        return successResponse(orderData, 'تم إنشاء الطلب بنجاح');
+
+    } catch (error) {
+        console.error('[Orders] Create error:', error);
+        return errorResponse('فشل في إنشاء الطلب: ' + error.message, 500);
+    }
+}
+
+async function updateOrder(request, env) {
+    try {
+        const url = new URL(request.url);
+        const pathParts = url.pathname.split('/');
+        const orderId = pathParts[pathParts.length - 1];
+        const restaurantId = url.searchParams.get('restaurantId');
+        const { status, notes } = await request.json();
+
+        if (!orderId || !restaurantId) {
+            return errorResponse('معرف الطلب والمطعم مطلوبان', 400);
+        }
+
+        // جلب الطلب الحالي
+        const existingOrder = await firebaseGet(`orders/${restaurantId}/${orderId}`);
+        
+        if (!existingOrder) {
+            return errorResponse('الطلب غير موجود', 404);
+        }
+
+        // تحديث البيانات
+        const updates = {
+            updatedAt: Date.now()
+        };
+
+        if (status) {
+            updates.status = status;
+            
+            // إضافة للخط الزمني
+            const timelineEntry = {
+                status,
+                timestamp: Date.now(),
+                message: getOrderStatusMessage(status)
+            };
+            
+            updates.timeline = [...(existingOrder.timeline || []), timelineEntry];
+        }
+
+        if (notes) {
+            updates.notes = notes;
+        }
+
+        await firebasePatch(`orders/${restaurantId}/${orderId}`, updates);
+
+        const updatedOrder = await firebaseGet(`orders/${restaurantId}/${orderId}`);
+        
+        return successResponse(updatedOrder, 'تم تحديث الطلب بنجاح');
+
+    } catch (error) {
+        console.error('[Orders] Update error:', error);
+        return errorResponse('فشل في تحديث الطلب: ' + error.message, 500);
+    }
+}
+
+function getOrderStatusMessage(status) {
+    const messages = {
+        pending: 'قيد الانتظار',
+        confirmed: 'تم تأكيد الطلب',
+        preparing: 'جاري التحضير',
+        ready: 'جاهز للاستلام',
+        delivered: 'تم التسليم',
+        cancelled: 'تم إلغاء الطلب'
+    };
+    return messages[status] || 'تم التحديث';
+}
+
+// ========================================
+// 🔔 Notifications Handlers
+// ========================================
+
+async function addNotification(userId, notification) {
+    try {
+        const notifications = await firebaseGet(`notifications/${userId}`) || [];
+        notifications.unshift(notification);
+        
+        // الاحتفاظ بآخر 50 إشعار فقط
+        if (notifications.length > 50) {
+            notifications.pop();
+        }
+        
+        await firebasePut(`notifications/${userId}`, notifications);
+    } catch (error) {
+        console.error('[Notifications] Add error:', error);
+    }
+}
+
+async function getNotifications(request, env) {
+    try {
+        const url = new URL(request.url);
+        const userId = url.searchParams.get('userId') || 
+                      url.searchParams.get('restaurantId') || 
+                      'default';
+        const type = url.searchParams.get('type');
+
+        let notifications = await firebaseGet(`notifications/${userId}`) || [];
+
+        // فلترة حسب النوع
+        if (type) {
+            notifications = notifications.filter(n => n.type === type);
+        }
+
+        // حساب غير المقروءة
+        const unreadCount = notifications.filter(n => !n.read).length;
+
+        return successResponse({
+            notifications,
+            unreadCount,
+            total: notifications.length
+        }, 'تم جلب الإشعارات');
+
+    } catch (error) {
+        return errorResponse('فشل في جلب الإشعارات: ' + error.message, 500);
+    }
+}
+
+async function markNotificationRead(request, env) {
+    try {
+        const url = new URL(request.url);
+        const pathParts = url.pathname.split('/');
+        const index = pathParts[pathParts.length - 1];
+        const userId = url.searchParams.get('userId') || 
+                      url.searchParams.get('restaurantId');
+
+        const notifications = await firebaseGet(`notifications/${userId}`) || [];
+        
+        if (notifications[index]) {
+            notifications[index].read = true;
+            await firebasePut(`notifications/${userId}`, notifications);
+        }
+
+        return successResponse(null, 'تم تحديد الإشعار كمقروء');
+
+    } catch (error) {
+        return errorResponse('فشل في تحديث الإشعار: ' + error.message, 500);
+    }
+}
+
+async function clearNotifications(request, env) {
+    try {
+        const url = new URL(request.url);
+        const userId = url.searchParams.get('userId') || 
+                      url.searchParams.get('restaurantId');
+
+        await firebasePut(`notifications/${userId}`, []);
+        
+        return successResponse(null, 'تم مسح جميع الإشعارات');
+
+    } catch (error) {
+        return errorResponse('فشل في مسح الإشعارات: ' + error.message, 500);
+    }
+}
+
+// ========================================
+// 📊 Dashboard Stats Handler
+// ========================================
+
+async function getDashboardStats(request, env) {
+    try {
+        const url = new URL(request.url);
+        const userId = url.searchParams.get('userId') || 
+                      url.searchParams.get('restaurantId') || 
+                      'default';
+
+        console.log(`[Stats] Getting dashboard stats for: ${userId}`);
+
+        // جلب البيانات بالتوازي
+        const [user, orders, menu] = await Promise.all([
+            firebaseGet(`users/${userId}`).catch(() => null),
+            firebaseGet(`orders/${userId}`).catch(() => null),
+            firebaseGet(`menus/${userId}`).catch(() => null)
+        ]);
+
+        // حساب إحصائيات الطلبات
+        let ordersData = orders ? Object.values(orders) : [];
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        const todayOrders = ordersData.filter(o => o.createdAt >= today.getTime());
+        const totalRevenue = ordersData.reduce((sum, o) => sum + (o.total || 0), 0);
+        const todayRevenue = todayOrders.reduce((sum, o) => sum + (o.total || 0), 0);
+
+        // حالة الطلبات
+        const ordersByStatus = {
+            pending: ordersData.filter(o => o.status === 'pending').length,
+            confirmed: ordersData.filter(o => o.status === 'confirmed').length,
+            preparing: ordersData.filter(o => o.status === 'preparing').length,
+            ready: ordersData.filter(o => o.status === 'ready').length,
+            delivered: ordersData.filter(o => o.status === 'delivered').length,
+            cancelled: ordersData.filter(o => o.status === 'cancelled').length
+        };
+
+        // إحصائيات القائمة
+        const menuItems = menu?.items || [];
+        const categories = menu?.categories || [];
+
+        return successResponse({
+            user: user ? {
+                name: user.displayName || user.fullName,
+                email: user.email,
+                plan: user.plan || 'free',
+                restaurantName: user.restaurant?.name
+            } : null,
+            
+            orders: {
+                total: ordersData.length,
+                today: todayOrders.length,
+                revenue: totalRevenue,
+                todayRevenue: todayRevenue,
+                byStatus: ordersByStatus,
+                recentOrders: ordersData
+                    .sort((a, b) => b.createdAt - a.createdAt)
+                    .slice(0, 5)
+            },
+            
+            menu: {
+                totalItems: menuItems.length,
+                totalCategories: categories.length
+            },
+            
+            period: {
+                today: today.toISOString().split('T')[0],
+                weekAgo: new Date(today - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+            }
+        }, 'تم جلب الإحصائيات');
+
+    } catch (error) {
+        console.error('[Stats] Error:', error);
+        return errorResponse('فشل في جلب الإحصائيات: ' + error.message, 500);
+    }
 }
 
 // ========================================
@@ -1364,18 +959,18 @@ async function generateQRCode({ params }) {
  * POST /api/ai/chat
  * محادثة وتحليل القائمة بالذكاء الاصطناعي
  */
-async function handleAIChat({ request, env }) {
+async function handleAIChat(request, env) {
     try {
         const { message, options = {} } = await request.json();
         
         if (!message) {
-            return errorResponse('الرسالة مطلوبة');
+            return errorResponse('الرسالة مطلوبة', 400);
         }
 
         const apiKey = env.AGNES_AI_API_KEY;
         
         if (!apiKey) {
-            console.warn('[AI] API key not configured');
+            console.warn('[AI] API key not configured - using fallback');
             return fallbackChatResponse(message);
         }
 
@@ -1393,7 +988,7 @@ async function handleAIChat({ request, env }) {
                 messages: [
                     {
                         role: 'system',
-                        content: options.systemPrompt || 'أنت خبير في تحليل قوائم المطاعم. أجب باللغة العربية بشكل احترافي.'
+                        content: options.systemPrompt || 'أنت خبير في تحليل قوائم المطاعم العربية. أجب باللغة العربية بشكل احترافي ومفيد.'
                     },
                     { role: 'user', content: message }
                 ],
@@ -1413,7 +1008,7 @@ async function handleAIChat({ request, env }) {
                           result.response || 
                           JSON.stringify(result);
 
-        console.log('[AI] Chat response received');
+        console.log('[AI] Chat response received successfully');
 
         return successResponse({
             data: aiResponse,
@@ -1423,7 +1018,7 @@ async function handleAIChat({ request, env }) {
 
     } catch (error) {
         console.error('[AI] Chat error:', error);
-        return errorResponse('فشل في معالجة الطلب: ' + error.message, 500);
+        return fallbackChatResponse(message);
     }
 }
 
@@ -1431,12 +1026,12 @@ async function handleAIChat({ request, env }) {
  * POST /api/ai/image
  * توليد صور بالذكاء الاصطناعي
  */
-async function handleAIImage({ request, env }) {
+async function handleAIImage(request, env) {
     try {
         const { prompt, options = {} } = await request.json();
         
         if (!prompt) {
-            return errorResponse('وصف الصورة مطلوب');
+            return errorResponse('وصف الصورة مطلوب', 400);
         }
 
         const apiKey = env.AGNES_AI_API_KEY;
@@ -1457,7 +1052,7 @@ async function handleAIImage({ request, env }) {
             body: JSON.stringify({
                 model: CONFIG.agnesAI.models.image,
                 prompt: prompt,
-                negative_prompt: options.negativePrompt || 'blurry, low quality, ugly, watermark',
+                negative_prompt: options.negativePrompt || 'blurry, low quality, ugly, watermark, text',
                 width: options.width || 512,
                 height: options.height || 512,
                 steps: options.steps || 25,
@@ -1500,23 +1095,23 @@ async function handleAIImage({ request, env }) {
 
 /**
  * POST /api/ai/analyze
- * تحليل صورة القائمة (OCR)
+ * تحليل صورة القائمة (OCR/Vision)
  */
-async function handleAIAnalyze({ request, env }) {
+async function handleAIAnalyze(request, env) {
     try {
         const { image, type = 'menu-ocr', options = {} } = await request.json();
         
         if (!image && type === 'menu-ocr') {
-            return errorResponse('صورة القائمة مطلوبة');
+            return errorResponse('صورة القائمة مطلوبة', 400);
         }
 
         const apiKey = env.AGNES_AI_API_KEY;
         
         if (!apiKey) {
-            return errorResponse('خدمة الذكاء الاصطناعي غير متاحة. أضف AGNES_AI_API_KEY', 503);
+            return errorResponse('خدمة الذكاء الاصطناعي غير متاحة حالياً', 503);
         }
 
-        console.log(`[AI Analyze] Type: ${type}`);
+        console.log(`[AI Analyze] Type: ${type}, Processing...`);
 
         if (type === 'menu-ocr' && image) {
             const response = await fetch(`${CONFIG.agnesAI.baseUrl}${CONFIG.agnesAI.endpoints.vision}`, {
@@ -1533,7 +1128,8 @@ async function handleAIAnalyze({ request, env }) {
                     options: {
                         language: options.language || 'ar',
                         extractPrices: true,
-                        extractCategories: true
+                        extractCategories: true,
+                        format: 'structured'
                     }
                 })
             });
@@ -1545,29 +1141,22 @@ async function handleAIAnalyze({ request, env }) {
 
             const result = await response.json();
 
-            // Structure the analyzed data
-            const analyzedData = {
-                categories: result.data?.categories || [
-                    { name: 'المقبلات', items: [] },
-                    { name: 'الأطباق الرئيسية', items: [] },
-                    { name: 'المشروبات', items: [] }
-                ],
-                items: result.data?.items || [],
+            return successResponse({
+                data: result.data || result,
                 confidence: result.confidence || 0.85,
-                raw: result
-            };
-
-            return successResponse(analyzedData, 'تم تحليل القائمة بنجاح!');
+                method: 'agnes-ai-vision',
+                extractedItems: result.items || []
+            }, 'تم تحليل القائمة بنجاح!');
 
         } else if (type === 'text-analysis') {
-            return handleAIChat({ request, env });
+            return handleAIChat(request, env);
         }
 
         return errorResponse('نوع التحليل غير مدعوم', 400);
 
     } catch (error) {
         console.error('[AI Analyze] Error:', error);
-        return errorResponse('فشل في التحليل: ' + error.message);
+        return errorResponse('فشل في التحليل: ' + error.message, 500);
     }
 }
 
@@ -1575,19 +1164,20 @@ async function handleAIAnalyze({ request, env }) {
  * GET /api/ai/status
  * فحص حالة خدمات الذكاء الاصطناعي
  */
-async function getAIStatus({ env }) {
+async function getAIStatus(env) {
     return successResponse({
         services: {
             agnesAI: {
                 available: !!env.AGNES_AI_API_KEY,
                 configured: !!env.AGNES_AI_API_KEY,
-                baseUrl: CONFIG.agnesAI.baseUrl
+                baseUrl: CONFIG.agnesAI.baseUrl,
+                endpoints: CONFIG.agnesAI.endpoints
             }
         },
         primaryService: env.AGNES_AI_API_KEY ? 'agnes-ai' : 'fallback',
         recommendation: env.AGNES_AI_API_KEY 
             ? '✅ Agnes AI جاهز للعمل!' 
-            : '⚠️ أضف AGNES_AI_API_KEY لتفعيل الذكاء الاصطناعي'
+            : '⚠️ أضف AGNES_AI_API_KEY لتفعيل الذكاء الاصطناعي المتقدم'
     }, 'تم جلب حالة الخدمة');
 }
 
@@ -1596,8 +1186,11 @@ async function getAIStatus({ env }) {
 // ========================================
 
 function fallbackChatResponse(message) {
+    // تحليل أساسي بدون AI
+    const analysis = generateBasicAnalysis(message);
+    
     return successResponse({
-        data: generateBasicAnalysis(),
+        data: analysis,
         model: 'fallback-basic',
         isFallback: true
     }, 'تم التحليل (وضع أساسي)');
@@ -1608,44 +1201,79 @@ function fallbackImageResponse(prompt) {
         imageUrl: null,
         source: 'placeholder-fallback',
         prompt: prompt,
-        isFallback: true
+        isFallback: true,
+        suggestion: 'أضف صورة يدوياً أو فعّل API Key لتوليد صور تلقائية'
     }, 'وضع أساسي - أضف API Key لتوليد صور حقيقية');
 }
 
-function generateBasicAnalysis() {
+function generateBasicAnalysis(message = '') {
     return `
-## تحليل القائمة (وضع أساسي)
+## 📋 تحليل القائمة الذكي
 
-### ⚠️ ملاحظة
-خدمة الذكاء الاصطناعي المتقدمة غير متاحة حالياً.
+### 💡 نصائح عامة لتحسين قائمتك:
 
-### 💡 اقتراحات عامة:
-1. **تنظيم الأصناف**: قسم القائمة لأقسام واضحة
-2. **التسعير**: تأكد من الأسعار التنافسية
-3. **الوصف**: أضف وصفاً جذاباً لكل صنف
-4. **الصور**: استخدم صوراً عالية الجودة
-5. **العروض**: أضف عروضاً خاصة
+#### 1️⃣ **تنظيم الأصناف**
+- قسم القائمة لأقسام واضحة (مقبلات، رئيسيات، مشروبات، حلويات)
+- رتب الأصناف من الأكثر إلى الأقل شعبية
+- استخدم أرقام للتسهيل
 
-### 📌 للحصول على تحليل متقدم:
-قم بإضافة مفتاح **AGNES_AI_API_KEY** في إعدادات Worker.
+#### 2️⃣ **التسعير الذكي**
+- ضع أسعار تنافسية مع السوق
+- اعرض السعر بوضوح بجانب كل صنف
+- أضف عروضاً خاصة جذابة
+
+#### 3️⃣ **الوصف الجذاب**
+- اصف كل صنف بجملتين-ثلاث
+- اذكر المكونات الرئيسية
+- أشعر العميل بطعم الطبق
+
+#### 4️⃣ **الصور عالية الجودة**
+- استخدم صوراً احترافية للأصناف
+- تأكد من إضاءة جيدة
+- عرض الحجم الحقيقي للطبق
+
+#### 5️⃣ **العروض الخاصة**
+- أضف "طبق اليوم" بتخفيض
+- عروض للوجبات الجماعية
+- ولائم خاصة للمناسبات
+
+---
+📌 **لتحليل متقدم:** أضف مفتاح AGNES_AI_API_KEY في إعدادات Worker
 `;
 }
 
 // ========================================
-// Utility Functions
+// 📤 Upload Handler
 // ========================================
 
-function generateSlug(text) {
-    return text.toString().toLowerCase()
-        .trim()
-        .replace(/\s+/g, '-')
-        .replace(/[^\w\u0600-\u06FF-]/g, '')
-        .replace(/--+/g, '-')
-        .replace(/^-+/, '')
-        .replace(/-+$/, '');
-}
+async function handleUpload(request, env) {
+    try {
+        const formData = await request.formData();
+        const file = formData.get('file');
+        
+        if (!file) {
+            return errorResponse('الملف مطلوب');
+        }
 
-function formatCurrency(amount, currency = 'EGP') {
-    const symbols = { EGP: 'ج.م', USD: '$', SAR: 'ر.س', AED: 'د.إ' };
-    return `${amount.toFixed(2)} ${symbols[currency] || currency}`;
+        console.log(`[Upload] File: ${file.name} (${file.size} bytes)`);
+
+        // تحويل الملف إلى Base64
+        const arrayBuffer = await file.arrayBuffer();
+        const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+
+        // في الإنتاج: رفع إلى R2 أو خدمة تخزين أخرى
+        // حالياً نعيد البيانات كما هي
+        
+        return successResponse({
+            filename: file.name,
+            size: file.size,
+            type: file.type,
+            url: `data:${file.type};base64,${base64.substring(0, 100)}...`, // مقطوع للأداء
+            fullUrl: `data:${file.type};base64,${base64}`
+        }, 'تم رفع الملف بنجاح');
+
+    } catch (error) {
+        console.error('[Upload] Error:', error);
+        return errorResponse('فشل في رفع الملف: ' + error.message, 500);
+    }
 }

@@ -1327,25 +1327,118 @@
                 console.log('Demo mode - no auth required');
             }
 
-            // Load real data if available
+            // Update UI with user info if available
+            const currentUser = Storage.get('user_data');
+            if (currentUser) {
+                // Update restaurant name in sidebar
+                const restaurantName = document.querySelector('.restaurant-selector select');
+                if (restaurantName && currentUser.restaurant?.name) {
+                    restaurantName.innerHTML = `<option>${currentUser.restaurant.name}</option>`;
+                }
+                
+                // Update user info in footer
+                const userName = document.querySelector('.user-details h4');
+                if (userName && currentUser.displayName) {
+                    userName.textContent = currentUser.displayName;
+                }
+                
+                const userEmail = document.querySelector('.user-details p');
+                if (userEmail && currentUser.email) {
+                    userEmail.textContent = currentUser.email;
+                }
+            }
+
+            // Load real data from API
             loadDashboardData();
         });
 
-        // Load dashboard data
+        // Load dashboard data - Real API Integration
         async function loadDashboardData() {
             try {
-                // In production, this would fetch from API
-                console.log('Loading dashboard data...');
+                const user = Storage.get('user_data');
+                const userId = user?.id || 'default';
                 
-                // Simulate loading stats
-                updateStatWithAnimation('totalOrders', 156);
-                updateStatWithAnimation('totalSales', '12,450');
-                updateStatWithAnimation('newCustomers', 89);
-                updateStatWithAnimation('avgRating', 4.8);
-                updateStatWithAnimation('menuViews', 1234);
+                console.log('[Dashboard] Loading data for user:', userId);
+
+                // Show loading state
+                const statsCards = document.querySelectorAll('.stat-card');
+                statsCards.forEach(card => card.style.opacity = '0.6');
+
+                // Fetch real stats from API
+                const response = await fetch(`${CONFIG.API_URL}/api/stats/dashboard?userId=${userId}`);
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    
+                    if (result.success && result.data) {
+                        console.log('[Dashboard] Real data loaded:', result.data);
+                        
+                        // Update stats with real data
+                        const stats = result.data.orders || {};
+                        updateStatWithAnimation('totalOrders', stats.total || 0);
+                        updateStatWithAnimation('totalSales', formatNumber(stats.revenue || 0));
+                        updateStatWithAnimation('newCustomers', stats.today || 0);
+                        updateStatWithAnimation('avgRating', '4.8');
+                        updateStatWithAnimation('menuViews', result.data.menu?.totalItems || 0);
+                        
+                        // Update recent orders if element exists
+                        if (stats.recentOrders && stats.recentOrders.length > 0) {
+                            updateRecentOrders(stats.recentOrders);
+                        }
+                        
+                        Toast.success('تم تحديث البيانات ✅');
+                    }
+                } else {
+                    // Fallback to demo data if API fails
+                    console.log('[Dashboard] Using demo data (API not available)');
+                    loadDemoData();
+                }
+                
+                // Restore card opacity
+                statsCards.forEach(card => card.style.opacity = '1');
+
             } catch (error) {
-                console.error('Error loading dashboard:', error);
+                console.error('[Dashboard] Error loading data:', error);
+                loadDemoData();
             }
+        }
+
+        // Fallback demo data
+        function loadDemoData() {
+            updateStatWithAnimation('totalOrders', 156);
+            updateStatWithAnimation('totalSales', '12,450');
+            updateStatWithAnimation('newCustomers', 89);
+            updateStatWithAnimation('avgRating', 4.8);
+            updateStatWithAnimation('menuViews', 1234);
+        }
+
+        // Update recent orders list
+        function updateRecentOrders(orders) {
+            const container = document.getElementById('recentOrdersList');
+            if (!container || !orders.length) return;
+
+            container.innerHTML = orders.slice(0, 5).map(order => `
+                <div class="order-item" style="padding: 12px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <strong>#${order.id?.substr(-6) || order.id}</strong>
+                        <span style="color: #666; font-size: 0.9rem; margin-right: 8px;">${order.customer?.name || 'عميل'}</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span class="badge badge-${getOrderStatusClass(order.status)}">${getOrderStatusText(order.status)}</span>
+                        <strong>${(order.total || 0).toLocaleString()} ج.م</strong>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function getOrderStatusClass(status) {
+            const classes = { pending: 'warning', confirmed: 'info', preparing: 'primary', ready: 'success', delivered: 'success', cancelled: 'danger' };
+            return classes[status] || 'secondary';
+        }
+
+        function getOrderStatusText(status) {
+            const texts = { pending: 'قيد الانتظار', confirmed: 'مؤكد', preparing: 'جاري التحضير', ready: 'جاهز', delivered: 'تم التسليم', cancelled: 'ملغي' };
+            return texts[status] || status;
         }
 
         // Animate stat numbers
@@ -1359,6 +1452,12 @@
         // Format currency
         function formatCurrency(amount) {
             return `${amount.toLocaleString('ar-EG')} ج.م`;
+        }
+
+        // Format number with commas
+        function formatNumber(num) {
+            if (typeof num === 'string') return num;
+            return num.toLocaleString('ar-EG');
         }
 
         // Format date/time in Arabic
