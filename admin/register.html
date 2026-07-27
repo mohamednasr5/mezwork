@@ -6,6 +6,11 @@
     <title>إنشاء حساب - MezoMenu</title>
     <link rel="icon" type="image/png" href="../assets/images/favicon.png">
     
+    <!-- Google Sign-In Meta -->
+    <meta name="google-signin-client_id" content="YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com">
+    <meta name="google-signin-cookiepolicy" content="single_host_origin">
+    <meta name="google-signin-scope" content="email profile">
+    
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1347,7 +1352,60 @@
                 console.log('[Register] User already logged in, redirecting...');
                 window.location.href = 'dashboard.html';
             }
+
+            // Initialize Google Sign-In for registration
+            const googleClientId = document.querySelector('meta[name="google-signin-client_id"]');
+            if (googleClientId?.content && !googleClientId.content.includes('YOUR_')) {
+                const script = document.createElement('script');
+                script.src = 'https://accounts.google.com/gsi/client';
+                script.async = true;
+                script.defer = true;
+                script.onload = () => {
+                    console.log('[Google] Sign-In loaded for registration...');
+                    initializeGoogleRegister(googleClientId.content);
+                };
+                document.head.appendChild(script);
+            }
         });
+
+        // Initialize Google Sign-Up with proper configuration
+        function initializeGoogleRegister(clientId) {
+            if (typeof google === 'undefined') return;
+
+            try {
+                google.accounts.id.initialize({
+                    client_id: clientId,
+                    callback: handleGoogleRegisterCredentialResponse,
+                    auto_select: false,
+                    context: 'signup',
+                    itp_support: true,
+                    use_fedcm_for_prompt: true
+                });
+
+                console.log('[Google] Sign-Up initialized successfully');
+
+                // Render Google button if element exists
+                const googleBtn = document.getElementById('googleSignUpBtn');
+                if (googleBtn) {
+                    google.accounts.id.renderButton(googleBtn, {
+                        theme: 'outline',
+                        size: 'large',
+                        width: '100%',
+                        text: 'signup_with',
+                        shape: 'rectangular',
+                        locale: 'ar'
+                    });
+                }
+
+                // Show prompt
+                google.accounts.id.prompt((notification) => {
+                    console.log('[Google] Prompt status:', notification);
+                });
+
+            } catch (error) {
+                console.error('[Google] Registration init error:', error);
+            }
+        }
     </script>
 </body>
 </html>

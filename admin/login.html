@@ -6,6 +6,11 @@
     <title>تسجيل الدخول - MezoMenu</title>
     <link rel="icon" type="image/png" href="../assets/images/favicon.png">
     
+    <!-- Google Sign-In Meta -->
+    <meta name="google-signin-client_id" content="YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com">
+    <meta name="google-signin-cookiepolicy" content="single_host_origin">
+    <meta name="google-signin-scope" content="email profile">
+    
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -875,15 +880,66 @@
             }
 
             // Add Google Sign-In script if configured
-            const googleClientId = document.querySelector('meta[name="google-signin-client-id"]');
-            if (googleClientId?.content) {
+            const googleClientId = document.querySelector('meta[name="google-signin-client_id"]');
+            if (googleClientId?.content && !googleClientId.content.includes('YOUR_')) {
+                // Load Google Identity Services
                 const script = document.createElement('script');
                 script.src = 'https://accounts.google.com/gsi/client';
                 script.async = true;
                 script.defer = true;
+                script.onload = () => {
+                    console.log('[Google] Sign-In loaded, initializing...');
+                    initializeGoogleSignIn(googleClientId.content);
+                };
                 document.head.appendChild(script);
+            } else {
+                console.log('[Google] Client ID not configured or using placeholder');
             }
         });
+
+        // Initialize Google Sign-In with proper configuration
+        function initializeGoogleSignIn(clientId) {
+            if (typeof google === 'undefined') {
+                console.warn('[Google] API not loaded yet');
+                return;
+            }
+
+            try {
+                google.accounts.id.initialize({
+                    client_id: clientId,
+                    callback: handleGoogleCredentialResponse,
+                    auto_select: false,
+                    context: 'signin',
+                    itp_support: true,
+                    use_fedcm_for_prompt: true
+                });
+
+                console.log('[Google] Sign-In initialized successfully');
+
+                // Render Google button if element exists
+                const googleBtn = document.getElementById('googleSignInBtn');
+                if (googleBtn) {
+                    google.accounts.id.renderButton(googleBtn, {
+                        theme: 'outline',
+                        size: 'large',
+                        width: '100%',
+                        text: 'signin_with',
+                        shape: 'rectangular',
+                        locale: 'ar'
+                    });
+                }
+
+                // Show One Tap prompt (optional)
+                google.accounts.id.prompt((notification) => {
+                    if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+                        console.log('[Google] One Tap not shown:', notification.getNotDisplayedReason?.() || notification.getSkippedReason?.());
+                    }
+                });
+
+            } catch (error) {
+                console.error('[Google] Initialization error:', error);
+            }
+        }
     </script>
 </body>
 </html>

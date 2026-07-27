@@ -1009,8 +1009,8 @@
             <div class="page-content">
                 <!-- Welcome Section -->
                 <div class="page-header">
-                    <h2 class="page-title">مرحباً، مدير مطعم المبروك! 👋</h2>
-                    <p class="page-subtitle">إليك ملخص أداء مطعمك اليوم</p>
+                    <h2 class="page-title" id="welcomeTitle">مرحباً! 👋</h2>
+                    <p class="page-subtitle" id="welcomeSubtitle">جاري تحميل بيانات مطعمك...</p>
                 </div>
 
                 <!-- Stats Cards -->
@@ -1020,11 +1020,9 @@
                             <i class="fas fa-shopping-cart"></i>
                         </div>
                         <div class="stat-info">
-                            <h3>156</h3>
+                            <h3 id="totalOrders">0</h3>
                             <p>إجمالي الطلبات</p>
-                            <div class="stat-change up">
-                                <i class="fas fa-arrow-up"></i> 12% من أمس
-                            </div>
+                            <div class="stat-change" id="ordersTrend"><span>--</span></div>
                         </div>
                     </div>
 
@@ -1033,11 +1031,9 @@
                             <i class="fas fa-money-bill-wave"></i>
                         </div>
                         <div class="stat-info">
-                            <h3>12,450 ج.م</h3>
+                            <h3 id="totalSales">0.00</h3>
                             <p>إجمالي المبيعات</p>
-                            <div class="stat-change up">
-                                <i class="fas fa-arrow-up"></i> 8% من الأسبوع
-                            </div>
+                            <div class="stat-change" id="revenueTrend"><span>--</span></div>
                         </div>
                     </div>
 
@@ -1046,11 +1042,9 @@
                             <i class="fas fa-users"></i>
                         </div>
                         <div class="stat-info">
-                            <h3>89</h3>
+                            <h3 id="newCustomers">0</h3>
                             <p>عملاء جدد</p>
-                            <div class="stat-change up">
-                                <i class="fas fa-arrow-up"></i> 23% هذا الشهر
-                            </div>
+                            <div class="stat-change" id="customersTrend"><span>--</span></div>
                         </div>
                     </div>
 
@@ -1059,11 +1053,9 @@
                             <i class="fas fa-star"></i>
                         </div>
                         <div class="stat-info">
-                            <h3>4.8</h3>
+                            <h3 id="avgRating">0.0</h3>
                             <p>متوسط التقييم</p>
-                            <div class="stat-change up">
-                                <i class="fas fa-arrow-up"></i> +0.3
-                            </div>
+                            <div class="stat-change"><span>--</span></div>
                         </div>
                     </div>
 
@@ -1072,11 +1064,9 @@
                             <i class="fas fa-eye"></i>
                         </div>
                         <div class="stat-info">
-                            <h3>1,234</h3>
+                            <h3 id="menuViews">0</h3>
                             <p>مشاهدات القائمة</p>
-                            <div class="stat-change down">
-                                <i class="fas fa-arrow-down"></i> 5%
-                            </div>
+                            <div class="stat-change"><span>--</span></div>
                         </div>
                     </div>
                 </div>
@@ -1185,14 +1175,14 @@
                             <tbody>
                                 <tr>
                                     <td><strong>#1001</strong></td>
-                                    <td>أحمد محمد</td>
+                                    <td>---</td>
                                     <td><strong>250 ج.م</strong></td>
                                     <td><span class="status-badge status-pending">قيد الانتظار</span></td>
                                     <td>منذ 5 دقائق</td>
                                 </tr>
                                 <tr>
                                     <td><strong>#1000</strong></td>
-                                    <td>سارة أحمد</td>
+                                    <td>---</td>
                                     <td><strong>180 ج.م</strong></td>
                                     <td><span class="status-badge status-preparing">قيد التحضير</span></td>
                                     <td>منذ 15 دقيقة</td>
@@ -1226,7 +1216,7 @@
                                     <i class="fas fa-receipt"></i>
                                 </div>
                                 <div class="activity-content">
-                                    <p class="activity-text">طلب جديد <strong>#1001</strong> من أحمد محمد</p>
+                                    <p class="activity-text">طلب جديد <strong>#1001</strong> من ---</p>
                                     <span class="activity-time">منذ 5 دقائق</span>
                                 </div>
                             </li>
@@ -1235,7 +1225,7 @@
                                     <i class="fas fa-user-plus"></i>
                                 </div>
                                 <div class="activity-content">
-                                    <p class="activity-text">عميل جديد: <strong>سارة أحمد</strong></p>
+                                    <p class="activity-text">عميل جديد: <strong>---</strong></p>
                                     <span class="activity-time">منذ 15 دقيقة</span>
                                 </div>
                             </li>
