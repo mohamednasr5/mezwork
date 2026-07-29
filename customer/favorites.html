@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>المفضلة - مطعم المبروك</title>
+    <meta name="theme-color" content="#ff6b35">
+    
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root{
+            --primary-color:#ff6b35;
+            --primary-dark:#e55a2b;
+            --secondary-color:#f7931e;
+            --dark-color:#1a1a2e;
+            --white:#ffffff;
+            --gray-50:#f8f9fa;
+            --gray-100:#e9ecef;
+            --gray-200:#dee2e6;
+            --gray-300:#ced4da;
+            --gray-500:#adb5bd;
+            --gray-600:#6c757d;
+            --gray-700:#495057;
+            --success:#28a745;
+            --warning:#ffc107;
+            --danger:#dc3545;
+            --info:#17a2b8;
+            --shadow-sm:0 1px 2px rgba(0,0,0,0.05);
+            --shadow-md:0 4px 6px rgba(0,0,0,0.1);
+            --shadow-lg:0 10px 25px rgba(0,0,0,0.15);
+            --radius-sm:4px;
+            --radius-md:8px;
+            --radius-lg:12px;
+            --radius-xl:20px;
+            --radius-full:50%;
+            --transition-fast:.15s ease;
+            --transition-normal:.3s ease;
+        }
+        
+        [data-theme="dark"]{
+            --white:#1a1a2e;
+            --gray-50:#16213e;
+            --gray-100:#1f2940;
+            --gray-200:#2d3f5c;
+            --gray-300:#3d5068;
+            --gray-500:#5a6a7e;
+            --gray-600:#788898;
+            --gray-700:#96a6b6;
+            --dark-color:#f0f0f0;
+            --shadow-sm:0 1px 2px rgba(0,0,0,0.3);
+            --shadow-md:0 4px 6px rgba(0,0,0,0.4);
+            --shadow-lg:0 10px 25px rgba(0,0,0,0.5);
+        }
+        
+        *{margin:0;padding:0;box-sizing:border-box}
+        
+        html{scroll-behavior:smooth}
+        
+        body{font-family:'Cairo',sans-serif;line-height:1.6;color:var(--dark-color);background:var(--gray-50);direction:rtl;text-align:right;min-height:100vh;padding-bottom:100px}
+        
+        /* Header */
+        .header{background:var(--white);box-shadow:var(--shadow-md);position:sticky;top:0;z-index:100}
+        .header-top{padding:16px 20px;display:flex;align-items:center;justify-content:space-between}
+        .header-left{display:flex;align-items:center;gap:12px}
+        .back-btn{width:40px;height:40px;border-radius:var(--radius-full);border:none;background:var(--gray-100);color:var(--gray-700);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1rem;transition:var(--transition-fast)}
+        .back-btn:hover{background:var(--primary-color);color:#fff}
+        .header-title h1{font-size:1.25rem;color:var(--dark-color);font-weight:700;display:flex;align-items:center;gap:8px}
+        .header-title p{font-size:.85rem;color:var(--gray-600)}
+        .fav-count{background:var(--danger);color:#fff;padding:4px 12px;border-radius:var(--radius-full);font-size:.82rem;font-weight:700}
+        
+        /* Actions Bar */
+        .actions-bar{padding:14px 20px;background:var(--white);border-top:1px solid var(--gray-100);display:flex;gap:10px}
+        .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 18px;font-family:'Cairo',sans-serif;font-size:.9rem;font-weight:600;border:none;border-radius:var(--radius-md);cursor:pointer;transition:var(--transition-normal)}
+        .btn:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
+        .btn-primary{background:linear-gradient(135deg,var(--primary-color),var(--secondary-color));color:#fff}
+        .btn-danger{background:var(--danger);color:#fff}
+        .btn-outline{background:transparent;color:var(--danger);border:1px solid var(--danger)}
+        
+        /* Main Content */
+        .main-content{padding:20px;max-width:800px;margin:0 auto}
+        
+        /* Favorites Grid */
+        .favorites-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+        
+        /* Favorite Card */
+        .fav-card{background:var(--white);border-radius:var(--radius-xl);overflow:hidden;box-shadow:var(--shadow-sm);transition:var(--transition-normal);position:relative}
+        .fav-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg)}
+        .fav-card-image{position:relative;width:100%;height:160px;overflow:hidden;background:linear-gradient(135deg,var(--gray-200),var(--gray-300))}
+        .fav-card-image img{width:100%;height:100%;object-fit:cover;transition:var(--transition-slow)}
+        .fav-card:hover .fav-card-image img{transform:scale(1.06)}
+        .fav-badge{position:absolute;top:10px;right:10px;background:rgba(220,53,69,.9);color:#fff;padding:4px 10px;border-radius:var(--radius-sm);font-size:.72rem;font-weight:700;display:flex;align-items:center;gap:4px}
+        .remove-fav{position:absolute;top:10px;left:10px;width:34px;height:34px;border-radius:var(--radius-full);background:rgba(255,255,255,.95);border:none;color:var(--danger);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:var(--transition-fast);font-size:1rem}
+        .remove-fav:hover{background:var(--danger);color:#fff}
+        .fav-card-body{padding:14px}
+        .fav-card-name{font-size:1.05rem;font-weight:700;color:var(--dark-color);margin-bottom:6px}
+        .fav-card-desc{font-size:.85rem;color:var(--gray-600);line-height:1.45;margin-bottom:12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+        .fav-card-footer{display:flex;align-items:center;justify-content:space-between}
+        .fav-card-price{font-size:1.15rem;font-weight:800;color:var(--primary-color)}
+        .add-to-cart-btn{width:38px;height:38px;border-radius:var(--radius-full);background:linear-gradient(135deg,var(--primary-color),var(--secondary-color));color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.95rem;transition:var(--transition-fast);box-shadow:0 4px 12px rgba(255,107,53,.3)}
+        .add-to-cart-btn:hover{transform:scale(1.1)}
+        
+        /* Empty State */
+        .empty-state{text-align:center;padding:60px 20px;background:var(--white);border-radius:var(--radius-xl)}
+        .empty-state i{font-size:4rem;color:var(--gray-300);margin-bottom:16px}
+        .empty-state h3{color:var(--gray-700);margin-bottom:8px}
+        .empty-state p{color:var(--gray-500);margin-bottom:20px;line-height:1.7}
+        
+        /* Summary Card */
+        .summary-card{background:linear-gradient(135deg,var(--primary-color),var(--secondary-color));border-radius:var(--radius-xl);padding:24px;color:#fff;margin-bottom:24px;text-align:center}
+        .summary-icon{font-size:3rem;margin-bottom:12px}
+        .summary-title{font-size:1.25rem;font-weight:700;margin-bottom:8px}
+        .summary-text{opacity:.9;font-size:.95rem}
+        .summary-total{font-size:2rem;font-weight:800;margin-top:12px}
+        
+        /* Bottom Navigation */
+        .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--white);box-shadow:0 -4px 20px rgba(0,0,0,.1);display:flex;justify-content:space-around;padding:8px 0;z-index:850;border-radius:var(--radius-xl) var(--radius-xl) 0 0}
+        .nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 16px;color:var(--gray-500);text-decoration:none;transition:var(--transition-fast);font-size:.72rem;font-weight:600}
+        .nav-item i{font-size:1.2rem}
+        .nav-item.active,.nav-item:hover{color:var(--primary-color)}
+        
+        /* Toast */
+        .toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-100px);background:var(--white);padding:14px 20px;border-radius:var(--radius-lg);box-shadow:var(--shadow-xl);z-index:99999;display:flex;align-items:center;gap:10px;transition:transform .3s ease;max-width:380px;width:90%}
+        .toast.show{transform:translateX(-50%) translateY(0)}
+        .toast-icon{width:36px;height:36px;border-radius:var(--radius-full);display:flex;align-items:center;justify-content:center;font-size:1rem;color:#fff}
+        .toast-success .toast-icon{background:var(--success)}
+        .toast-error .toast-icon{background:var(--danger)}
+        .toast-info .toast-icon{background:var(--info)}
+        .toast-text h4{font-size:.92rem;margin:0 0 2px 0;color:var(--dark-color)}
+        .toast-text p{font-size:.8rem;margin:0;color:var(--gray-600)}
+        
+        @media(max-width:480px){
+            .main-content{padding:16px}
+            .favorites-grid{grid-template-columns:1fr}
+            .actions-bar{flex-wrap:wrap}
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-top">
+            <div class="header-left">
+                <button class="back-btn" onclick="history.back()"><i class="fas fa-arrow-right"></i></button>
+                <div class="header-title">
+                    <h1><i class="fas fa-heart" style="color:var(--danger)"></i> المفضلة</h1>
+                    <p>أصنافك المفضلة في مكان واحد</p>
+                </div>
+            </div>
+            <span class="fav-count" id="favCount">0 صنف</span>
+        </div>
+        
+        <!-- Actions -->
+        <div class="actions-bar">
+            <button class="btn btn-primary" onclick="addAllToCart()">
+                <i class="fas fa-cart-plus"></i> إضافة الكل للسلة
+            </button>
+            <button class="btn btn-outline" onclick="clearAllFavorites()">
+                <i class="fas fa-trash"></i> مسح الكل
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Summary (when has favorites) -->
+        <div class="summary-card" id="summaryCard" style="display:none">
+            <div class="summary-icon">❤️</div>
+            <div class="summary-title">قائمتك المفضلة</div>
+            <div class="summary-text">أصناف اخترتها بعناية</div>
+            <div class="summary-total" id="totalPrice">0 ج.م</div>
+        </div>
+
+        <!-- Favorites Grid -->
+        <div class="favorites-grid" id="favoritesGrid"></div>
+    </main>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+        <a href="index.html" class="nav-item">
+            <i class="fas fa-home"></i>
+            <span>الرئيسية</span>
+        </a>
+        <a href="order-history.html" class="nav-item">
+            <i class="fas fa-receipt"></i>
+            <span>طلباتي</span>
+        </a>
+        <a href="favorites.html" class="nav-item active">
+            <i class="fas fa-heart"></i>
+            <span>المفضلة</span>
+        </a>
+        <a href="profile.html" class="nav-item">
+            <i class="fas fa-user"></i>
+            <span>حسابي</span>
+        </a>
+    </nav>
+
+    <!-- Toast -->
+    <div class="toast toast-success" id="toast">
+        <div class="toast-icon"><i class="fas fa-check"></i></div>
+        <div class="toast-text">
+            <h4 id="toastTitle">نجاح</h4>
+            <p id="toastMsg">تمت العملية بنجاح</p>
+        </div>
+    </div>
+
+    <script>
+        // Sample menu items that can be favorited
+        const menuItems = [
+            { id: '1', name: 'كبدة فراخ', price: 65, description: 'كبدة فراخ طازجة مع البصل والفلفل الرومي والثوم', image: null },
+            { id: '2', name: 'شاورما فراخ', price: 55, description: 'شاورما فراخ مشوي على الجمر مع الخبز العربي والطحينة', image: null },
+            { id: '3', name: 'محمرة', price: 85, description: 'لحم محمر بالثوم والبصل والفلفل الرومي مع الأرز', image: null },
+            { id: '4', name: 'فتة موزة', price: 70, description: 'فتة بالأرز والخبز المحمر والصلصة الثومية', image: null },
+            { id: '5', name: 'كفتة بالصينية', price: 95, description: 'كفتة فراخ بالصلصة والبطاطس والبازلاء', image: null },
+            { id: '6', name: 'سلطة فتوش', price: 35, description: 'فتوش طازج بالخضروات والخبز المحمر وصلصة الرمان', image: null },
+            { id: '7', name: 'متبل', price: 25, description: 'متبل ساخن منزلي بالطحينة والثوم والليمون', image: null },
+            { id: '8', name: 'تكا مشوي', price: 120, description: 'تكا مشوي على الفحم مع الأرز والمخلل والصلصة', image: null },
+            { id: '9', name: 'شيش طاووق', price: 95, description: 'فراخ متبلة ومشوية على الفحم مع الخضار', image: null },
+            { id: '10', name: 'عصير برتقال طازج', price: 18, description: 'عصير برتقال طازج 100%', image: null },
+            { id: '11', name: 'كنافة بالنابلسي', price: 50, description: 'كنافة بالجبنة النابلسي والقطر الطازج', image: null },
+            { id: '12', name: 'سمك مقلي', price: 150, description: 'سمك مقلي مع السلطة والتومية والأرز', image: null }
+        ];
+
+        let favorites = [];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadUserTheme();
+            loadFavorites();
+        });
+
+        function loadFavorites() {
+            favorites = JSON.parse(localStorage.getItem('mezofavs') || '[]');
+            renderFavorites();
+            updateCount();
+        }
+
+        function renderFavorites() {
+            const grid = document.getElementById('favoritesGrid');
+            const summaryCard = document.getElementById('summaryCard');
+            
+            // Get favorite items from menu
+            const favItems = menuItems.filter(item => favorites.includes(item.id));
+
+            if (favItems.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state" style="grid-column:1/-1">
+                        <i class="far fa-heart"></i>
+                        <h3>لا توجد مفضلات</h3>
+                        <p>لم تقم بإضافة أي أصناف للمفضلة بعد.<br>استعرض القائمة وأضف ما يعجبك! ❤️</p>
+                        <a href="index.html" class="btn btn-primary" style="margin-top:16px">
+                            <i class="fas fa-utensils"></i> استعرض القائمة
+                        </a>
+                    </div>`;
+                summaryCard.style.display = 'none';
+                return;
+            }
+
+            summaryCard.style.display = 'block';
+            
+            // Calculate total
+            const total = favItems.reduce((sum, item) => sum + item.price, 0);
+            document.getElementById('totalPrice').textContent = `${total} ج.م`;
+
+            grid.innerHTML = favItems.map(item => `
+                <div class="fav-card" data-id="${item.id}">
+                    <div class="fav-card-image">
+                        <img src="${item.image || `https://placehold.co/400x250/FF6B35/FFFFFF?text=${encodeURIComponent(item.name)}`}" alt="${item.name}" loading="lazy">
+                        <span class="fav-badge"><i class="fas fa-heart"></i> مفضل</span>
+                        <button class="remove-fav" onclick="removeFavorite('${item.id}')" title="إزالة من المفضلة">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="fav-card-body">
+                        <h3 class="fav-card-name">${item.name}</h3>
+                        <p class="fav-card-desc">${item.description}</p>
+                        <div class="fav-card-footer">
+                            <span class="fav-card-price">${item.price} ج.م</span>
+                            <button class="add-to-cart-btn" onclick="addToCart('${item.id}', ${item.price}, '${item.name.replace(/'/g, "\\'")}')">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function removeFavorite(itemId) {
+            favorites = favorites.filter(id => id !== itemId);
+            localStorage.setItem('mezofavs', JSON.stringify(favorites));
+            
+            showToast('تم الإزالة', 'تم إزالة الصنف من المفضلة', 'info');
+            renderFavorites();
+            updateCount();
+        }
+
+        function addToCart(itemId, price, name) {
+            let cart = JSON.parse(localStorage.getItem('mezocart') || '[]');
+            
+            const existingIndex = cart.findIndex(c => c.id === itemId);
+            if (existingIndex > -1) {
+                cart[existingIndex].qty += 1;
+            } else {
+                cart.push({
+                    id: itemId,
+                    name: name,
+                    price: price,
+                    qty: 1,
+                    image: null,
+                    notes: '',
+                    size: null,
+                    addons: []
+                });
+            }
+
+            localStorage.setItem('mezocart', JSON.stringify(cart));
+            showToast('تمت الإضافة!', `${name} تمت إضافته للسلة`, 'success');
+        }
+
+        function addAllToCart() {
+            if (favorites.length === 0) {
+                showToast('تنبيه', 'لا توجد أصناف في المفضلة', 'warning');
+                return;
+            }
+
+            let cart = JSON.parse(localStorage.getItem('mezocart') || '[]');
+            const favItems = menuItems.filter(item => favorites.includes(item.id));
+
+            favItems.forEach(item => {
+                const existingIndex = cart.findIndex(c => c.id === item.id);
+                if (existingIndex > -1) {
+                    cart[existingIndex].qty += 1;
+                } else {
+                    cart.push({
+                        id: item.id,
+                        name: item.name,
+                        price: item.price,
+                        qty: 1,
+                        image: null,
+                        notes: '',
+                        size: null,
+                        addons: []
+                    });
+                }
+            });
+
+            localStorage.setItem('mezocart', JSON.stringify(cart));
+            showToast('تمت الإضافة!', `تم إضافة ${favItems.length} صنف للسلة`, 'success');
+        }
+
+        function clearAllFavorites() {
+            if (!confirm('هل أنت متأكد من مسح جميع المفضلات؟')) return;
+
+            favorites = [];
+            localStorage.setItem('mezofavs', JSON.stringify(favorites));
+            
+            showToast('تم المسح', 'تم مسح جميع المفضلات', 'info');
+            renderFavorites();
+            updateCount();
+        }
+
+        function updateCount() {
+            document.getElementById('favCount').textContent = `${favorites.length} صنف`;
+        }
+
+        // Toast
+        function showToast(title, message, type = 'success') {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastTitle').textContent = title;
+            document.getElementById('toastMsg').textContent = message;
+            toast.className = `toast toast-${type} show`;
+            setTimeout(() => toast.classList.remove('show'), 3500);
+        }
+
+        // Theme
+        function loadUserTheme() {
+            if (localStorage.getItem('mezodark') === 'true') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            }
+        }
+    </script>
+</body>
+</html>
