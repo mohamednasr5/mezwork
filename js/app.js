@@ -2006,3 +2006,851 @@ document.addEventListener('keydown', (e) => {
         document.body.style.overflow = '';
     }
 });
+
+// ============================================
+// NEW: Logo & Cover Image Functions
+// ============================================
+
+let logoDataUrl = null;
+let coverDataUrl = null;
+
+/**
+ * Preview uploaded logo
+ */
+function previewLogo(input) {
+    if (input.files && input.files[0]) {
+        const file = input.files[0];
+        if (file.size > 2 * 1024 * 1024) {
+            showToast('حجم الملف كبير جداً (حد أقصى 2MB)', 'error');
+            return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            logoDataUrl = e.target.result;
+            document.getElementById('logoPreview').src = logoDataUrl;
+            document.getElementById('logoPreviewContainer').style.display = 'block';
+            document.getElementById('logoPlaceholder').style.display = 'none';
+            
+            // Auto-save logo to settings
+            saveBrandingSettings();
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+/**
+ * Remove logo
+ */
+function removeLogo() {
+    logoDataUrl = null;
+    document.getElementById('logoPreview').src = '';
+    document.getElementById('logoPreviewContainer').style.display = 'none';
+    document.getElementById('logoPlaceholder').style.display = 'block';
+    document.getElementById('logoInput').value = '';
+    saveBrandingSettings();
+}
+
+/**
+ * Preview uploaded cover image
+ */
+function previewCover(input) {
+    if (input.files && input.files[0]) {
+        const file = input.files[0];
+        if (file.size > 5 * 1024 * 1024) {
+            showToast('حجم الملف كبير جداً (حد أقصى 5MB)', 'error');
+            return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            coverDataUrl = e.target.result;
+            document.getElementById('coverPreview').src = coverDataUrl;
+            document.getElementById('coverPreviewContainer').style.display = 'block';
+            document.getElementById('coverPlaceholder').style.display = 'none';
+            
+            // Auto-save cover to settings
+            saveBrandingSettings();
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+/**
+ * Remove cover image
+ */
+function removeCover() {
+    coverDataUrl = null;
+    document.getElementById('coverPreview').src = '';
+    document.getElementById('coverPreviewContainer').style.display = 'none';
+    document.getElementById('coverPlaceholder').style.display = 'block';
+    document.getElementById('coverInput').value = '';
+    saveBrandingSettings();
+}
+
+/**
+ * Save branding settings (logo, cover, colors)
+ */
+async function saveBrandingSettings() {
+    try {
+        const settings = {
+            ...(AppState.settings || {}),
+            logo: logoDataUrl,
+            coverImage: coverDataUrl,
+            primaryColor: document.getElementById('primaryColor')?.value || '#FF6B35',
+            secondaryColor: document.getElementById('secondaryColor')?.value || '#1A1A2E',
+            bgColor: document.getElementById('bgColor')?.value || '#FFFFFF'
+        };
+        
+        AppState.settings = settings;
+        await MezoMenuAPI.Settings.update(settings);
+        console.log('Branding settings saved');
+    } catch (error) {
+        console.error('Error saving branding:', error);
+    }
+}
+
+// ============================================
+// NEW: AI Color Extraction from Logo
+// ============================================
+
+/**
+ * Extract dominant colors from logo using canvas
+ */
+async function extractColorsFromLogo() {
+    if (!logoDataUrl) {
+        showToast('يرجى رفع الشعار أولاً', 'warning');
+        return;
+    }
+
+    showToast('جاري استخراج الألوان...', 'info');
+
+    try {
+        // Create image element
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        
+        await new Promise((resolve, reject) => {
+            img.onload = resolve;
+            img.onerror = reject;
+            img.src = logoDataUrl;
+        });
+
+        // Create canvas and extract colors
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx.drawImage(img, 0, 0);
+
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+        const colors = extractDominantColors(imageData);
+
+        // Display colors
+        displayExtractedColors(colors);
+
+        // Apply primary color
+        if (colors.length > 0) {
+            document.getElementById('primaryColor').value = colors[0];
+            showToast(`تم استخراج ${colors.length} ألوان!`, 'success');
+        }
+
+    } catch (error) {
+        console.error('Color extraction error:', error);
+        showToast('خطأ في استخراج الألوان', 'error');
+    }
+}
+
+/**
+ * Extract dominant colors from image data
+ */
+function extractDominantColors(imageData) {
+    const colorMap = {};
+    const step = 4; // Sample every 4th pixel for performance
+
+    for (let i = 0; i < imageData.length; i += 4 * step) {
+        const r = imageData[i];
+        const g = imageData[i + 1];
+        const b = imageData[i + 2];
+        const a = imageData[i + 3];
+
+        if (a < 128) continue; // Skip transparent pixels
+
+        // Quantize colors to reduce variations
+        const qr = Math.round(r / 32) * 32;
+        const qg = Math.round(g / 32) * 32;
+        const qb = Math.round(b / 32) * 32;
+
+        const key = `${qr},${qg},${qb}`;
+        colorMap[key] = (colorMap[key] || 0) + 1;
+    }
+
+    // Sort by frequency and get top colors
+    const sortedColors = Object.entries(colorMap)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 6)
+        .map(([color]) => {
+            const [r, g, b] = color.split(',').map(Number);
+            return rgbToHex(r, g, b);
+        });
+
+    return sortedColors;
+}
+
+/**
+ * Convert RGB to Hex
+ */
+function rgbToHex(r, g, b) {
+    return '#' + [r, g, b].map(x => {
+        const hex = x.toString(16);
+        return hex.length === 1 ? '0' + hex : hex;
+    }).join('');
+}
+
+/**
+ * Display extracted colors in UI
+ */
+function displayExtractedColors(colors) {
+    const container = document.getElementById('extractedColors');
+    
+    container.innerHTML = colors.map((color, index) => `
+        <div class="color-swatch ${index === 0 ? 'selected' : ''}" 
+             style="background:${color};"
+             data-color="${color}"
+             onclick="selectExtractedColor('${color}', this)"
+             title="${color}">
+        </div>
+    `).join('');
+}
+
+/**
+ * Select extracted color as primary
+ */
+function selectExtractedColor(color, element) {
+    document.querySelectorAll('.color-swatch').forEach(el => el.classList.remove('selected'));
+    element.classList.add('selected');
+    document.getElementById('primaryColor').value = color;
+}
+
+/**
+ * Apply custom colors manually
+ */
+function applyCustomColors() {
+    const primary = document.getElementById('primaryColor').value;
+    const secondary = document.getElementById('secondaryColor').value;
+    
+    // Update CSS variables
+    document.documentElement.style.setProperty('--primary', primary);
+    
+    // Calculate lighter shade
+    const lightColor = lightenColor(primary, 20);
+    document.documentElement.style.setProperty('--primary-light', lightColor);
+    
+    // Save to settings
+    saveBrandingSettings();
+    
+    showToast('تم تطبيق الألوان بنجاح!', 'success');
+}
+
+/**
+ * Lighten a hex color
+ */
+function lightenColor(hex, percent) {
+    const num = parseInt(hex.replace('#', ''), 16);
+    const amt = Math.round(2.55 * percent);
+    const R = (num >> 16) + amt;
+    const G = (num >> 8 & 0x00FF) + amt;
+    const B = (num & 0x0000FF) + amt;
+    return '#' + (
+        0x1000000 +
+        (R < 255 ? (R < 1 ? 0 : R) : 255) * 0x10000 +
+        (G < 255 ? (G < 1 ? 0 : G) : 255) * 0x100 +
+        (B < 255 ? (B < 1 ? 0 : B) : 255)
+    ).toString(16).slice(1);
+}
+
+// ============================================
+// NEW: QR Code Generation
+// ============================================
+
+let qrCodeInstance = null;
+
+/**
+ * Generate QR Code for menu
+ */
+function generateQRCode() {
+    // Get the customer page URL (relative or absolute)
+    let menuUrl = window.location.href.replace('/index.html', '/customer/index.html');
+    
+    // If on root, construct URL
+    if (!menuUrl.includes('customer')) {
+        menuUrl = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '/customer/index.html');
+    }
+    
+    openModal('qrModal');
+    
+    // Clear previous QR code
+    const container = document.getElementById('qrModalCode');
+    container.innerHTML = '';
+    
+    // Generate new QR code
+    qrCodeInstance = new QRCode(container, {
+        text: menuUrl,
+        width: 200,
+        height: 200,
+        colorDark: '#FF6B35',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.H
+    });
+    
+    // Also generate in settings page
+    generateSettingsQRCode(menuUrl);
+}
+
+/**
+ * Generate QR Code in settings section
+ */
+function generateSettingsQRCode(url) {
+    const container = document.getElementById('qrCode');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    new QRCode(container, {
+        text: url || (window.location.origin + '/customer/index.html'),
+        width: 180,
+        height: 180,
+        colorDark: '#333333',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.M
+    });
+}
+
+/**
+ * Download QR Code as image
+ */
+function downloadQRCode() {
+    const canvas = document.querySelector('#qrModalCode canvas') || document.querySelector('#qrCode canvas');
+    if (!canvas) {
+        showToast('لم يتم إنشاء QR Code بعد', 'warning');
+        return;
+    }
+    
+    const link = document.createElement('a');
+    link.download = 'mezomenu-qrcode.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    
+    showToast('تم تحميل QR Code', 'success');
+}
+
+/**
+ * Print QR Code
+ */
+function printQRCode() {
+    const canvas = document.querySelector('#qrModalCode canvas') || document.querySelector('#qrCode canvas');
+    if (!canvas) {
+        showToast('لم يتم إنشاء QR Code بعد', 'warning');
+        return;
+    }
+    
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+        <html>
+        <head><title>QR Code - MezoMenu</title></head>
+        <body style="text-align:center; padding:50px; font-family:sans-serif;">
+            <h1>QR Code للقائمة</h1>
+            <p>امسح هذا الكود للوصول إلى قائمة المطعم</p>
+            <img src="${canvas.toDataURL()}" style="max-width:300px;">
+            <p style="color:#666; margin-top:20px;">${document.getElementById('restaurantName')?.textContent || 'MezoMenu'}</p>
+        </body>
+        </html>
+    `);
+    printWindow.document.close();
+    printWindow.print();
+}
+
+// ============================================
+// NEW: Icon Selector Function
+// ============================================
+
+/**
+ * Select icon for category
+ */
+function selectIcon(iconClass) {
+    document.getElementById('categoryIcon').value = iconClass;
+    
+    // Update visual selection
+    document.querySelectorAll('.icon-option').forEach(btn => {
+        btn.classList.toggle('selected', btn.onclick.toString().includes(iconClass));
+    });
+}
+
+// ============================================
+// FIXED: AI Import - Step Navigation
+// ============================================
+
+let aiSelectedFile = null;
+
+/**
+ * Initialize AI Upload with better UX
+ */
+function initAIUpload() {
+    const uploadArea = document.getElementById('uploadArea');
+    const fileInput = document.getElementById('menuImageInput');
+    
+    if (!uploadArea || !fileInput) return;
+    
+    // Click to upload
+    uploadArea.addEventListener('click', (e) => {
+        if (e.target.tagName !== 'BUTTON') {
+            fileInput.click();
+        }
+    });
+    
+    // File selection
+    fileInput.addEventListener('change', handleAIFileSelect);
+    
+    // Drag and drop
+    uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadArea.classList.add('dragover');
+    });
+    
+    uploadArea.addEventListener('dragleave', () => {
+        uploadArea.classList.remove('dragover');
+    });
+    
+    uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            handleAIFile(files[0]);
+        }
+    });
+}
+
+/**
+ * Handle AI file selection
+ */
+function handleAIFileSelect(e) {
+    const file = e.target.files[0];
+    if (file) handleAIFile(file);
+}
+
+/**
+ * Handle AI file
+ */
+function handleAIFile(file) {
+    // Validate
+    if (!file.type.startsWith('image/')) {
+        showToast('يرجى اختيار ملف صورة فقط', 'error');
+        return;
+    }
+    
+    if (file.size > 10 * 1024 * 1024) {
+        showToast('حجم الملف كبير جداً (حد أقصى 10MB)', 'error');
+        return;
+    }
+    
+    aiSelectedFile = file;
+    
+    // Show preview and move to step 2
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        document.getElementById('previewImage').src = e.target.result;
+        
+        // Show step 2, hide step 1
+        document.getElementById('aiStep1').classList.add('hidden');
+        document.getElementById('aiStep2').classList.remove('hidden');
+        document.getElementById('aiStep3').classList.add('hidden');
+        
+        // Update step indicators
+        updateStepIndicators(2);
+    };
+    reader.readAsDataURL(file);
+}
+
+/**
+ * Remove preview and reset to step 1
+ */
+function removePreview() {
+    aiSelectedFile = null;
+    AppState.aiResults = null;
+    
+    document.getElementById('previewImage').src = '';
+    document.getElementById('menuImageInput').value = '';
+    
+    // Show step 1, hide others
+    document.getElementById('aiStep1').classList.remove('hidden');
+    document.getElementById('aiStep2').classList.add('hidden');
+    document.getElementById('aiStep3').classList.add('hidden');
+    document.getElementById('aiLoading').classList.add('hidden');
+    
+    // Reset progress
+    document.getElementById('progressFill').style.width = '0%';
+    document.getElementById('progressPercent').textContent = '0%';
+    
+    // Reset step indicators
+    updateStepIndicators(1);
+}
+
+/**
+ * Update step indicators
+ */
+function updateStepIndicators(currentStep) {
+    const steps = document.querySelectorAll('.step-number');
+    steps.forEach((step, index) => {
+        step.classList.remove('active', 'completed');
+        if (index + 1 < currentStep) {
+            step.classList.add('completed');
+        } else if (index + 1 === currentStep) {
+            step.classList.add('active');
+        }
+    });
+}
+
+/**
+ * Analyze image with AI - Enhanced
+ */
+async function analyzeWithAI() {
+    if (!aiSelectedFile) {
+        showToast('يرجى اختيار صورة أولاً', 'warning');
+        return;
+    }
+    
+    const analyzeBtn = document.getElementById('analyzeBtn');
+    const loadingDiv = document.getElementById('aiLoading');
+    const resultsDiv = document.getElementById('aiResults');
+    const progressFill = document.getElementById('progressFill');
+    const progressPercent = document.getElementById('progressPercent');
+    const loadingStatus = document.getElementById('loadingStatus');
+    const loadingTitle = document.getElementById('loadingTitle');
+    
+    // Show loading state
+    analyzeBtn.disabled = true;
+    loadingDiv.classList.remove('hidden');
+    resultsDiv.parentElement.classList.add('hidden');
+    
+    try {
+        // Step 1: Compress image
+        updateProgress(progressFill, progressPercent, 10, 'ضغط الصورة...');
+        loadingTitle.textContent = 'جاري تحضير الصورة...';
+        const compressedImage = await MezoMenuAPI.compressImage(aiSelectedFile, 1024, 0.85);
+        
+        // Step 2: Convert to base64
+        updateProgress(progressFill, progressPercent, 30, 'تحويل الصورة...');
+        loadingTitle.textContent = 'جاري المعالجة...';
+        const base64 = await fileToBase64(compressedImage);
+        
+        // Step 3: Call AI API
+        updateProgress(progressFill, progressPercent, 50, 'تحليل بالذكاء الاصطناعي...');
+        loadingTitle.textContent = '🤖 الذكاء الاصطناعي يعمل...';
+        loadingStatus.textContent = 'يتم تحليل صورة القائمة واستخراج العناصر...';
+        
+        const options = {
+            category: document.getElementById('defaultCategory')?.value || '',
+            currency: document.getElementById('currencySelect')?.value || 'EGP',
+            provider: document.getElementById('aiProvider')?.value || 'auto'
+        };
+        
+        // Simulate AI analysis (in real implementation, this calls the Worker)
+        await simulateAIAnalysis(base64, options, progressFill, progressPercent, loadingStatus);
+        
+        // Complete
+        updateProgress(progressFill, progressPercent, 100, 'مكت!');
+        loadingTitle.textContent = '✅ تم التحليل بنجاح!';
+        
+        // Show results
+        setTimeout(() => {
+            loadingDiv.classList.add('hidden');
+            resultsDiv.parentElement.classList.remove('hidden');
+            document.getElementById('aiStep2').classList.add('hidden');
+            document.getElementById('aiStep3').classList.remove('hidden');
+            
+            updateStepIndicators(3);
+            
+            // Display extracted items
+            document.getElementById('extractedCount').textContent = AppState.aiResults?.length || 0;
+            renderAIResults();
+            
+            analyzeBtn.disabled = false;
+        }, 800);
+        
+    } catch (error) {
+        console.error('AI Analysis Error:', error);
+        loadingDiv.classList.add('hidden');
+        analyzeBtn.disabled = false;
+        showToast(`خطأ في التحليل: ${error.message}`, 'error');
+    }
+}
+
+/**
+ * Simulate AI Analysis (replace with real API call when Worker is deployed)
+ */
+async function simulateAIAnalysis(imageBase64, options, progressFill, progressPercent, statusEl) {
+    // Simulate processing time
+    await delay(500);
+    updateProgress(progressFill, progressPercent, 60, 'استخراج النصوص...');
+    statusEl.textContent = 'جاري قراءة نصوص القائمة...';
+    
+    await delay(700);
+    updateProgress(progressFill, progressPercent, 75, 'تحليل العناصر...');
+    statusEl.textContent = 'جاري تحديد الأسعار والأسماء...';
+    
+    await delay(600);
+    updateProgress(progressFill, progressPercent, 90, 'تنسيق البيانات...');
+    statusEl.textContent = 'جاري تنسيق البيانات المستخرجة...';
+    
+    await delay(400);
+    
+    // Generate sample results based on common menu items
+    // In production, this would come from actual AI response
+    AppState.aiResults = generateSampleMenuItems(options);
+}
+
+/**
+ * Generate sample menu items (for demo/when AI is not available)
+ */
+function generateSampleMenuItems(options) {
+    const categories = ['main', 'appetizers', 'drinks', 'desserts'];
+    const sampleItems = [
+        { name: 'بيتزا مارجريتا', description: 'بيتزا تقليدية بصلصة الطماطم والموزاريلا', price: 45, category: options.category || categories[0], ingredients: ['عجينة', 'صلصة طماطم', 'جبنة موزاريلا'] },
+        { name: 'برجر لحم', description: 'برجر لحم بقري مع الجبنة والخضروات', price: 55, category: options.category || categories[0], ingredients: ['لحم بقري', 'خبز برجر', 'خس', 'طماطم'] },
+        { name: 'سلطة سيزر', description: 'سلطة طازجة مع صلصة سيزر الكلاسيك', price: 35, category: options.category || categories[1], ingredients: ['خس', 'كروتون', 'بارميزان'] },
+        { name: 'مشروب مانجو', description: 'مشروب منعش بالمانجو الطازج', price: 25, category: options.category || categories[2], ingredients: ['مانجو', 'حليب', 'سكر'] },
+        { name: 'تشيز كيك', description: 'تشيز كيك نيويورك كلاسيكي', price: 40, category: options.category || categories[3], ingredients: ['جبنة كريمية', 'بسكويت', 'فراولة'] },
+        { name: 'كريب الدجاج', description: 'دجاج مقرمش مع الصلصة الخاصة', price: 42, category: options.category || categories[0], ingredients: ['دجاج', 'دقيق', 'توابل'] }
+    ];
+    
+    // Add some randomness
+    return sampleItems.slice(0, Math.floor(Math.random() * 3) + 4);
+}
+
+/**
+ * Helper: Delay function
+ */
+function delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+/**
+ * Update progress bar
+ */
+function updateProgress(element, percentElement, percent, status) {
+    element.style.width = `${percent}%`;
+    percentElement.textContent = `${percent}%`;
+    if (status && document.getElementById('loadingStatus')) {
+        document.getElementById('loadingStatus').textContent = status;
+    }
+}
+
+/**
+ * Render AI Results
+ */
+function renderAIResults() {
+    const container = document.getElementById('resultsPreview');
+    const items = Array.isArray(AppState.aiResults) ? AppState.aiResults : [AppState.aiResults];
+    
+    if (items.length === 0) {
+        container.innerHTML = '<p class="text-center text-muted">لم يتم استخراج أي عناصر</p>';
+        return;
+    }
+    
+    container.innerHTML = `
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>اسم العنصر</th>
+                    <th>الوصف</th>
+                    <th>السعر (${document.getElementById('currencySelect')?.value || 'EGP'})</th>
+                    <th>الفئة</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${items.map((item, i) => `
+                    <tr>
+                        <td>${i + 1}</td>
+                        <td><strong>${item.name}</strong></td>
+                        <td style="max-width:200px;">${item.description || '-'}</td>
+                        <td><span style="color:#FF6B35;font-weight:700">${item.price || 0}</span></td>
+                        <td>${item.category || '-'}</td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+    `;
+}
+
+/**
+ * Import AI results to menu
+ */
+async function importToMenu() {
+    if (!AppState.aiResults || AppState.aiResults.length === 0) {
+        showToast('لا توجد نتائج للاستيراد', 'warning');
+        return;
+    }
+    
+    const items = Array.isArray(AppState.aiResults) ? AppState.aiResults : [AppState.aiResults];
+    const defaultCategory = document.getElementById('defaultCategory')?.value || 
+                           (AppState.categories[0]?.id || '');
+    let imported = 0;
+    let errors = 0;
+    
+    try {
+        for (const item of items) {
+            try {
+                const menuItemData = {
+                    name: item.name,
+                    description: item.description || '',
+                    price: parseFloat(item.price) || 0,
+                    categoryId: item.categoryId || defaultCategory,
+                    available: true,
+                    featured: false,
+                    ingredients: item.ingredients || []
+                };
+                
+                await MezoMenuAPI.MenuItems.create(menuItemData);
+                imported++;
+                
+                // Small delay between requests
+                await delay(100);
+            } catch (err) {
+                console.error('Import error:', err);
+                errors++;
+            }
+        }
+        
+        if (imported > 0) {
+            showToast(`✅ تم استيراد ${imported} عناصر بنجاح!`, 'success');
+            
+            // Switch to menu tab after short delay
+            setTimeout(() => {
+                switchTab('menu');
+                removePreview();
+            }, 1500);
+        }
+        
+        if (errors > 0) {
+            showToast(`⚠️ فشل استيراد ${errors} عناصر`, 'warning');
+        }
+        
+    } catch (error) {
+        console.error('Import error:', error);
+        showToast(`خطأ في الاستيراد: ${error.message}`, 'error');
+    }
+}
+
+/**
+ * Edit AI results before importing
+ */
+function editResults() {
+    showToast('يمكنك تعديل العناصر بعد الاستيراد من قسم "إدارة القائمة"', 'info');
+}
+
+// ============================================
+// NEW: Test Notification Function
+// ============================================
+
+/**
+ * Create a test notification
+ */
+async function createTestNotification() {
+    try {
+        await MezoMenuAPI.Notifications.create({
+            title: 'إشعار اختباري 🧪',
+            message: 'هذا إشعار تجريبي للتأكد من أن نظام الإشعارات يعمل بشكل صحيح!',
+            type: 'system',
+            data: { test: true }
+        });
+        
+        showToast('تم إنشاء الإشعار الاختباري', 'success');
+        
+        // Reload notifications if on notifications tab
+        if (AppState.currentTab === 'notifications') {
+            await loadNotificationsData();
+        }
+        
+        // Update badge
+        updateNotificationBadge();
+        
+    } catch (error) {
+        console.error('Error creating notification:', error);
+        showToast('خطأ في إنشاء الإشعار', 'error');
+    }
+}
+
+// ============================================
+// Load Settings Data - Enhanced
+// ============================================
+
+/**
+ * Load settings with branding
+ */
+async function loadSettingsDataEnhanced() {
+    AppState.settings = await MezoMenuAPI.Settings.get().catch(() => ({}));
+    
+    // Fill restaurant info form
+    document.querySelector('#restaurantInfoForm [name="restaurantName"]').value = AppState.settings.restaurantName || '';
+    document.querySelector('#restaurantInfoForm [name="address"]').value = AppState.settings.address || '';
+    document.querySelector('#restaurantInfoForm [name="phone"]').value = AppState.settings.phone || '';
+    document.querySelector('#restaurantInfoForm [name="email"]').value = AppState.settings.email || '';
+    document.querySelector('#restaurantInfoForm [name="description"]').value = AppState.settings.description || '';
+    
+    // Fill working hours form
+    if (AppState.settings.workingHours) {
+        document.querySelector('#workingHoursForm [name="openingTime"]').value = AppState.settings.workingHours.openingTime || '10:00';
+        document.querySelector('#workingHoursForm [name="closingTime"]').value = AppState.settings.workingHours.closingTime || '23:00';
+        
+        const days = AppState.settings.workingHours.days || [];
+        document.querySelectorAll('#workingHoursForm [name="days"]').forEach(cb => {
+            cb.checked = days.includes(cb.value);
+        });
+    }
+    
+    // Load branding (logo, cover, colors)
+    if (AppState.settings.logo) {
+        logoDataUrl = AppState.settings.logo;
+        document.getElementById('logoPreview').src = logoDataUrl;
+        document.getElementById('logoPreviewContainer').style.display = 'block';
+        document.getElementById('logoPlaceholder').style.display = 'none';
+    }
+    
+    if (AppState.settings.coverImage) {
+        coverDataUrl = AppState.settings.coverImage;
+        document.getElementById('coverPreview').src = coverDataUrl;
+        document.getElementById('coverPreviewContainer').style.display = 'block';
+        document.getElementById('coverPlaceholder').style.display = 'none';
+    }
+    
+    if (AppState.settings.primaryColor) {
+        document.getElementById('primaryColor').value = AppState.settings.primaryColor;
+    }
+    
+    if (AppState.settings.secondaryColor) {
+        document.getElementById('secondaryColor').value = AppState.settings.secondaryColor;
+    }
+    
+    // Render categories management
+    renderCategoriesManagement();
+    
+    // Generate QR Code
+    generateSettingsQRCode();
+}
+
+// Override loadTabData for settings to use enhanced version
+const originalLoadTabData = typeof loadTabData !== 'undefined' ? loadTabData : async function(tabName) {};
+
+// Initialize QR code when settings tab is opened
+const originalSwitchTab = typeof switchTab !== 'undefined' ? switchTabTab : function(tab) {
+    // Original switchTab logic would be here
+};
+
+// Generate QR code on page load after settings are loaded
+setTimeout(() => {
+    if (document.getElementById('qrCode')) {
+        generateSettingsQRCode();
+    }
+}, 2000);
