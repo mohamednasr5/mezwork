@@ -1,17 +1,24 @@
 /**
  * ===================================
- * MezoMenu SaaS - Complete Worker v3.1
+ * MezoMenu SaaS - Complete Worker v3.2
  * ===================================
  * 
  * ملف متكامل لـ Cloudflare Worker مع Firebase Realtime Database
  * يحتوي على: Auth, Menu, AI, Upload, Orders, Notifications
  * 
  * 📌 المتغيرات المطلوبة في Cloudflare:
- *    - AGNES_AI_API_KEY = [مفتاح Agnes AI]
+ *    - GEMINI_API_KEY = [مفتاح Google Gemini AI - من aistudio.google.com]
+ *    - AGNES_AI_API_KEY = [مفتاح Agnes AI - اختياري كبديل]
  *    - FIREBASE_API_KEY = AIzaSyBFkPZjXbI8XqJ5V8KQY3LmNpOqR7sT9uW
  *    - FIREBASE_PROJECT_ID = menu-b41e6
  * 
- * @version 3.1.0
+ * 🚀 للحصول على Gemini API Key:
+ *    1. اذهب إلى https://aistudio.google.com/app/apikey
+ *    2. سجل الدخول بحساب Google
+ *    3. اضغط "Create API Key"
+ *    4. انسخ المفتاح وأضفه في Cloudflare Workers Settings
+ *
+ * @version 3.2.0
  * @author MezoMenu Team
  */
 
@@ -1096,57 +1103,86 @@ async function handleAIImage(request, env) {
 /**
  * POST /api/ai/analyze
  * تحليل صورة القائمة (OCR/Vision)
+ * يدعم: Agnes AI + Google Gemini Vision
  */
 async function handleAIAnalyze(request, env) {
     try {
-        const { image, type = 'menu-ocr', options = {} } = await request.json();
+        const { image, type = 'menu-ocr', options = {}, provider = 'auto' } = await request.json();
         
         if (!image && type === 'menu-ocr') {
             return errorResponse('صورة القائمة مطلوبة', 400);
         }
 
-        const apiKey = env.AGNES_AI_API_KEY;
-        
-        if (!apiKey) {
-            return errorResponse('خدمة الذكاء الاصطناعي غير متاحة حالياً', 503);
-        }
-
-        console.log(`[AI Analyze] Type: ${type}, Processing...`);
+        console.log(`[AI Analyze] Type: ${type}, Provider: ${provider}, Processing...`);
 
         if (type === 'menu-ocr' && image) {
-            const response = await fetch(`${CONFIG.agnesAI.baseUrl}${CONFIG.agnesAI.endpoints.vision}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${apiKey}`,
-                    'X-API-Key': apiKey
-                },
-                body: JSON.stringify({
-                    model: CONFIG.agnesAI.models.vision,
-                    image: image.startsWith('data:') ? image : `data:image/png;base64,${image}`,
-                    task: 'menu-extraction',
-                    options: {
-                        language: options.language || 'ar',
-                        extractPrices: true,
-                        extractCategories: true,
-                        format: 'structured'
+            // Try Gemini first (if key provided), then Agnes AI
+            let result;
+            
+            // Check for Gemini API Key
+            const geminiKey = env.GEMINI_API_KEY || options.geminiApiKey;
+            
+            if ((provider === 'gemini' || provider === 'auto') && geminiKey) {
+                console.log('[AI Analyze] Using Gemini Vision...');
+                try {
+                    result = await analyzeWithGemini(image, geminiKey, options);
+                    if (result.success) {
+                        return successResponse({
+                            data: result.data,
+                            confidence: result.confidence || 0.9,
+                            method: 'gemini-vision',
+                            extractedItems: result.items || []
+                        }, 'تم تحليل القائمة بنجاح باستخدام Gemini!');
                     }
-                })
-            });
-
-            if (!response.ok) {
-                console.error('[AI Analyze] Error:', await response.text());
-                return errorResponse('فشل في تحليل الصورة', 500);
+                } catch (geminiError) {
+                    console.warn('[AI Analyze] Gemini failed:', geminiError.message);
+                    if (provider === 'gemini') {
+                        throw new Error('فشل تحليل Gemini: ' + geminiError.message);
+                    }
+                }
             }
+            
+            // Fallback to Agnes AI
+            const agnesKey = env.AGNES_AI_API_KEY;
+            if (agnesKey) {
+                console.log('[AI Analyze] Using Agnes AI...');
+                
+                const response = await fetch(`${CONFIG.agnesAI.baseUrl}${CONFIG.agnesAI.endpoints.vision}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${agnesKey}`,
+                        'X-API-Key': agnesKey
+                    },
+                    body: JSON.stringify({
+                        model: CONFIG.agnesAI.models.vision,
+                        image: image.startsWith('data:') ? image : `data:image/png;base64,${image}`,
+                        task: 'menu-extraction',
+                        options: {
+                            language: options.language || 'ar',
+                            extractPrices: true,
+                            extractCategories: true,
+                            format: 'structured'
+                        }
+                    })
+                });
 
-            const result = await response.json();
+                if (!response.ok) {
+                    throw new Error('فشل في تحليل الصورة عبر Agnes AI');
+                }
 
-            return successResponse({
-                data: result.data || result,
-                confidence: result.confidence || 0.85,
-                method: 'agnes-ai-vision',
-                extractedItems: result.items || []
-            }, 'تم تحليل القائمة بنجاح!');
+                const agnesResult = await response.json();
+                
+                return successResponse({
+                    data: agnesResult.data || agnesResult,
+                    confidence: agnesResult.confidence || 0.85,
+                    method: 'agnes-ai-vision',
+                    extractedItems: agnesResult.items || []
+                }, 'تم تحليل القائمة بنجاح!');
+            }
+            
+            // No API available
+            return errorResponse('خدمة الذكاء الاصطناعي غير متاحة - أضف GEMINI_API_KEY أو AGNES_AI_API_KEY', 503);
 
         } else if (type === 'text-analysis') {
             return handleAIChat(request, env);
@@ -1158,6 +1194,94 @@ async function handleAIAnalyze(request, env) {
         console.error('[AI Analyze] Error:', error);
         return errorResponse('فشل في التحليل: ' + error.message, 500);
     }
+}
+
+/**
+ * Analyze image with Google Gemini Vision
+ */
+async function analyzeWithGemini(imageBase64, apiKey, options = {}) {
+    const prompt = `أنت خبير متخصص في تحليل قوائم المطاعم. قم بتحليل هذه الصورة بعناية واستخرج:
+
+1. **الفئات (Categories)**: أسماء الأقسام في القائمة
+2. **الأصناف (Items)**: كل صنف مع:
+   - اسم الصنف بالضبط كما هو مكتوب
+   - السعر (رقم فقط)
+   - وصف إن وجد
+
+⚠️ تعليمات مهمة:
+- استخرج النصوص **بالضبط** كما هي مكتوبة
+- لا تخترع أو تعدل أي أسماء أو أسعار
+- الأسعار يجب أن تكون أرقام حقيقية
+
+📤 رد بتنسيق JSON فقط:
+{
+  "categories": [
+    {
+      "name": "اسم الفئة",
+      "items": [
+        {"name": "اسم الصنف", "price": الرقم, "description": "وصف"}
+      ]
+    }
+  ],
+  "confidence": 90
+}`;
+
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            contents: [{
+                parts: [
+                    { text: prompt },
+                    {
+                        inline_data: {
+                            mime_type: imageBase64.match(/data:([^;]+);/)?.[1] || 'image/jpeg',
+                            data: imageBase64.split(',')[1]
+                        }
+                    }
+                ]
+            }],
+            generationConfig: {
+                temperature: 0.1,
+                maxOutputTokens: 4096
+            }
+        })
+    });
+
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error?.message || `Gemini API Error: ${response.status}`);
+    }
+
+    const geminiResult = await response.json();
+    const responseText = geminiResult.candidates?.[0]?.content?.parts?.[0]?.text;
+    
+    if (!responseText) {
+        throw new Error('لم يرجع Gemini نتيجة');
+    }
+
+    // Parse JSON from response
+    let parsedData;
+    try {
+        const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+        parsedData = jsonMatch ? JSON.parse(jsonMatch[0]) : JSON.parse(responseText);
+    } catch (e) {
+        // Create basic structure from text
+        parsedData = {
+            categories: [{
+                name: 'أصناف مستخرجة',
+                items: [{ name: responseText.substring(0, 100), price: 0, description: responseText.substring(0, 200) }]
+            }],
+            confidence: 70
+        };
+    }
+
+    return {
+        success: true,
+        data: parsedData,
+        confidence: parsedData.confidence || 0.9,
+        items: parsedData.categories?.flatMap(c => c.items) || []
+    };
 }
 
 /**
