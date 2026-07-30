@@ -385,15 +385,36 @@
         function generateQRCode(){
             const slug=document.getElementById('restaurantSlug').value||'el-mabrouk';
             const canvas=document.getElementById('qrCodeCanvas');
+            
+            // Check if canvas exists
+            if(!canvas){
+                console.warn('[Settings] QR Code canvas not found');
+                return;
+            }
+            
             if(typeof QRCode!=='undefined'){
-                QRCode.toCanvas(canvas,`https://menu.nonm1724.workers.dev/r/${slug}`,{width:200,margin:2,color:{dark:'#000000',light:'#ffffff'}});
+                try {
+                    QRCode.toCanvas(canvas,`https://menu.nonm1724.workers.dev/r/${slug}`,{width:200,margin:2,color:{dark:'#000000',light:'#ffffff'}});
+                } catch(e) {
+                    console.warn('[Settings] QR Code generation error:', e);
+                    if(canvas.parentElement){
+                        canvas.parentElement.innerHTML='<p style="color:var(--gray-500)">QR Code: /r/'+slug+'</p>';
+                    }
+                }
             }else{
-                canvas.parentElement.innerHTML='<p style="color:var(--gray-500)">QR Code: /r/'+slug+'</p>';
+                // Fallback if QRCode library not loaded
+                if(canvas.parentElement){
+                    canvas.parentElement.innerHTML='<p style="color:var(--gray-500)">QR Code: /r/'+slug+'</p>';
+                }
             }
         }
         
         function downloadQRCode(){
             const canvas=document.getElementById('qrCodeCanvas');
+            if(!canvas){
+                Toast.error('رمز QR غير متاح');
+                return;
+            }
             const link=document.createElement('a');
             link.download=`qrcode-${document.getElementById('restaurantSlug').value||'menu'}.png`;
             link.href=canvas.toDataURL('image/png');
