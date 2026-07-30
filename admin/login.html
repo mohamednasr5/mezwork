@@ -6,11 +6,6 @@
     <title>تسجيل الدخول - MezoMenu</title>
     <link rel="icon" type="image/png" href="../assets/images/favicon.png">
     
-    <!-- Google Sign-In Meta -->
-    <meta name="google-signin-client_id" content="YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com">
-    <meta name="google-signin-cookiepolicy" content="single_host_origin">
-    <meta name="google-signin-scope" content="email profile">
-    
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -19,10 +14,17 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- CRITICAL: Inline CSS for guaranteed loading -->
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    
+    <!-- Google Identity Services -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    
     <style>
         /* ===================================
-           MezoMenu - Complete Inline Styles
+           MezoMenu - Login Page Styles
            =================================== */
         
         :root {
@@ -243,6 +245,7 @@
             font-size: 0.9rem;
             color: var(--primary-color);
             font-weight: 600;
+            cursor: pointer;
         }
         
         .btn {
@@ -308,13 +311,18 @@
             background: var(--gray-200);
         }
         
-        .social-login { display: flex; justify-content: center; }
+        .social-login { 
+            display: flex; 
+            justify-content: center;
+            gap: 12px;
+        }
         
         .btn-social {
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 10px;
-            padding: 12px 24px;
+            padding: 14px 28px;
             border: 2px solid var(--gray-200);
             border-radius: var(--radius-md);
             background: var(--white);
@@ -322,11 +330,25 @@
             font-weight: 600;
             cursor: pointer;
             transition: var(--transition-fast);
+            flex: 1;
+            max-width: 220px;
         }
         
         .btn-social:hover {
             background: var(--gray-50);
             border-color: var(--gray-300);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .btn-social.google:hover {
+            border-color: #4285F4;
+            background: #f8f9ff;
+        }
+        
+        .btn-social.loading {
+            opacity: 0.7;
+            pointer-events: none;
         }
         
         .auth-footer {
@@ -429,6 +451,14 @@
             
             .auth-illustration { display: none; }
             .auth-card { padding: 32px 24px; }
+            
+            .social-login {
+                flex-direction: column;
+            }
+            
+            .btn-social {
+                max-width: 100%;
+            }
         }
         
         /* Toast Notifications */
@@ -492,6 +522,37 @@
             color: var(--gray-600);
             font-weight: 600;
         }
+
+        /* User info after login */
+        .user-welcome {
+            background: linear-gradient(135deg, rgba(255,107,53,0.1), rgba(247,147,30,0.1));
+            border-radius: var(--radius-lg);
+            padding: 16px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .user-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-full);
+            object-fit: cover;
+            border: 2px solid var(--primary-color);
+        }
+        
+        .user-info h4 {
+            margin: 0;
+            font-size: 1rem;
+            color: var(--dark-color);
+        }
+        
+        .user-info p {
+            margin: 0;
+            font-size: 0.85rem;
+            color: var(--gray-600);
+        }
     </style>
 </head>
 <body class="auth-page">
@@ -538,7 +599,7 @@
                         <input type="checkbox" name="remember" checked>
                         <span>تذكرني</span>
                     </label>
-                    <a href="#" class="forgot-link">نسيت كلمة المرور؟</a>
+                    <a href="#" class="forgot-link" onclick="forgotPassword(event)">نسيت كلمة المرور؟</a>
                 </div>
 
                 <button type="submit" class="btn btn-primary btn-lg w-100" id="loginBtn">
@@ -549,18 +610,23 @@
                 </button>
 
                 <div class="divider">
-                    <span>أو</span>
+                    <span>أو سجّل الدخول باستخدام</span>
                 </div>
 
                 <div class="social-login">
-                    <button type="button" class="btn btn-social google" onclick="socialLogin('google')">
+                    <button type="button" class="btn btn-social google" id="googleLoginBtn" onclick="handleGoogleSignIn()">
                         <svg viewBox="0 0 24 24" width="20" height="20">
                             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/>
                             <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
                             <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
                             <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                         </svg>
-                        Google
+                        <span>Google</span>
+                    </button>
+                    
+                    <button type="button" class="btn btn-social" onclick="handleAppleSignIn()" style="border-color: #000;">
+                        <i class="fab fa-apple" style="font-size: 20px;"></i>
+                        <span>Apple</span>
                     </button>
                 </div>
             </form>
@@ -601,20 +667,36 @@
 
     <!-- Scripts -->
     <script>
-        // Simple utility functions (inline)
-        const CONFIG = {
-            API_URL: 'https://menu.nonm1724.workers.dev',
-            FIREBASE_DB: 'https://menu-b41e6-default-rtdb.firebaseio.com'
+        // ==========================================
+        // Firebase Configuration
+        // ==========================================
+        const FIREBASE_CONFIG = {
+            apiKey: "AIzaSyXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            authDomain: "menu-b41e6.firebaseapp.com",
+            databaseURL: "https://menu-b41e6-default-rtdb.firebaseio.com",
+            projectId: "menu-b41e6",
+            storageBucket: "menu-b41e6.appspot.com",
+            messagingSenderId: "XXXXXXXXXXXX",
+            appId: "1:XXXXXXXXXXXXX:web:XXXXXXXXXXXXXX"
         };
 
-        // Storage helpers
+        // Initialize Firebase
+        if (!firebase.apps.length) {
+            firebase.initializeApp(FIREBASE_CONFIG);
+        }
+        
+        const auth = firebase.auth();
+        const db = firebase.database();
+
+        // ==========================================
+        // Utility Functions
+        // ==========================================
         const Storage = {
             set: (key, value) => localStorage.setItem(key, JSON.stringify(value)),
             get: (key) => { try { return JSON.parse(localStorage.getItem(key)); } catch { return null; } },
             remove: (key) => localStorage.removeItem(key)
         };
 
-        // Toast notifications
         const Toast = {
             show: (message, type = 'info') => {
                 const container = document.getElementById('toastContainer');
@@ -625,7 +707,7 @@
                 toast.innerHTML = `<i class="fas fa-${icons[type] || 'info-circle'}"></i><span>${message}</span>`;
                 
                 container.appendChild(toast);
-                setTimeout(() => toast.remove(), 3000);
+                setTimeout(() => toast.remove(), 3500);
             },
             success: (msg) => Toast.show(msg, 'success'),
             error: (msg) => Toast.show(msg, 'error'),
@@ -633,7 +715,10 @@
             info: (msg) => Toast.show(msg, 'info')
         };
 
-        // Toggle password visibility
+        function isValidEmail(email) {
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        }
+
         function togglePassword() {
             const input = document.getElementById('password');
             const icon = document.querySelector('.toggle-password i');
@@ -649,182 +734,138 @@
             }
         }
 
-        // Handle login form submission - Real API Integration
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
+        function setLoading(loading) {
             const btn = document.getElementById('loginBtn');
             const btnText = btn.querySelector('.btn-text');
             const btnLoader = btn.querySelector('.btn-loader');
             
-            // Show loading state
-            btn.disabled = true;
-            btnText.style.display = 'none';
-            btnLoader.style.display = 'inline-flex';
+            btn.disabled = loading;
+            btnText.style.display = loading ? 'none' : 'inline';
+            btnLoader.style.display = loading ? 'inline-flex' : 'none';
+        }
 
+        function setSocialLoading(provider, loading) {
+            const btn = document.getElementById(`${provider}LoginBtn`);
+            if (btn) {
+                btn.classList.toggle('loading', loading);
+                btn.disabled = loading;
+                if (loading) {
+                    btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i><span>جاري التحميل...</span>`;
+                }
+            }
+        }
+
+        // ==========================================
+        // Email/Password Login
+        // ==========================================
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
 
-            try {
-                if (!email || !password) {
-                    throw new Error('يرجى إدخال البريد الإلكتروني وكلمة المرور');
-                }
-
-                // Validate email format
-                if (!isValidEmail(email)) {
-                    throw new Error('صيغة البريد الإلكتروني غير صحيحة');
-                }
-
-                console.log('[Login] Attempting REAL login for:', email);
-
-                // Use Auth system for real Worker authentication
-                const result = await Auth.login(email, password);
-
-                if (result.success) {
-                    console.log('[Login] Successful authentication!');
-                    
-                    // Also save in legacy format for compatibility
-                    Storage.set('user_data', result.user);
-                    if (result.token) {
-                        Storage.set('auth_token', result.token);
-                    }
-                    
-                    Toast.success('مرحباً ' + (result.user?.displayName || result.user?.email?.split('@')[0] || 'بك') + '! ✅');
-                    
-                    setTimeout(() => {
-                        window.location.href = 'dashboard.html';
-                    }, 1000);
-                } else {
-                    throw new Error(result.error || 'فشل تسجيل الدخول');
-                }
-
-            } catch (error) {
-                console.error('[Login] Error:', error);
-                
-                // Check error type
-                if (error.message.includes('fetch') || error.message.includes('network') || error.message.includes('Failed')) {
-                    Toast.error('فشل الاتصال بالخادم - تحقق من اتصالك بالإنترنت');
-                } else if (error.message.includes('401') || error.message.includes('403')) {
-                    Toast.error('البريد الإلكتروني أو كلمة المرور غير صحيحة');
-                } else if (error.message.includes('404')) {
-                    Toast.error('الحساب غير موجود - سجل أولاً');
-                } else {
-                    Toast.error(error.message || 'فشل تسجيل الدخول');
-                }
-                
-                // Reset button
-                btn.disabled = false;
-                btnText.style.display = 'inline';
-                btnLoader.style.display = 'none';
-            }
-        });
-
-        // Google/Gmail Login Handler - REAL OAuth Integration
-        async function socialLogin(provider) {
-            try {
-                showLoading(`جاري التسجيل عبر ${provider}...`);
-
-                if (provider === 'google' || provider === 'gmail') {
-                    await handleGoogleLogin();
-                } else if (provider === 'apple') {
-                    Toast.info('تسجيل الدخول عبر Apple قريباً...');
-                    hideLoading();
-                } else if (provider === 'facebook') {
-                    Toast.info('تسجيل الدخول عبر Facebook قريباً...');
-                    hideLoading();
-                }
-
-            } catch (error) {
-                hideLoading();
-                console.error(`[Social Login] ${provider} error:`, error);
-                Toast.error('فشل تسجيل الدخول: ' + error.message);
-            }
-        }
-
-        // Google Sign-In with Firebase/Google OAuth
-        async function handleGoogleLogin() {
-            // Check if Google API is loaded
-            if (typeof google === 'undefined' || !google.accounts) {
-                // Fallback: Manual Google OAuth flow
-                await manualGoogleLogin();
+            if (!email || !password) {
+                Toast.warning('يرجى إدخال البريد الإلكتروني وكلمة المرور');
                 return;
             }
 
-            // Use Google Identity Services
-            google.accounts.id.initialize({
-                client_id: 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com', // Replace with your Google Client ID
-                callback: handleGoogleCredentialResponse,
-                auto_select: false,
-                context: 'signin'
-            });
+            if (!isValidEmail(email)) {
+                Toast.error('صيغة البريد الإلكتروني غير صحيحة');
+                return;
+            }
 
-            // Show Google One Tap or prompt
-            google.accounts.id.prompt((notification) => {
-                if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-                    // Fall back to button click
-                    google.accounts.id.prompt();
-                }
-            });
-        }
+            setLoading(true);
 
-        // Handle Google credential response
-        async function handleGoogleCredentialResponse(response) {
             try {
-                console.log('[Google Login] Received credential, verifying with Worker...');
-                
-                // Send ID token to Worker for verification
-                const authResult = await Auth.registerWithGoogle(response.credential);
+                // Firebase Email/Password Sign-In
+                const result = await auth.signInWithEmailAndPassword(email, password);
+                const user = result.user;
 
-                if (authResult.success) {
-                    Toast.success('تم تسجيل الدخول بحساب Google! ✅');
-                    
-                    setTimeout(() => {
-                        window.location.href = 'dashboard.html';
-                    }, 1000);
+                console.log('[Firebase Auth] Email login successful:', user.email);
+
+                // Save user session
+                saveUserSession(user);
+
+                Toast.success(`مرحباً ${user.displayName || email.split('@')[0]}! ✅`);
+                
+                setTimeout(() => {
+                    redirectAfterLogin();
+                }, 1000);
+
+            } catch (error) {
+                console.error('[Firebase Auth] Login error:', error.code, error.message);
+                
+                const errorMessages = {
+                    'auth/user-not-found': 'لا يوجد حساب بهذا البريد الإلكتروني',
+                    'auth/wrong-password': 'كلمة المرور غير صحيحة',
+                    'auth/invalid-email': 'البريد الإلكتروني غير صحيح',
+                    'auth/too-many-requests': 'محاولات كثيرة جداً. يرجى المحاولة لاحقاً',
+                    'auth/user-disabled': 'تم تعطيل هذا الحساب',
+                    'auth/network-request-failed': 'فشل الاتصال بالإنترنت'
+                };
+
+                Toast.error(errorMessages[error.code] || error.message || 'فشل تسجيل الدخول');
+                setLoading(false);
+            }
+        });
+
+        // ==========================================
+        // Google Sign-In
+        // ==========================================
+        async function handleGoogleSignIn() {
+            setSocialLoading('google', true);
+
+            try {
+                const provider = new firebase.auth.GoogleAuthProvider();
+                provider.setCustomParameters({
+                    prompt: 'select_account'
+                });
+
+                const result = await auth.signInWithPopup(provider);
+                const user = result.user;
+
+                console.log('[Firebase Auth] Google login successful:', user.email);
+
+                // Save user data to database
+                await saveUserDataToDB(user);
+                
+                // Save session
+                saveUserSession(user);
+
+                Toast.success(`مرحباً ${user.displayName || 'بك'}! ✅`);
+                
+                setTimeout(() => {
+                    redirectAfterLogin();
+                }, 1000);
+
+            } catch (error) {
+                console.error('[Firebase Auth] Google sign-in error:', error.code, error.message);
+                
+                if (error.code === 'auth/popup-closed-by-user') {
+                    Toast.info('تم إغلاق نافذة تسجيل الدخول');
+                } else if (error.code === 'auth/cancelled-popup-request') {
+                    Toast.info('تم إلغاء تسجيل الدخول');
+                } else if (error.code === 'auth/popup-blocked') {
+                    Toast.warning('تم حظر النافذة المنبثقة. يرجى السماح بالنوافذ.');
                 } else {
-                    throw new Error(authResult.error || 'فشل التحقق من Google');
+                    Toast.error('فشل تسجيل الدخول بحساب Google');
                 }
-            } catch (error) {
-                hideLoading();
-                Toast.error(error.message);
-            }
-        }
-
-        // Manual Google OAuth fallback (popup-based)
-        async function manualGoogleLogin() {
-            try {
-                // For GitHub Pages / static hosting without backend OAuth
-                // We'll use a simpler approach with Google Sign-In
                 
-                const clientId = prompt(
-                    'أدخل Google Client ID (اختياري - للتطوير فقط)', 
-                    ''
-                );
-
-                if (!clientId) {
-                    Toast.info('سيتم تفعيل تسجيل Google قريباً');
-                    hideLoading();
-                    return;
-                }
-
-                // Load Google API dynamically
-                const script = document.createElement('script');
-                script.src = 'https://accounts.google.com/gsi/client';
-                script.async = true;
-                script.defer = true;
-                script.onload = () => handleGoogleLogin();
-                document.head.appendChild(script);
-
-            } catch (error) {
-                hideLoading();
-                console.error('[Manual Google Login] Error:', error);
-                Toast.error('فشل تحميل Google Sign-In');
+                resetGoogleButton();
             }
         }
 
-        // Forgot Password Handler
-        async function forgotPassword() {
-            const email = document.getElementById('email')?.value?.trim();
+        function handleAppleSignIn() {
+            Toast.info('تسجيل الدخول عبر Apple قريباً...');
+        }
+
+        // ==========================================
+        // Forgot Password
+        // ==========================================
+        async function forgotPassword(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value.trim();
             
             if (!email) {
                 Toast.warning('أدخل بريدك الإلكتروني أولاً');
@@ -837,109 +878,107 @@
             }
 
             try {
-                showLoading('جاري إ发送 رابط إعادة تعيين كلمة المرور...');
-
-                // Call Worker API for password reset
-                const response = await fetch(`${CONFIG.API_URL}/api/auth/forgot-password`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email })
-                });
-
-                const result = await response.json();
-
-                hideLoading();
-
-                if (result.success) {
-                    Toast.success('تم إرسال رابط إعادة التعيين إلى بريدك الإلكتروني ✅');
-                } else {
-                    // Even if API fails, show success for UX (don't reveal if email exists)
-                    Toast.info('إذا كان البريد مسجلاً، سيتم إرسال رابط إعادة التعيين');
-                }
-
+                await auth.sendPasswordResetEmail(email);
+                Toast.success('تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني ✅');
             } catch (error) {
-                hideLoading();
-                Toast.info('حدث خطأ - حاول مرة أخرى لاحقاً');
+                console.error('[Firebase Auth] Password reset error:', error);
+                
+                if (error.code === 'auth/user-not-found') {
+                    // Don't reveal if email exists
+                    Toast.info('إذا كان البريد مسجلاً، سيتم إرسال رابط إعادة التعيين');
+                } else {
+                    Toast.error('حدث خطأ. يرجى المحاولة مرة أخرى');
+                }
             }
         }
 
-        // Check if already logged in & redirect
-        document.addEventListener('DOMContentLoaded', () => {
-            // Check new Auth system first
-            if (Auth.isAuthenticated()) {
-                console.log('[Login] User already authenticated, redirecting to dashboard...');
-                window.location.href = 'dashboard.html';
-                return;
-            }
+        // ==========================================
+        // Session Management
+        // ==========================================
+        function saveUserSession(user) {
+            const userData = {
+                uid: user.uid,
+                email: user.email,
+                displayName: user.displayName || 'مستخدم MezoMenu',
+                photoURL: user.photoURL || '',
+                emailVerified: user.emailVerified,
+                lastLogin: new Date().toISOString()
+            };
+            
+            Storage.set('mezomenu_user', userData);
+            Storage.set('user_data', userData); // Legacy support
+            
+            // Also store in Firebase DB
+            saveUserDataToDB(user).catch(console.error);
+        }
 
-            // Check legacy storage
-            const savedUser = Storage.get('user_data');
-            if (savedUser && savedUser.email) {
-                console.log('[Login] User found in legacy storage, redirecting...');
-                window.location.href = 'dashboard.html';
+        async function saveUserDataToDB(user) {
+            try {
+                await db.ref(`users/${user.uid}`).update({
+                    uid: user.uid,
+                    email: user.email,
+                    displayName: user.displayName || 'مستخدم MezoMenu',
+                    photoURL: user.photoURL || '',
+                    emailVerified: user.emailVerified,
+                    lastLogin: firebase.database.ServerValue.TIMESTAMP,
+                    role: 'customer' // Default role, can be changed to admin manually
+                });
+                console.log('[Firebase DB] User data saved successfully');
+            } catch (error) {
+                console.error('[Firebase DB] Error saving user data:', error);
             }
+        }
 
-            // Add Google Sign-In script if configured
-            const googleClientId = document.querySelector('meta[name="google-signin-client_id"]');
-            if (googleClientId?.content && !googleClientId.content.includes('YOUR_')) {
-                // Load Google Identity Services
-                const script = document.createElement('script');
-                script.src = 'https://accounts.google.com/gsi/client';
-                script.async = true;
-                script.defer = true;
-                script.onload = () => {
-                    console.log('[Google] Sign-In loaded, initializing...');
-                    initializeGoogleSignIn(googleClientId.content);
-                };
-                document.head.appendChild(script);
+        function redirectAfterLogin() {
+            // Check for redirect URL parameter
+            const urlParams = new URLSearchParams(window.location.search);
+            const redirectUrl = urlParams.get('redirect') || 'dashboard.html';
+            window.location.href = redirectUrl;
+        }
+
+        function resetGoogleButton() {
+            const btn = document.getElementById('googleLoginBtn');
+            if (btn) {
+                btn.classList.remove('loading');
+                btn.disabled = false;
+                btn.innerHTML = `
+                    <svg viewBox="0 0 24 24" width="20" height="20">
+                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/>
+                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                    </svg>
+                    <span>Google</span>
+                `;
+            }
+        }
+
+        // ==========================================
+        // Auth State Observer & Auto Redirect
+        // ==========================================
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                console.log('[Firebase Auth] User is logged in:', user.email);
+                // User is signed in, you could auto-redirect here if needed
             } else {
-                console.log('[Google] Client ID not configured or using placeholder');
+                console.log('[Firebase Auth] User is not logged in');
             }
         });
 
-        // Initialize Google Sign-In with proper configuration
-        function initializeGoogleSignIn(clientId) {
-            if (typeof google === 'undefined') {
-                console.warn('[Google] API not loaded yet');
-                return;
-            }
-
-            try {
-                google.accounts.id.initialize({
-                    client_id: clientId,
-                    callback: handleGoogleCredentialResponse,
-                    auto_select: false,
-                    context: 'signin',
-                    itp_support: true,
-                    use_fedcm_for_prompt: true
-                });
-
-                console.log('[Google] Sign-In initialized successfully');
-
-                // Render Google button if element exists
-                const googleBtn = document.getElementById('googleSignInBtn');
-                if (googleBtn) {
-                    google.accounts.id.renderButton(googleBtn, {
-                        theme: 'outline',
-                        size: 'large',
-                        width: '100%',
-                        text: 'signin_with',
-                        shape: 'rectangular',
-                        locale: 'ar'
-                    });
+        // Check if already logged in on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedUser = Storage.get('mezomenu_user') || Storage.get('user_data');
+            
+            if (savedUser && savedUser.uid) {
+                console.log('[Login] Found existing session, checking...');
+                // Verify session is still valid by checking current Firebase user
+                const currentUser = auth.currentUser;
+                if (currentUser && currentUser.uid === savedUser.uid) {
+                    console.log('[Login] Valid session found, redirecting...');
+                    window.location.href = 'dashboard.html';
                 }
-
-                // Show One Tap prompt (optional)
-                google.accounts.id.prompt((notification) => {
-                    if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-                        console.log('[Google] One Tap not shown:', notification.getNotDisplayedReason?.() || notification.getSkippedReason?.());
-                    }
-                });
-
-            } catch (error) {
-                console.error('[Google] Initialization error:', error);
             }
-        }
+        });
     </script>
 </body>
 </html>

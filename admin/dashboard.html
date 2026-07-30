@@ -14,6 +14,11 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    
     <!-- Complete Inline CSS for GitHub Pages Compatibility -->
     <style>
         /* ===================================
@@ -1300,42 +1305,90 @@
             overlay.classList.toggle('active');
         }
 
-        // Logout function
-        function logout() {
+        // Logout function with Firebase support
+        async function logout() {
             if (confirm('هل تريد تسجيل الخروج؟')) {
+                try {
+                    // Sign out from Firebase if available
+                    if (firebaseAuth) {
+                        await firebaseAuth.signOut();
+                        console.log('[Dashboard] Signed out from Firebase');
+                    }
+                } catch (error) {
+                    console.error('[Dashboard] Firebase signout error:', error);
+                }
+                
+                // Clear local storage
                 Storage.remove('user_data');
                 Storage.remove('auth_token');
+                Storage.remove('mezomenu_user');
+                
                 window.location.href = 'login.html';
             }
         }
 
+        // ============================================
+        // Firebase Configuration & Auth Protection
+        // ============================================
+        const FIREBASE_CONFIG = {
+            apiKey: "AIzaSyXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            authDomain: "menu-b41e6.firebaseapp.com",
+            databaseURL: "https://menu-b41e6-default-rtdb.firebaseio.com",
+            projectId: "menu-b41e6",
+            storageBucket: "menu-b41e6.appspot.com",
+            messagingSenderId: "XXXXXXXXXXXX",
+            appId: "1:XXXXXXXXXXXXX:web:XXXXXXXXXXXXXX"
+        };
+
+        // Initialize Firebase
+        let firebaseAuth, firebaseDb;
+        
+        try {
+            if (typeof firebase !== 'undefined' && !firebase.apps.length) {
+                firebase.initializeApp(FIREBASE_CONFIG);
+            }
+            if (typeof firebase !== 'undefined') {
+                firebaseAuth = firebase.auth();
+                firebaseDb = firebase.database();
+                console.log('[Dashboard] Firebase initialized successfully');
+            }
+        } catch (e) {
+            console.warn('[Dashboard] Firebase initialization failed:', e);
+        }
+
         // Check authentication on load
         document.addEventListener('DOMContentLoaded', () => {
-            const user = Storage.get('user_data');
-            if (!user && !window.location.search.includes('demo=true')) {
-                // For demo purposes, allow access without auth
-                console.log('Demo mode - no auth required');
+            // Check Firebase Auth first
+            if (firebaseAuth) {
+                firebaseAuth.onAuthStateChanged((user) => {
+                    if (!user && !window.location.search.includes('demo=true')) {
+                        console.log('[Dashboard] No authenticated user, redirecting to login...');
+                        window.location.href = `login.html?redirect=${encodeURIComponent(window.location.href)}`;
+                        return;
+                    }
+                    
+                    if (user) {
+                        console.log('[Dashboard] User authenticated:', user.email);
+                        // Update UI with user info
+                        updateUIWithUserInfo(user);
+                    }
+                    
+                    // Continue loading dashboard
+                    initDashboard(user);
+                });
+            } else {
+                // Fallback to localStorage check
+                const user = Storage.get('user_data') || Storage.get('mezomenu_user');
+                if (!user && !window.location.search.includes('demo=true')) {
+                    console.log('[Dashboard] Demo mode - no auth required');
+                }
+                initDashboard(user);
             }
+        });
 
-            // Update UI with user info if available
-            const currentUser = Storage.get('user_data');
-            if (currentUser) {
-                // Update restaurant name in sidebar
-                const restaurantName = document.querySelector('.restaurant-selector select');
-                if (restaurantName && currentUser.restaurant?.name) {
-                    restaurantName.innerHTML = `<option>${currentUser.restaurant.name}</option>`;
-                }
-                
-                // Update user info in footer
-                const userName = document.querySelector('.user-details h4');
-                if (userName && currentUser.displayName) {
-                    userName.textContent = currentUser.displayName;
-                }
-                
-                const userEmail = document.querySelector('.user-details p');
-                if (userEmail && currentUser.email) {
-                    userEmail.textContent = currentUser.email;
-                }
+        function initDashboard(user) {
+            if (user) {
+                updateUIWithUserInfo(user);
             }
 
             // Load real data from Firebase
@@ -1343,7 +1396,38 @@
             
             // Start auto-refresh every 30 seconds
             startAutoRefresh();
-        });
+        }
+
+        function updateUIWithUserInfo(user) {
+            // Update restaurant name in sidebar
+            const restaurantName = document.querySelector('.restaurant-selector select');
+            if (restaurantName && user?.displayName) {
+                restaurantName.innerHTML = `<option>${user.displayName}</option>`;
+            }
+            
+            // Update user info in footer
+            const userName = document.querySelector('.user-details h4');
+            if (userName) {
+                userName.textContent = user.displayName || 'مدير المطعم';
+            }
+            
+            const userEmail = document.querySelector('.user-details p');
+            if (userEmail) {
+                userEmail.textContent = user.email || '';
+            }
+            
+            // Update avatar
+            const userAvatar = document.querySelector('.user-avatar');
+            if (userAvatar) {
+                if (user.photoURL) {
+                    userAvatar.style.backgroundImage = `url(${user.photoURL})`;
+                    userAvatar.style.backgroundSize = 'cover';
+                    userAvatar.textContent = '';
+                } else {
+                    userAvatar.textContent = (user.displayName || 'م')[0].toUpperCase();
+                }
+            }
+        }
 
         // Load dashboard data - REAL Firebase Integration
         async function loadDashboardData() {
