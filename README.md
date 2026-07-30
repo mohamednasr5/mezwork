@@ -1,385 +1,174 @@
-# 🍽️ MezoMenu SaaS - نظام القوائم الرقمية للمطاعم
+# MezoMenu - نظام إدارة المطعم
 
-<div align="center">
-
-![MezoMenu Logo](assets/images/logo.png)
-
-**منصة SaaS متكاملة لإدارة قوائم المطاعم الرقمية**
-
-[🌐 موقع المعاينة](#) | [📖 التوثيق](docs/) | [🐛 الإبلاغ عن مشكلة](issues) | [💬 الدعم](#)
-
-[![License: MIT](https://img.shields.io/badge/LICENSE-MIT-green.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/VERSION-4.1.0-blue.svg)](package.json)
-[![Cloudflare Workers](https://img.shields.io/badge/BACKEND-CLOUDFLARE_WORKERS-orange.svg)](worker/)
-[![Firebase](https://img.shields.io/badge/DATABASE-FIREBASE-yellow.svg)](firebase.json)
-[![API Connected](https://img.shields.io/badge/API-CONNECTED-success.svg)](worker/index.js)
-
-</div>
-
----
-
-## ✨ نظرة عامة
-
-MezoMenu هو نظام SaaS متكامل لإدارة قوائم المطاعم الرقمية، يتيح لأصحاب المطاعم إنشاء قوائم طعام رقمية احترافية وإدارتها بسهولة، مع إمكانية استيراد القائمة بالذكاء الاصطناعي واستقبال الطلبات عبر واتساب.
-
-### 🎯 الميزات الرئيسية
-
-#### 📱 تطبيقين PWA منفصلين:
-- **لوحة تحكم المدير (Admin PWA)**: لإدارة كامل المطعم
-- **تطبيق العميل (Customer PWA)**: لعرض القائمة وطلب الطعام
-
-#### 🔧 ميزات لوحة التحكم:
-- ✅ تسجيل الدخول والتسجيل
-- ✅ إدارة بيانات المطعم (الشعار، الموقع، مواعيد العمل)
-- ✅ إدارة القائمة الكاملة (تصنيفات، أصناف، أسعار، أحجام، إضافات)
-- ✅ **استيراد ذكي بالذكاء الاصطناعي** (من صور أو PDF)
-- ✅ إدارة الطلبات مع تتبع الحالة
-- ✅ نظام إشعارات متقدم
-- ✅ رمز QR للقائمة
-- ✅ إحصائيات وتحليلات
-- ✅ إعدادات واتساب مخصصة
-- ✅ نظام اشتراكات (لصاحب المنصة)
-- ✅ تخصيص المظهر والألوان
-
-#### 👥 ميزات العميل:
-- ✅ عرض احترافي للقائمة
-- ✅ بحث وتصفية حسب التصنيف
-- ✅ سلة مشتريات
-- ✅ طلب عبر واتساب مع جميع التفاصيل
-- ✅ تتبع حالة الطلب
-- ✅ إشعارات فورية
-- ✅ دعم كامل للعربية (RTL)
-
----
-
-## 🛠️ التقنيات المستخدمة
-
-| التقنية | الاستخدام |
-|---------|-----------|
-| **HTML5** | هيكل الصفحات |
-| **CSS3** | التصميم المتجاوب والرسوم المتحركة |
-| **JavaScript (Vanilla)** | المنطق والتفاعلية |
-| **Cloudflare Worker** | Backend API |
-| **R2 Storage** | تخزين الملفات والصور |
-| **Firebase Realtime Database** | قاعدة البيانات |
-| **Agnes AI / Nvidia AI** | الذكاء الاصطناعي لاستخراج القوائم |
-| **WhatsApp API** | إرسال الطلبات والإشعارات |
-
----
+نظام متكامل لإدارة المطعم يعمل بتقنية HTML + CSS + JavaScript مع Firebase و Cloudflare Worker.
 
 ## 📁 هيكل المشروع
 
 ```
-menomenu-saas/
-├── index.html                 # الصفحة الرئيسية (Landing Page)
-├── README.md                  # هذا الملف
-├── LICENSE                    # رخصة MIT
-├── .gitignore                 # ملف Gitignore
-│
-├── admin/                     # لوحة تحكم المدير (Admin PWA)
-│   ├── login.html             # صفحة تسجيل الدخول
-│   ├── register.html          # صفحة التسجيل
-│   ├── dashboard.html         # لوحة الإحصائيات
-│   ├── menu.html              # إدارة القائمة
-│   ├── ai-import.html         # الاستيراد بالذكاء الاصطناعي
-│   ├── orders.html            # إدارة الطلبات
-│   ├── settings.html          # إعدادات المطعم
-│   ├── notifications.html     # الإشعارات
-│   ├── manifest.json          # PWA Manifest للـ Admin
-│   └── sw.js                  # Service Worker للـ Admin
-│
-├── customer/                  # تطبيق العميل (Customer PWA)
-│   ├── index.html             # صفحة عرض القائمة
-│   ├── manifest.json          # PWA Manifest للـ Customer
-│   └── sw.js                  # Service Worker للـ Customer
-│
-├── assets/                    # الملفات الثابتة
-│   ├── css/
-│   │   ├── main.css           # الأنماط الرئيسية
-│   │   ├── admin.css          # أنماط لوحة التحكم
-│   │   └── customer.css       # أنماط صفحة العميل
-│   ├── js/
-│   │   ├── main.js            # JavaScript الرئيسي
-│   │   ├── orders.js          # وظائف إدارة الطلبات
-│   │   ├── settings.js        # وظائف الإعدادات
-│   │   ├── ai-import.js       # وظائف الاستيراد الذكي
-│   │   └── notifications.js   # وظائف الإشعارات
-│   └── images/
-│       ├── logo.png           # شعار التطبيق
-│       ├── favicon.png        # أيقونة الموقع
-│       └── icon-*.png         # أيقونات PWA
-│
-├── worker/                    # Cloudflare Worker Backend
-│   └── index.js               # كود الـ Worker
-│
-└── docs/                      # التوثيق
-    └── (قريباً)
+mezomenu-html/
+├── index.html              # الصفحة الرئيسية (لوحة إدارة المطعم)
+├── css/
+│   └── styles.css          # ملف التنسيقات الكامل
+├── js/
+│   ├── firebase.js         # تكوين Firebase و API REST
+│   └── app.js              # منطق التطبيق الرئيسي
+├── customer/
+│   └── index.html          # صفحة العميل (عرض القائمة)
+├── worker/
+│   └── index.js            # Cloudflare Worker (API Server)
+└── wrangler.toml           # إعدادات Cloudflare
 ```
 
----
+## ✨ المميزات
 
-## 🚀 البدء السريع
+### لوحة الإدارة
+- **لوحة التحكم**: إحصائيات شاملة (الطلبات، الإيرادات، العناصر، الحجوزات)
+- **إدارة القائمة**: CRUD كامل للعناصر والفئات مع رفع الصور
+- **إدارة الطلبات**: تتبع الطلبات وتحديث الحالات
+- **العروض**: إنشاء وإدارة العروض والتخفيضات
+- **الحجوزات**: إدارة حجوزات العملاء
+- **الإشعارات**: نظام إشعارات متكامل
+- **الإعدادات**: إعدادات المطعم وساعات العمل
+- **استيراد بالذكاء الاصطناعي**: تحليل صور القائمة تلقائياً
 
-### 1. المتطلبات الأساسية
-- حساب على [Cloudflare](https://cloudflare.com)
-- مشروع على [Firebase Console](https://console.firebase.google.com)
-- مفتاح API من [Agnes AI](https://platform.agnes-ai.com) (اختياري للميزات الذكية)
+### صفحة العميل
+- عرض جميل للقائمة
+- فلترة حسب الفئات
+- سلة تسوق تفاعلية
+- عرض العروض الخاصة
+- تصميم متجاوب للموبايل
 
-### 2. إعداد Cloudflare Worker
+## 🚀 خطوات النشر
 
-```bash
-# 1. تثبيت Wrangler CLI
-npm install -g wrangler
+### 1. إعداد Firebase Realtime Database
 
-# 2. تسجيل الدخول
-wrangler login
-
-# 3. نشر الـ Worker
-cd worker
-wrangler deploy
-
-# 4. إضافة المتغيرات البيئية
-wrangler secret put AGNES_AI_API_KEY
-wrangler secret put FIREBASE_API_KEY
-wrangler secret put R2_BUCKET_NAME
-```
-
-### 3. إعداد Firebase
-
-1. أنشئ مشروع جديد على Firebase Console
-2. فعّل Realtime Database
-3. أضف قواعد الأمان (انظر `firebase-rules.json`)
-4. انسخ إعدادات المشروع إلى `worker/index.js`
-
-### 4. تشغيل المشروع محلياً
-
-```bash
-# باستخدام أي خادم محلي
-cd menomenu-saas
-python -m http.server 8080
-
-# أو باستخدام Live Server في VS Code
-```
-
-### 5. الوصول للتطبيق
-
-- **الصفحة الرئيسية**: http://localhost:8080
-- **لوحة التحكم**: http://localhost:8080/admin/dashboard.html
-- **قائمة العميل**: http://localhost:8080/customer/index.html?slug=el-mabrouk
-
----
-
-## 🔌 API Endpoints (v4.1)
-
-> **Base URL**: `https://menu.nonm1724.workers.dev`
-
-### المصادقة (Auth)
-| Endpoint | Method | الوصف |
-|----------|--------|-------|
-| `/api/auth/login` | POST | تسجيل الدخول |
-| `/api/auth/register` | POST | إنشاء حساب جديد |
-| `/api/auth/user` | GET | جلب بيانات المستخدم |
-
-### القائمة (Menu)
-| Endpoint | Method | الوصف |
-|----------|--------|-------|
-| `/api/menu?restaurantId={id}` | GET | جلب القائمة |
-| `/api/menu` | POST | حفظ/إنشاء قائمة |
-| `/api/menu?restaurantId={id}` | PUT | تحديث قائمة |
-
-### الطلبات (Orders)
-| Endpoint | Method | الوصف |
-|----------|--------|-------|
-| `/api/orders?restaurantId={id}` | GET | جلب الطلبات |
-| `/api/orders` | POST | إنشاء طلب جديد |
-| `/api/orders/{orderId}?restaurantId={id}` | PUT | تحديث حالة الطلب |
-
-### الذكاء الاصطناعي (AI)
-| Endpoint | Method | الوصف |
-|----------|--------|-------|
-| `/api/ai/chat` | POST | محادثة مع AI |
-| `/api/ai/image` | POST | توليد صور بالAI |
-| `/api/ai/analyze` | POST | تحليل صورة القائمة (OCR) |
-| `/api/ai/status` | GET | حالة خدمات AI |
-
-### الإشعارات (Notifications)
-| Endpoint | Method | الوصف |
-|----------|--------|-------|
-| `/api/notifications?userId={id}` | GET | جلب الإشعارات |
-| `/api/notifications?userId={id}` | DELETE | مسح جميع الإشعارات |
-
-### الإحصائيات (Dashboard)
-| Endpoint | Method | الوصف |
-|----------|--------|-------|
-| `/api/stats/dashboard?userId={id}` | GET | إحصائيات لوحة التحكم |
-
----
-
-## ⚙️ الإعدادات والتهيئة
-
-### متغيرات البيئة المطلوبة
-
-| المتغير | الوصف | مثال |
-|---------|-------|------|
-| `AGNES_AI_API_KEY` | مفتاح Agnes AI API | `agnes-xxx...` |
-| `FIREBASE_API_KEY` | مفتاح Firebase API | `AIzaSyxxx...` |
-| `FIREBASE_PROJECT_ID` | معرف مشروع Firebase | `menu-b41e6` |
-| `R2_BUCKET_NAME` | اسم R2 Bucket | `mezomenu-uploads` |
-
-### إعدادات Firebase Rules
-
+1. أنشئ مشروع جديد على [Firebase Console](https://console.firebase.google.com/)
+2. فعّل **Realtime Database**
+3. حدد قواعد الأمان (للتطوير):
 ```json
 {
   "rules": {
     ".read": true,
-    ".write": "auth != null",
-    "restaurants": {
-      "$restaurantId": {
-        ".read": true,
-        ".write": "auth.uid == $restaurantId || root.child('admins').child(auth.uid).exists()"
-      }
-    },
-    "orders": {
-      "$orderId": {
-        ".read": "auth != null",
-        ".write": "auth != null"
-      }
-    }
+    ".write": true
   }
 }
 ```
+4. انسخ عنوان قاعدة البيانات
 
----
+### 2. نشر Cloudflare Worker
 
-## 📊 نقاط النهاية API (Endpoints)
-
-### المصادقة
-| Method | Endpoint | الوصف |
-|--------|----------|-------|
-| POST | `/api/auth/register` | تسجيل حساب جديد |
-| POST | `/api/auth/login` | تسجيل الدخول |
-| GET | `/api/auth/me` | جلب بيانات المستخدم |
-
-### القائمة
-| Method | Endpoint | الوصف |
-|--------|----------|-------|
-| GET | `/api/menu/:slug` | جلب قائمة مطعم |
-| POST | `/api/menu` | حفظ/تحديث القائمة |
-| POST | `/api/menu/import` | استيراد قائمة بالذكاء الاصطناعي |
-
-### الطلبات
-| Method | Endpoint | الوصف |
-|--------|----------|-------|
-| GET | `/api/orders` | جلب طلبات المطعم |
-| POST | `/api/orders` | إنشاء طلب جديد |
-| PUT | `/api/orders/:id/status` | تحديث حالة الطلب |
-
-### الملفات
-| Method | Endpoint | الوصف |
-|--------|----------|-------|
-| POST | `/api/upload` | رفع ملف إلى R2 |
-
-### الذكاء الاصطناعي
-| Method | Endpoint | الوصف |
-|--------|----------|-------|
-| POST | `/api/ai/analyze` | تحليل صورة القائمة |
-| GET | `/api/ai/status` | حالة خدمة AI |
-
----
-
-## 💰 نظام الاشتراكات
-
-### الباقات المتاحة
-
-| الباقة | السعر | المميزات |
-|--------|-------|---------|
-| **مجاني** | 0 ج.م | 50 صنف، طلبات واتساب، بدون تحليلات |
-| **احترافي** | 199 ج.م/شهر | أصناف غير محدودة، AI، تحليلات، دعم بريد |
-| **مؤسسات** | 499 ج.م/شهر | فروع متعددة، API مخصص، دعم 24/7 |
-
----
-
-## 🎨 تخصيص المظهر
-
-يمكن تخصيص ألوان التطبيق من خلال:
-
-1. **CSS Variables** في `assets/css/main.css`
-2. **إعدادات المطعم** > تبويب "المظهر"
-3. **ألوان مخصصة** عبر Color Picker
-
-```css
-:root {
-    --primary-color: #ff6b35;    /* اللون الرئيسي */
-    --secondary-color: #f7931e;  /* اللون الثانوي */
-    --dark-color: #1a1a2e;       /* اللون الداكن */
-}
+#### تثبيت Wrangler CLI
+```bash
+npm install -g wrangler
 ```
 
----
-
-## 🌍 دعم اللغات
-
-التطبيق يدعم بشكل كامل:
-- ✅ **العربية** (RTL) - اللغة الافتراضية
-- ✅ **English** (LTR) - قيد التطوير
-
----
-
-## 🤝 المساهمة في المشروع
-
-نرحب بمساهماتكم! يرجى اتباع الخطوات التالية:
-
-1. Fork المشروع
-2. إنشاء فرع جديد (`git checkout -b feature/amazing-feature`)
-3. Commit التغييرات (`git commit -m 'Add amazing feature'`)
-4. Push إلى الفرع (`git push origin feature/amazing-feature`)
-3. فتح Pull Request
-
----
-
-## 📝 الترخيص
-
-هذا المشروع مرخص تحت ترخيص [MIT License](LICENSE).
-
-```
-MIT License
-
-Copyright (c) 2026 MezoMenu Team
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+#### تسجيل الدخول
+```bash
+wrangler login
 ```
 
----
+#### إعداد المتغيرات البيئية
+```bash
+wrangler secret put FIREBASE_DB_URL
+# أدخل: https://your-project-default-rtdb.firebaseio.com
 
-## 👥 فريق العمل
+wrangler secret put MISTRAL_API_KEY
+# أدخل: مفتاح Mistral API
 
-- **المطور الرئيسي**: MezoMenu Team
-- **التصميم**: UI/UX Team
+wrangler secret put GEMINI_API_KEY
+# أدخل: مفتاح Google Gemini API
 
----
+wrangler secret put QWEN_API_KEY
+# أدخل: مفتاح Qwen API (اختياري)
+```
 
-## 📞 الدعم والتواصل
+#### النشر
+```bash
+cd mezomenu-html
+wrangler deploy
+```
 
-هل لديك سؤال أو اقتراح؟ تواصل معنا:
+### 3. نشر الموقع الثابت
 
-- 📧 البريد الإلكتروني: support@mezo.menu
-- 🌐 الموقع: https://mezo.menu
-- 💬 واتساب: +20 127 993 4735
+#### الخيار أ: GitHub Pages
+1. ارفع مجلد المشروع إلى GitHub
+2. فعّل GitHub Pages من Settings > Pages
+3. اختر المصدر: main branch / root
 
----
+#### الخيار ب: Cloudflare Pages
+1. اذهب إلى Cloudflare Dashboard > Pages
+2. Connect to Git repository
+3. اختر Build command: (فارغ) أو `echo "No build needed"`
+4. اختر Output directory: `/` أو `.`
+5. Deploy!
 
-<div align="center">
+#### الخيار ج: Netlify
+1. اسحب وأفلت مجلد المشروع في [Netlify Drop](https://app.netlify.com/drop)
 
-**⭐ إذا أعجبك المشروع، لا تنسى إعطائه نجمة! ⭐**
+### 4. تهيئة R2 للتخزين (اختياري)
 
-Made with ❤️ by [MezoMenu Team](https://github.com/mezomenu)
+1. أنشئ R2 Bucket من Cloudflare Dashboard
+2. فعّل Public Access
+3. أضف Binding في wrangler.toml:
+```toml
+[[r2_buckets]]
+binding = "R2_BUCKET"
+bucket_name = "your-bucket-name"
+```
 
-</div>
+## 🔧 تكوين API Keys
+
+### Mistral AI (OCR + LLM)
+- سجل في [Mistral AI](https://console.mistral.ai/)
+- احصل على API Key
+- يدعم OCR عالي الجودة + تحليل النصوص
+
+### Google Gemini 2.5 Flash Vision
+- سجل في [Google AI Studio](https://aistudio.google.com/)
+- احصل على API Key
+- دع رؤية الصور مباشرة
+
+### Qwen2.5-VL (Alibaba) - بديل
+- سجل في [Alibaba Cloud](https://dashscope.console.aliyun.com/)
+- احصل على API Key
+- خيار احتياطي ممتاز
+
+## 🔄 نظام الذكاء الاصطناعي
+
+النظام يستخدم pipeline متعدد المراحل:
+
+1. **Mistral OCR** → استخراج النص من الصورة
+2. **Mistral LLM** → تحويل النص لبيانات منظمة JSON
+3. **Gemini 2.5 Flash** → بديل (رؤية + تحليل)
+4. **Qwen2.5-VL** → بديل أخير
+
+### ضغط الصور قبل الإرسال:
+- الحد الأقصى: 1024 بكسل
+- الجودة: 85% JPEG
+- يقلل حجم الملف ويحسن السرعة
+
+## 📱 استخدام التطبيق
+
+### للوحة الإدارة:
+افتح `index.html` بعد رفع الموقع
+
+### لصفحة العميل:
+افتح `customer/index.html`
+
+## 🛠️ التقنيات المستخدمة
+
+- **Frontend**: HTML5, CSS3, Vanilla JavaScript
+- **Database**: Firebase Realtime Database (REST API)
+- **Backend**: Cloudflare Workers (Serverless)
+- **Storage**: Cloudflare R2 (اختياري)
+- **AI**: Mistral, Google Gemini, Qwen2.5-VL
+- **Icons**: Font Awesome 6
+- **Design**: RTL Arabic Support, Responsive
+
+## 📄 الرخصة
+
+هذا المشروع للاستخدام الشخصي والتجاري.
+
+## 🆘 الدعم
+
+للمساعدة أو الاستفسارات، راجع التوثيق أو افت Issue.

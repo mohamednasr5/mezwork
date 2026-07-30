@@ -1,39 +1,52 @@
 /* ===================================
-   MezoMenu SaaS - Main JavaScript
-   Functions & Utilities - REAL DATABASE INTEGRATION
+   MezoMenu - Main JavaScript
+   Firebase + R2 + Worker Integration
    =================================== */
 
 // ==========================================
-// Configuration - Connected to Live Worker
+// Configuration
 // ==========================================
+
 const CONFIG = {
-    API_URL: 'https://menu.nonm1724.workers.dev',
-    FIREBASE_DB: 'https://menu-b41e6-default-rtdb.firebaseio.com',
+    // Worker API URL (Change this to your Cloudflare Worker URL)
+    WORKER_URL: 'https://menu.nonm1724.workers.dev',
+    
+    // Firebase Configuration
+    FIREBASE: {
+        apiKey: "AIzaSyB9SyGG0MNGWU-bmMVZVJITW0bxDbbkB94",
+        authDomain: "menu-b41e6.firebaseapp.com",
+        databaseURL: "https://menu-b41e6-default-rtdb.firebaseio.com",
+        projectId: "menu-b41e6",
+        storageBucket: "menu-b41e6.firebasestorage.app",
+        messagingSenderId: "912801475897",
+        appId: "1:912801475897:web:4b35f7a144b7c2cc3b4ce8"
+    },
+    
+    // App Settings
+    APP_NAME: 'MezoMenu',
     DEFAULT_CURRENCY: 'EGP',
-    DEFAULT_LANGUAGE: 'ar',
-    NVIDIA_API_KEY: '', // Set your NVIDIA API key here or in environment
-    FIREBASE_CONFIG: {
-        databaseURL: 'https://menu-b41e6-default-rtdb.firebaseio.com'
-    }
+    DEFAULT_LANGUAGE: 'ar'
 };
 
 // ==========================================
 // State Management
 // ==========================================
+
 const AppState = {
     user: null,
     restaurant: null,
     menu: { categories: [], items: [] },
     cart: [],
-    currentLanguage: 'ar',
+    currentLanguage: CONFIG.DEFAULT_LANGUAGE,
     isLoading: false,
     isOnline: navigator.onLine,
     lastSyncTime: null
 };
 
 // ==========================================
-// Firebase Realtime Database Direct Connection
+// Firebase Database Helper
 // ==========================================
+
 const FirebaseDB = {
     
     /**
@@ -41,7 +54,7 @@ const FirebaseDB = {
      */
     async get(path) {
         try {
-            const url = `${CONFIG.FIREBASE_DB}/${path}.json`;
+            const url = `${CONFIG.FIREBASE.databaseURL}/${path}.json`;
             const response = await fetch(url);
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
             return await response.json();
@@ -50,1260 +63,1100 @@ const FirebaseDB = {
             return null;
         }
     },
-
+    
     /**
-     * Set data at Firebase path (requires auth)
+     * Set data at path (PUT)
      */
-    async set(path, data, token = null) {
+    async set(path, data) {
         try {
-            const url = `${CONFIG.FIREBASE_DB}/${path}.json`;
-            const headers = { 'Content-Type': 'application/json' };
-            if (token) headers['Authorization'] = `Bearer ${token}`;
-            
+            const url = `${CONFIG.FIREBASE.databaseURL}/${path}.json`;
             const response = await fetch(url, {
                 method: 'PUT',
-                headers,
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
             });
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
-            return await response.json();
+            return response.ok;
         } catch (error) {
             console.error('Firebase SET error:', error);
-            throw error;
+            return false;
         }
     },
-
+    
     /**
-     * Push new data to Firebase path
+     * Update data at path (PATCH)
      */
-    async push(path, data, token = null) {
+    async update(path, data) {
         try {
-            const url = `${CONFIG.FIREBASE_DB}/${path}.json`;
-            const headers = { 'Content-Type': 'application/json' };
-            if (token) headers['Authorization'] = `Bearer ${token}`;
-            
-            const response = await fetch(url, {
-                method: 'POST',
-                headers,
-                body: JSON.stringify(data)
-            });
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
-            return await response.json();
-        } catch (error) {
-            console.error('Firebase PUSH error:', error);
-            throw error;
-        }
-    },
-
-    /**
-     * Update data at Firebase path (PATCH)
-     */
-    async update(path, data, token = null) {
-        try {
-            const url = `${CONFIG.FIREBASE_DB}/${path}.json`;
-            const headers = { 'Content-Type': 'application/json' };
-            if (token) headers['Authorization'] = `Bearer ${token}`;
-            
-            const response = await fetch(url, {
-                method: 'PATCH',
-                headers,
-                body: JSON.stringify(data)
-            });
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
-            return await response.json();
+            const existingData = await this.get(path);
+            const updatedData = { ...existingData, ...data };
+            return await this.set(path, updatedData);
         } catch (error) {
             console.error('Firebase UPDATE error:', error);
-            throw error;
+            return false;
         }
     },
-
+    
     /**
-     * Delete data from Firebase path
+     * Push new data (POST)
      */
-    async remove(path, token = null) {
+    async push(path, data) {
         try {
-            const url = `${CONFIG.FIREBASE_DB}/${path}.json`;
-            const headers = {};
-            if (token) headers['Authorization'] = `Bearer ${token}`;
-            
+            const url = `${CONFIG.FIREBASE.databaseURL}/${path}.json`;
             const response = await fetch(url, {
-                method: 'DELETE',
-                headers
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
             });
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
-            return true;
+            if (response.ok) {
+                const result = await response.json();
+                return result.name; // Returns the new key
+            }
+            return null;
         } catch (error) {
-            console.error('Firebase REMOVE error:', error);
-            throw error;
-        }
-    },
-
-    /**
-     * Query with ordering and filtering
-     */
-    async query(path, orderBy, equalTo, limitToFirst = null) {
-        try {
-            let url = `${CONFIG.FIREBASE_DB}/${path}.json?orderBy="${orderBy}"&equalTo="${equalTo}"`;
-            if (limitToFirst) url += `&limitToFirst=${limitToFirst}`;
-            
-            const response = await fetch(url);
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
-            return await response.json();
-        } catch (error) {
-            console.error('Firebase QUERY error:', error);
+            console.error('Firebase PUSH error:', error);
             return null;
         }
     },
-
+    
     /**
-     * Listen for real-time changes (polling-based for REST API)
+     * Delete data at path
      */
-    onValue(path, callback, intervalMs = 5000) {
-        let lastData = null;
-        
-        const poll = async () => {
-            try {
-                const data = await this.get(path);
-                if (JSON.stringify(data) !== JSON.stringify(lastData)) {
-                    lastData = data;
-                    callback(data);
-                }
-            } catch (error) {
-                console.error('Polling error:', error);
-            }
-        };
-
-        // Initial call
-        poll();
-        
-        // Set up polling
-        return setInterval(poll, intervalMs);
+    async delete(path) {
+        try {
+            const url = `${CONFIG.FIREBASE.databaseURL}/${path}.json`;
+            const response = await fetch(url, { method: 'DELETE' });
+            return response.ok;
+        } catch (error) {
+            console.error('Firebase DELETE error:', error);
+            return false;
+        }
     }
 };
 
 // ==========================================
-// Worker API Integration
+// API Service (Worker Backend)
 // ==========================================
-const WorkerAPI = {
+
+const ApiService = {
     
     /**
-     * Login with email/password via Worker
+     * Make API request to Worker
      */
-    async login(email, password) {
-        const response = await fetch(`${CONFIG.API_URL}/api/auth/login`, {
+    async request(endpoint, options = {}) {
+        try {
+            const url = `${CONFIG.WORKER_URL}${endpoint}`;
+            const response = await fetch(url, {
+                headers: { 
+                    'Content-Type': 'application/json',
+                    ...options.headers 
+                },
+                ...options
+            });
+            
+            if (!response.ok) {
+                const error = await response.json().catch(() => ({}));
+                throw new Error(error.message || `API Error: ${response.status}`);
+            }
+            
+            return await response.json();
+        } catch (error) {
+            console.error('API Request error:', error);
+            throw error;
+        }
+    },
+    
+    // Dashboard
+    async getDashboardStats() {
+        return this.request('/api/dashboard');
+    },
+    
+    // Menu
+    async getMenu() {
+        return this.request('/api/menu');
+    },
+    
+    async createMenuItem(data) {
+        return this.request('/api/menu', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password })
+            body: JSON.stringify(data)
         });
-        return await response.json();
     },
-
-    /**
-     * Register new user via Worker
-     */
-    async register(userData) {
-        const response = await fetch(`${CONFIG.API_URL}/api/auth/register`, {
+    
+    async updateMenuItem(id, data) {
+        return this.request('/api/menu', {
+            method: 'PUT',
+            body: JSON.stringify({ id, ...data })
+        });
+    },
+    
+    async deleteMenuItem(id) {
+        return this.request(`/api/menu?id=${id}`, {
+            method: 'DELETE'
+        });
+    },
+    
+    // Orders
+    async getOrders(filters = {}) {
+        const params = new URLSearchParams(filters).toString();
+        return this.request(`/api/orders?${params}`);
+    },
+    
+    async createOrder(data) {
+        return this.request('/api/orders', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(userData)
+            body: JSON.stringify(data)
         });
-        return await response.json();
     },
-
-    /**
-     * Get menu data via Worker
-     */
-    async getMenu(restaurantId) {
-        const response = await fetch(`${CONFIG.API_URL}/api/menu?restaurantId=${restaurantId}`);
-        return await response.json();
+    
+    async updateOrderStatus(id, status) {
+        return this.request('/api/orders', {
+            method: 'PUT',
+            body: JSON.stringify({ id, status })
+        });
     },
-
-    /**
-     * Save menu data via Worker
-     */
-    async saveMenu(menuData, token) {
-        const response = await fetch(`${CONFIG.API_URL}/api/menu`, {
+    
+    // Settings
+    async getSettings() {
+        return this.request('/api/settings');
+    },
+    
+    async updateSettings(data) {
+        return this.request('/api/settings', {
+            method: 'PUT',
+            body: JSON.stringify(data)
+        });
+    },
+    
+    // Promotions
+    async getPromotions() {
+        return this.request('/api/promotions');
+    },
+    
+    async createPromotion(data) {
+        return this.request('/api/promotions', {
             method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify(menuData)
+            body: JSON.stringify(data)
         });
-        return await response.json();
     },
-
-    /**
-     * Upload file via Worker
-     */
-    async uploadFile(file, type = 'image') {
+    
+    // Upload
+    async uploadImage(file, type = 'menu-item') {
         const formData = new FormData();
         formData.append('file', file);
         formData.append('type', type);
-
-        const response = await fetch(`${CONFIG.API_URL}/api/upload`, {
+        
+        return this.request('/api/upload', {
             method: 'POST',
-            body: formData
+            body: formData,
+            headers: {} // Let browser set content-type for FormData
         });
-        return await response.json();
     },
-
-    /**
-     * AI Analyze image via Worker
-     */
-    async analyzeImage(imageUrl, type = 'menu') {
-        const response = await fetch(`${CONFIG.API_URL}/api/ai/analyze`, {
+    
+    // AI Analysis
+    async analyzeMenu(file) {
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        return this.request('/api/ai/analyze', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ imageUrl, type })
+            body: formData,
+            headers: {}
         });
-        return await response.json();
-    },
-
-    /**
-     * AI Chat completion via Worker
-     */
-    async chat(message, context = '') {
-        const response = await fetch(`${CONFIG.API_URL}/api/ai/chat`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message, context })
-        });
-        return await response.json();
-    },
-
-    /**
-     * Generate image via AI
-     */
-    async generateImage(prompt) {
-        const response = await fetch(`${CONFIG.API_URL}/api/ai/image`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ prompt })
-        });
-        return await response.json();
-    },
-
-    /**
-     * Check AI service status
-     */
-    async checkAIStatus() {
-        try {
-            const response = await fetch(`${CONFIG.API_URL}/api/ai/status`);
-            return await response.json();
-        } catch (error) {
-            return { success: false, status: 'offline', error: error.message };
-        }
-    },
-
-    /**
-     * Get orders for restaurant
-     */
-    async getOrders(restaurantId) {
-        const response = await fetch(`${CONFIG.API_URL}/api/orders?restaurantId=${restaurantId}`);
-        return await response.json();
-    },
-
-    /**
-     * Update order status
-     */
-    async updateOrderStatus(orderId, status, token) {
-        const response = await fetch(`${CONFIG.API_URL}/api/orders/${orderId}/status`, {
-            method: 'PUT',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({ status })
-        });
-        return await response.json();
-    },
-
-    /**
-     * Get notifications
-     */
-    async getNotifications(restaurantId) {
-        const response = await fetch(`${CONFIG.API_URL}/api/notifications?restaurantId=${restaurantId}`);
-        return await response.json();
-    },
-
-    /**
-     * Get restaurant settings
-     */
-    async getRestaurant(restaurantId) {
-        const response = await fetch(`${CONFIG.API_URL}/api/restaurants/${restaurantId}`);
-        return await response.json();
-    },
-
-    /**
-     * Save restaurant settings
-     */
-    async saveRestaurant(restaurantId, data, token) {
-        const response = await fetch(`${CONFIG.API_URL}/api/restaurants/${restaurantId}`, {
-            method: 'PUT',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify(data)
-        });
-        return await response.json();
     }
 };
 
 // ==========================================
-// NVIDIA AI Integration (Alternative AI Provider)
+// Menu Items Management
 // ==========================================
-const NVIDIA_AI = {
+
+const MenuManager = {
     
     /**
-     * Chat completion using NVIDIA API
+     * Get all categories and items
      */
-    async chat(messages, model = 'meta/llama3-70b-instruct') {
-        if (!CONFIG.NVIDIA_API_KEY) {
-            console.warn('NVIDIA API key not configured');
-            return null;
-        }
-
-        try {
-            const response = await fetch(
-                'https://integrate.api.nvidia.com/v1/chat/completions',
-                {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${CONFIG.NVIDIA_API_KEY}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        model,
-                        messages,
-                        max_tokens: 1024,
-                        temperature: 0.7
-                    })
-                }
-            );
-
-            if (!response.ok) {
-                throw new Error(`NVIDIA API error: ${response.status}`);
-            }
-
-            const data = await response.json();
-            return data.choices[0]?.message?.content;
-        } catch (error) {
-            console.error('NVIDIA AI error:', error);
-            throw error;
-        }
+    async getAll() {
+        const [categories, items] = await Promise.all([
+            FirebaseDB.get('menu/categories'),
+            FirebaseDB.get('menu/items')
+        ]);
+        
+        AppState.menu.categories = categories || {};
+        AppState.menu.items = items || {};
+        
+        return {
+            categories: AppState.menu.categories,
+            items: AppState.menu.items
+        };
     },
-
+    
     /**
-     * Image analysis using NVIDIA VILA model
+     * Add new category
      */
-    async analyzeImage(imageBase64, prompt = 'Describe this menu image in detail') {
-        if (!CONFIG.NVIDIA_API_KEY) {
-            console.warn('NVIDIA API key not configured');
-            return null;
+    async addCategory(categoryData) {
+        const category = {
+            name: categoryData.name,
+            icon: categoryData.icon || '🍽️',
+            order: Object.keys(AppState.menu.categories).length,
+            active: true,
+            createdAt: Date.now()
+        };
+        
+        const id = await FirebaseDB.push('menu/categories', category);
+        if (id) {
+            AppState.menu.categories[id] = { id, ...category };
         }
-
-        try {
-            const response = await fetch(
-                'https://integrate.api.nvidia.com/v1/chat/completions',
-                {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${CONFIG.NVIDIA_API_KEY}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        model: 'nvidia/neva-22b',
-                        messages: [
-                            {
-                                role: 'user',
-                                content: [
-                                    { type: 'text', text: prompt },
-                                    { type: 'image_url', image_url: { url: imageBase64 } }
-                                ]
-                            }
-                        ],
-                        max_tokens: 2048
-                    })
-                }
-            );
-
-            if (!response.ok) {
-                throw new Error(`NVIDIA API error: ${response.status}`);
+        
+        return id;
+    },
+    
+    /**
+     * Update category
+     */
+    async updateCategory(id, updates) {
+        const success = await FirebaseDB.update(`menu/categories/${id}`, updates);
+        if (success && AppState.menu.categories[id]) {
+            Object.assign(AppState.menu.categories[id], updates);
+        }
+        return success;
+    },
+    
+    /**
+     * Delete category
+     */
+    async deleteCategory(id) {
+        const success = await FirebaseDB.delete(`menu/categories/${id}`);
+        if (success) {
+            delete AppState.menu.categories[id];
+        }
+        return success;
+    },
+    
+    /**
+     * Add new item
+     */
+    async addItem(itemData) {
+        const item = {
+            name: itemData.name,
+            description: itemData.description || '',
+            price: itemData.price,
+            category: itemData.category,
+            image: itemData.image || '',
+            available: itemData.available !== false,
+            popular: itemData.popular || false,
+            preparationTime: itemData.preparationTime || 15,
+            createdAt: Date.now(),
+            updatedAt: Date.now()
+        };
+        
+        const id = await FirebaseDB.push('menu/items', item);
+        if (id) {
+            AppState.menu.items[id] = { id, ...item };
+        }
+        
+        return id;
+    },
+    
+    /**
+     * Update item
+     */
+    async updateItem(id, updates) {
+        const success = await FirebaseDB.update(
+            `menu/items/${id}`, 
+            { ...updates, updatedAt: Date.now() }
+        );
+        if (success && AppState.menu.items[id]) {
+            Object.assign(AppState.menu.items[id], updates);
+        }
+        return success;
+    },
+    
+    /**
+     * Delete item
+     */
+    async deleteItem(id) {
+        const success = await FirebaseDB.delete(`menu/items/${id}`);
+        if (success) {
+            delete AppState.menu.items[id];
+        }
+        return success;
+    },
+    
+    /**
+     * Get items by category
+     */
+    getItemsByCategory(categoryId) {
+        const items = {};
+        Object.entries(AppState.menu.items).forEach(([id, item]) => {
+            if (item.category === categoryId) {
+                items[id] = item;
             }
-
-            const data = await response.json();
-            return data.choices[0]?.message?.content;
-        } catch (error) {
-            console.error('NVIDIA Image Analysis error:', error);
-            throw error;
-        }
+        });
+        return items;
     }
 };
 
 // ==========================================
-// Authentication System
+// Orders Management
 // ==========================================
-const Auth = {
+
+const OrdersManager = {
     
     /**
-     * Login user
+     * Get all orders
      */
-    async login(email, password) {
-        showLoading('جاري تسجيل الدخول...');
-        
-        try {
-            const result = await WorkerAPI.login(email, password);
-            
-            if (result.success && result.data) {
-                // Store auth data
-                AppState.user = result.data.user;
-                localStorage.setItem('user', JSON.stringify(result.data.user));
-                localStorage.setItem('authToken', result.data.token || '');
-                
-                if (result.data.user?.restaurantId) {
-                    localStorage.setItem('restaurantId', result.data.user.restaurantId);
-                    // Load restaurant data
-                    await this.loadRestaurantData(result.data.user.restaurantId);
-                }
-                
-                hideLoading();
-                showNotification('success', 'تم تسجيل الدخول بنجاح!');
-                
-                return { success: true, user: result.data.user };
-            } else {
-                hideLoading();
-                showNotification('error', result.error || 'فشل تسجيل الدخول');
-                return { success: false, error: result.error };
-            }
-        } catch (error) {
-            hideLoading();
-            showNotification('error', 'حدث خطأ: ' + error.message);
-            return { success: false, error: error.message };
-        }
+    async getAll() {
+        const orders = await FirebaseDB.get('orders');
+        return orders || {};
     },
-
-    /**
-     * Register new user
-     */
-    async register(userData) {
-        showLoading('جاري إنشاء الحساب...');
-        
-        try {
-            const result = await WorkerAPI.register({
-                ...userData,
-                createdAt: new Date().toISOString()
-            });
-            
-            if (result.success && result.data) {
-                // Auto-login after registration
-                AppState.user = result.data.user;
-                localStorage.setItem('user', JSON.stringify(result.data.user));
-                localStorage.setItem('authToken', result.data.token || '');
-                
-                if (result.data.user?.restaurantId) {
-                    localStorage.setItem('restaurantId', result.data.user.restaurantId);
-                }
-                
-                hideLoading();
-                showNotification('success', 'تم إنشاء الحساب بنجاح!');
-                
-                return { success: true, user: result.data.user };
-            } else {
-                hideLoading();
-                showNotification('error', result.error || 'فشل إنشاء الحساب');
-                return { success: false, error: result.error };
-            }
-        } catch (error) {
-            hideLoading();
-            showNotification('error', 'حدث خطأ: ' + error.message);
-            return { success: false, error: error.message };
-        }
-    },
-
-    /**
-     * Gmail/Google OAuth registration helper
-     */
-    async registerWithGoogle(idToken) {
-        showLoading('جاري التسجيل بحساب Google...');
-        
-        try {
-            const result = await fetch(`${CONFIG.API_URL}/api/auth/google`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ idToken })
-            });
-            
-            const data = await result.json();
-            
-            if (data.success) {
-                AppState.user = data.user;
-                localStorage.setItem('user', JSON.stringify(data.user));
-                localStorage.setItem('authToken', data.token || '');
-                
-                hideLoading();
-                showNotification('success', 'تم التسجيل بحساب Google بنجاح!');
-                return { success: true, user: data.user };
-            } else {
-                hideLoading();
-                showNotification('error', data.error || 'فشل التسجيل');
-                return { success: false, error: data.error };
-            }
-        } catch (error) {
-            hideLoading();
-            showNotification('error', 'حدث خطأ: ' + error.message);
-            return { success: false, error: error.message };
-        }
-    },
-
-    /**
-     * Load restaurant data after login
-     */
-    async loadRestaurantData(restaurantId) {
-        try {
-            const restaurantData = await FirebaseDB.get(`restaurants/${restaurantId}`);
-            if (restaurantData) {
-                AppState.restaurant = restaurantData;
-                localStorage.setItem('restaurant', JSON.stringify(restaurantData));
-            }
-            
-            // Load menu data
-            const menuData = await FirebaseDB.get(`menus/${restaurantId}`);
-            if (menuData) {
-                AppState.menu = menuData;
-            }
-        } catch (error) {
-            console.error('Error loading restaurant data:', error);
-        }
-    },
-
-    /**
-     * Logout user
-     */
-    logout() {
-        AppState.user = null;
-        AppState.restaurant = null;
-        AppState.menu = { categories: [], items: [] };
-        
-        localStorage.removeItem('user');
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('restaurantId');
-        localStorage.removeItem('restaurant');
-        sessionStorage.clear();
-        
-        window.location.href = 'login.html';
-    },
-
-    /**
-     * Check if user is authenticated
-     */
-    isAuthenticated() {
-        const token = localStorage.getItem('authToken');
-        const user = localStorage.getItem('user');
-        return !!(token && user);
-    },
-
-    /**
-     * Get current user
-     */
-    getCurrentUser() {
-        if (!AppState.user) {
-            const userData = localStorage.getItem('user');
-            if (userData) {
-                AppState.user = JSON.parse(userData);
-            }
-        }
-        return AppState.user;
-    },
-
-    /**
-     * Get auth token
-     */
-    getToken() {
-        return localStorage.getItem('authToken') || '';
-    }
-};
-
-// ==========================================
-// Dashboard Data Service (Real-time from Firebase)
-// ==========================================
-const DashboardService = {
     
-    /**
-     * Fetch real dashboard statistics from Firebase
-     */
-    async getStats(restaurantId) {
-        if (!restaurantId) {
-            const user = Auth.getCurrentUser();
-            restaurantId = user?.restaurantId || localStorage.getItem('restaurantId') || 'default';
-        }
-
-        try {
-            // Parallel fetch all data
-            const [orders, menu, restaurant, analytics] = await Promise.all([
-                FirebaseDB.get(`orders/${restaurantId}`),
-                FirebaseDB.get(`menus/${restaurantId}`),
-                FirebaseDB.get(`restaurants/${restaurantId}`),
-                FirebaseDB.get(`analytics/${restaurantId}`)
-            ]);
-
-            // Process orders
-            const ordersList = orders ? Object.entries(orders).map(([id, order]) => ({
-                id,
-                ...order
-            })) : [];
-
-            // Calculate stats
-            const stats = {
-                // Order stats
-                totalOrders: ordersList.length,
-                pendingOrders: ordersList.filter(o => o.status === 'pending').length,
-                confirmedOrders: ordersList.filter(o => o.status === 'confirmed').length,
-                preparingOrders: ordersList.filter(o => o.status === 'preparing').length,
-                readyOrders: ordersList.filter(o => o.status === 'ready').length,
-                deliveredOrders: ordersList.filter(o => o.status === 'delivered').length,
-                cancelledOrders: ordersList.filter(o => o.status === 'cancelled').length,
-
-                // Revenue calculation
-                totalRevenue: ordersList
-                    .filter(o => o.status === 'delivered')
-                    .reduce((sum, o) => sum + (o.total || o.amount || 0), 0),
-                
-                todayRevenue: ordersList
-                    .filter(o => {
-                        const today = new Date().toDateString();
-                        return o.createdAt && new Date(o.createdAt).toDateString() === today && o.status === 'delivered';
-                    })
-                    .reduce((sum, o) => sum + (o.total || o.amount || 0), 0),
-
-                // Customer stats
-                uniqueCustomers: [...new Set(ordersList.map(o => o.customerEmail || o.customerPhone))].length,
-                
-                // Menu stats
-                totalCategories: menu?.categories?.length || 0,
-                totalItems: menu?.categories?.reduce((sum, cat) => sum + (cat.items?.length || 0), 0) || 0,
-
-                // Restaurant info
-                restaurantName: restaurant?.name || 'المطعم',
-                rating: restaurant?.rating || 0,
-                views: analytics?.totalViews || analytics?.views || 0,
-                
-                // Recent activity
-                recentOrders: ordersList
-                    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-                    .slice(0, 10),
-
-                // Trend calculations (compare to previous period)
-                revenueTrend: this.calculateTrend(analytics?.revenueHistory || []),
-                ordersTrend: this.calculateTrend(analytics?.ordersHistory || [])
-            };
-
-            return { success: true, stats };
-        } catch (error) {
-            console.error('Dashboard stats error:', error);
-            return { success: false, error: error.message };
-        }
-    },
-
-    /**
-     * Calculate trend percentage
-     */
-    calculateTrend(historyArray) {
-        if (!historyArray || historyArray.length < 2) return 0;
-        const len = historyArray.length;
-        const current = historyArray[len - 1];
-        const previous = historyArray[len - 2];
-        if (previous === 0) return current > 0 ? 100 : 0;
-        return Math.round(((current - previous) / previous) * 100);
-    },
-
-    /**
-     * Get real-time updates listener
-     */
-    subscribeToUpdates(restaurantId, callback) {
-        return FirebaseDB.onValue(`restaurants/${restaurantId}`, callback, 10000);
-    }
-};
-
-// ==========================================
-// Orders Service (Real-time from Firebase)
-// ==========================================
-const OrdersService = {
-    
-    /**
-     * Fetch real orders from Firebase
-     */
-    async getOrders(restaurantId) {
-        if (!restaurantId) {
-            const user = Auth.getCurrentUser();
-            restaurantId = user?.restaurantId || localStorage.getItem('restaurantId') || 'default';
-        }
-
-        try {
-            const orders = await FirebaseDB.get(`orders/${restaurantId}`);
-            
-            if (orders) {
-                const ordersList = Object.entries(orders).map(([id, order]) => ({
-                    id,
-                    ...order
-                }));
-                
-                return { 
-                    success: true, 
-                    orders: ordersList.sort((a, b) => 
-                        new Date(b.createdAt || b.timestamp) - new Date(a.createdAt || a.timestamp)
-                    )
-                };
-            }
-            
-            return { success: true, orders: [] };
-        } catch (error) {
-            console.error('Get orders error:', error);
-            return { success: false, error: error.message, orders: [] };
-        }
-    },
-
     /**
      * Create new order
      */
-    async createOrder(orderData, restaurantId) {
-        if (!restaurantId) {
-            restaurantId = Auth.getCurrentUser()?.restaurantId || localStorage.getItem('restaurantId');
+    async create(orderData) {
+        const order = {
+            customerName: orderData.customerName,
+            customerPhone: orderData.customerPhone,
+            customerEmail: orderData.customerEmail || '',
+            items: orderData.items || [],
+            totalAmount: orderData.totalAmount || 0,
+            status: 'pending',
+            paymentMethod: orderData.paymentMethod || 'cash',
+            paymentStatus: 'pending',
+            notes: orderData.notes || '',
+            tableNumber: orderData.tableNumber,
+            deliveryAddress: orderData.deliveryAddress,
+            orderType: orderData.orderType || 'dine-in',
+            createdAt: Date.now(),
+            updatedAt: Date.now()
+        };
+        
+        const id = await FirebaseDB.push('orders', order);
+        
+        // Create notification
+        if (id) {
+            await NotificationsManager.create({
+                title: { ar: 'طلب جديد', en: 'New Order' },
+                message: { 
+                    ar: `طلب جديد من ${order.customerName}`, 
+                    en: `New order from ${order.customerName}` 
+                },
+                type: 'order',
+                read: false,
+                targetRole: 'admin',
+                link: `orders.html?id=${id}`
+            });
         }
-
-        try {
-            const order = {
-                ...orderData,
-                id: 'ORD' + Date.now(),
-                status: 'pending',
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString()
-            };
-
-            const result = await FirebaseDB.push(`orders/${restaurantId}`, order, Auth.getToken());
-            
-            return { success: true, orderId: result.name, order };
-        } catch (error) {
-            console.error('Create order error:', error);
-            return { success: false, error: error.message };
-        }
+        
+        return id ? { id, ...order } : null;
     },
-
+    
     /**
      * Update order status
      */
-    async updateStatus(orderId, newStatus, restaurantId) {
-        if (!restaurantId) {
-            restaurantId = Auth.getCurrentUser()?.restaurantId || localStorage.getItem('restaurantId');
-        }
-
-        try {
-            await FirebaseDB.update(
-                `orders/${restaurantId}/${orderId}`,
-                { status: newStatus, updatedAt: new Date().toISOString() },
-                Auth.getToken()
-            );
-            
-            return { success: true };
-        } catch (error) {
-            console.error('Update order status error:', error);
-            return { success: false, error: error.message };
-        }
+    async updateStatus(orderId, status) {
+        return FirebaseDB.update(`orders/${orderId}`, {
+            status,
+            updatedAt: Date.now()
+        });
     },
-
+    
     /**
-     * Get single order details
+     * Delete order
      */
-    async getOrderDetails(orderId, restaurantId) {
-        if (!restaurantId) {
-            restaurantId = Auth.getCurrentUser()?.restaurantId || localStorage.getItem('restaurantId');
-        }
-
-        try {
-            const order = await FirebaseDB.get(`orders/${restaurantId}/${orderId}`);
-            
-            if (order) {
-                return { success: true, order: { id: orderId, ...order } };
-            }
-            
-            return { success: false, error: 'Order not found' };
-        } catch (error) {
-            console.error('Get order details error:', error);
-            return { success: false, error: error.message };
-        }
+    async delete(orderId) {
+        return FirebaseDB.delete(`orders/${orderId}`);
     },
-
+    
     /**
-     * Subscribe to real-time order updates
+     * Get today's orders
      */
-    subscribeToNewOrders(restaurantId, callback) {
-        return FirebaseDB.onValue(`orders/${restaurantId}`, (data) => {
-            if (data) {
-                const orders = Object.entries(data).map(([id, order]) => ({
-                    id,
-                    ...order
-                }));
-                callback(orders);
+    async getToday() {
+        const allOrders = await this.getAll();
+        const today = new Date().toDateString();
+        
+        const todayOrders = {};
+        Object.entries(allOrders).forEach(([id, order]) => {
+            if (new Date(order.createdAt).toDateString() === today) {
+                todayOrders[id] = order;
             }
-        }, 5000); // Poll every 5 seconds
+        });
+        
+        return todayOrders;
+    },
+    
+    /**
+     * Get stats
+     */
+    async getStats() {
+        const allOrders = await this.getAll();
+        const ordersList = Object.values(allOrders);
+        
+        const totalOrders = ordersList.length;
+        const totalRevenue = ordersList
+            .filter(o => o.paymentStatus === 'paid')
+            .reduce((sum, o) => sum + (o.totalAmount || 0), 0);
+        
+        const uniqueCustomers = new Set(ordersList.map(o => o.customerPhone)).size;
+        const averageOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
+        
+        // Orders by status
+        const ordersByStatus = {};
+        ordersList.forEach(order => {
+            ordersByStatus[order.status] = (ordersByStatus[order.status] || 0) + 1;
+        });
+        
+        // Today's stats
+        const today = new Date().toDateString();
+        const todayOrders = ordersList.filter(o => 
+            new Date(o.createdAt).toDateString() === today
+        );
+        const todayRevenue = todayOrders
+            .filter(o => o.paymentStatus === 'paid')
+            .reduce((sum, o) => sum + (o.totalAmount || 0), 0);
+        
+        return {
+            totalOrders,
+            totalRevenue,
+            totalCustomers: uniqueCustomers,
+            averageOrderValue,
+            ordersByStatus,
+            todayOrders: todayOrders.length,
+            todayRevenue,
+            recentOrders: ordersList
+                .sort((a, b) => b.createdAt - a.createdAt)
+                .slice(0, 10)
+        };
     }
 };
 
 // ==========================================
-// Notifications Service (Real-time)
+// Settings Manager
 // ==========================================
-const NotificationsService = {
+
+const SettingsManager = {
     
     /**
-     * Fetch real notifications
+     * Get restaurant settings
      */
-    async getNotifications(restaurantId) {
-        if (!restaurantId) {
-            restaurantId = Auth.getCurrentUser()?.restaurantId || localStorage.getItem('restaurantId') || 'default';
+    async get() {
+        let settings = await FirebaseDB.get('settings/restaurant');
+        
+        if (!settings) {
+            settings = this.getDefaultSettings();
         }
-
-        try {
-            const notifications = await FirebaseDB.get(`notifications/${restaurantId}`);
-            
-            if (notifications) {
-                const notifList = Object.entries(notifications).map(([id, notif]) => ({
-                    id,
-                    ...notif
-                }));
-                
-                return { 
-                    success: true, 
-                    notifications: notifList.sort((a, b) => 
-                        new Date(b.timestamp || b.createdAt) - new Date(a.timestamp || a.createdAt)
-                    )
-                };
-            }
-            
-            return { success: true, notifications: [] };
-        } catch (error) {
-            console.error('Get notifications error:', error);
-            return { success: false, error: error.message, notifications: [] };
-        }
+        
+        AppState.restaurant = settings;
+        return settings;
     },
+    
+    /**
+     * Get default settings
+     */
+    getDefaultSettings() {
+        return {
+            name: { ar: 'مطعم المبروك', en: 'Al-Mabrouk Restaurant' },
+            description: { ar: 'أفضل مطعم في المنطقة', en: 'Best restaurant in town' },
+            logo: '',
+            coverImage: '',
+            phone: '+201234567890',
+            whatsapp: '+201234567890',
+            email: 'info@mezomenu.com',
+            address: { ar: 'القاهرة، مصر', en: 'Cairo, Egypt' },
+            currency: CONFIG.DEFAULT_CURRENCY,
+            language: CONFIG.DEFAULT_LANGUAGE,
+            workingHours: {
+                open: '10:00',
+                close: '23:00',
+                days: ['Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday']
+            },
+            socialMedia: {},
+            features: {
+                reservations: true,
+                delivery: true,
+                takeaway: true,
+                qrOrdering: true
+            },
+            theme: {
+                primaryColor: '#ff6b35',
+                secondaryColor: '#f7931e'
+            }
+        };
+    },
+    
+    /**
+     * Update settings
+     */
+    async update(settings) {
+        const success = await FirebaseDB.set('settings/restaurant', settings);
+        if (success) {
+            AppState.restaurant = settings;
+        }
+        return success;
+    }
+};
 
+// ==========================================
+// Notifications Manager
+// ==========================================
+
+const NotificationsManager = {
+    
+    /**
+     * Get all notifications
+     */
+    async getAll() {
+        const notifications = await FirebaseDB.get('notifications');
+        return notifications || {};
+    },
+    
+    /**
+     * Get unread count
+     */
+    async getUnreadCount() {
+        const all = await this.getAll();
+        return Object.values(all).filter(n => !n.read).length;
+    },
+    
     /**
      * Create notification
      */
-    async createNotification(notificationData, restaurantId) {
-        if (!restaurantId) {
-            restaurantId = Auth.getCurrentUser()?.restaurantId || localStorage.getItem('restaurantId');
-        }
-
-        try {
-            const notification = {
-                ...notificationData,
-                id: generateId(),
-                timestamp: new Date().toISOString(),
-                read: false
-            };
-
-            await FirebaseDB.push(`notifications/${restaurantId}`, notification);
-            
-            return { success: true, notification };
-        } catch (error) {
-            console.error('Create notification error:', error);
-            return { success: false, error: error.message };
-        }
+    async create(notificationData) {
+        const notification = {
+            title: notificationData.title,
+            message: notificationData.message,
+            type: notificationData.type || 'info',
+            read: false,
+            targetRole: notificationData.targetRole || 'all',
+            createdAt: Date.now(),
+            link: notificationData.link || ''
+        };
+        
+        return FirebaseDB.push('notifications', notification);
     },
-
+    
     /**
-     * Mark notification as read
+     * Mark as read
      */
-    async markAsRead(notificationId, restaurantId) {
-        if (!restaurantId) {
-            restaurantId = Auth.getCurrentUser()?.restaurantId || localStorage.getItem('restaurantId');
-        }
-
-        try {
-            await FirebaseDB.update(
-                `notifications/${restaurantId}/${notificationId}`,
-                { read: true },
-                Auth.getToken()
-            );
-            
-            return { success: true };
-        } catch (error) {
-            console.error('Mark as read error:', error);
-            return { success: false, error: error.message };
-        }
+    async markAsRead(id) {
+        return FirebaseDB.update(`notifications/${id}`, { read: true });
     },
-
+    
     /**
      * Mark all as read
      */
-    async markAllAsRead(restaurantId) {
-        if (!restaurantId) {
-            restaurantId = Auth.getCurrentUser()?.restaurantId || localStorage.getItem('restaurantId');
-        }
-
-        try {
-            const result = await FirebaseDB.get(`notifications/${restaurantId}`);
-            
-            if (result) {
-                const updates = {};
-                Object.keys(result).forEach(key => {
-                    updates[`${key}/read`] = true;
-                });
-                
-                await FirebaseDB.update(`notifications/${restaurantId}`, updates, Auth.getToken());
-            }
-            
-            return { success: true };
-        } catch (error) {
-            console.error('Mark all as read error:', error);
-            return { success: false, error: error.message };
-        }
+    async markAllAsRead() {
+        const all = await this.getAll();
+        const updates = {};
+        Object.keys(all).forEach(key => {
+            updates[key] = true;
+        });
+        return FirebaseDB.set('notifications', all);
     },
-
+    
     /**
-     * Auto-generate order notification
+     * Delete notification
      */
-    async generateOrderNotification(order) {
-        return this.createNotification({
-            type: 'orders',
-            title: `طلب جديد #${order.id}`,
-            message: `لقد تلقيت طلباً جديداً من ${order.customerName} بمبلغ ${formatCurrency(order.total)}`,
-            actionUrl: 'orders.html',
-            priority: 'high'
+    async delete(id) {
+        return FirebaseDB.delete(`notifications/${id}`);
+    }
+};
+
+// ==========================================
+// Promotions Manager
+// ==========================================
+
+const PromotionsManager = {
+    
+    /**
+     * Get all promotions
+     */
+    async getAll() {
+        const promotions = await FirebaseDB.get('promotions');
+        return promotions || {};
+    },
+    
+    /**
+     * Get active promotions
+     */
+    async getActive() {
+        const all = await this.getAll();
+        const now = Date.now();
+        const active = {};
+        
+        Object.entries(all).forEach(([key, promo]) => {
+            if (promo.active && 
+                new Date(promo.startDate).getTime() <= now && 
+                new Date(promo.endDate).getTime() >= now) {
+                active[key] = promo;
+            }
+        });
+        
+        return active;
+    },
+    
+    /**
+     * Create promotion
+     */
+    async create(promoData) {
+        const promotion = {
+            title: promoData.title,
+            description: promoData.description,
+            discountType: promoData.discountType || 'percentage',
+            discountValue: promoData.discountValue,
+            startDate: promoData.startDate,
+            endDate: promoData.endDate,
+            code: promoData.code || '',
+            minOrderAmount: promoData.minOrderAmount,
+            active: promoData.active !== false,
+            image: promoData.image || '',
+            createdAt: Date.now()
+        };
+        
+        return FirebaseDB.push('promotions', promotion);
+    },
+    
+    /**
+     * Update promotion
+     */
+    async update(id, updates) {
+        return FirebaseDB.update(`promotions/${id}`, updates);
+    },
+    
+    /**
+     * Delete promotion
+     */
+    async delete(id) {
+        return FirebaseDB.delete(`promotions/${id}`);
+    }
+};
+
+// ==========================================
+// Reservations Manager
+// ==========================================
+
+const ReservationsManager = {
+    
+    /**
+     * Get all reservations
+     */
+    async getAll() {
+        const reservations = await FirebaseDB.get('reservations');
+        return reservations || {};
+    },
+    
+    /**
+     * Create reservation
+     */
+    async create(reservationData) {
+        const reservation = {
+            customerName: reservationData.customerName,
+            customerPhone: reservationData.customerPhone,
+            customerEmail: reservationData.customerEmail || '',
+            date: reservationData.date,
+            time: reservationData.time,
+            guests: reservationData.guests,
+            status: 'pending',
+            notes: reservationData.notes || '',
+            tableNumber: reservationData.tableNumber,
+            createdAt: Date.now()
+        };
+        
+        const id = await FirebaseDB.push('reservations', reservation);
+        
+        // Create notification
+        if (id) {
+            await NotificationsManager.create({
+                title: { ar: 'حجز جديد', en: 'New Reservation' },
+                message: { 
+                    ar: `حجز جديد من ${reservationData.customerName}`, 
+                    en: `New reservation from ${reservationData.customerName}` 
+                },
+                type: 'info',
+                targetRole: 'admin',
+                link: `reservations.html?id=${id}`
+            });
+        }
+        
+        return id;
+    },
+    
+    /**
+     * Update reservation
+     */
+    async update(id, updates) {
+        return FirebaseDB.update(`reservations/${id}`, updates);
+    },
+    
+    /**
+     * Delete reservation
+     */
+    async delete(id) {
+        return FirebaseDB.delete(`reservations/${id}`);
+    }
+};
+
+// ==========================================
+// Image Compression Utility
+// ==========================================
+
+const ImageUtils = {
+    
+    /**
+     * Compress image to max dimensions and quality
+     */
+    compress(file, maxWidth = 1024, quality = 0.85) {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            const canvas = document.createElement('canvas');
+            
+            img.onload = () => {
+                let width = img.width;
+                let height = img.height;
+                
+                // Calculate new dimensions
+                if (width > height && width > maxWidth) {
+                    height = Math.round((height * maxWidth) / width);
+                    width = maxWidth;
+                } else if (height > maxWidth) {
+                    width = Math.round((width * maxWidth) / height);
+                    height = maxWidth;
+                }
+                
+                canvas.width = width;
+                canvas.height = height;
+                
+                const ctx = canvas.getContext('2d');
+                if (ctx) {
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    canvas.toBlob(
+                        (blob) => {
+                            if (blob) {
+                                const compressedFile = new File([blob], file.name, {
+                                    type: 'image/jpeg',
+                                    lastModified: Date.now()
+                                });
+                                resolve(compressedFile);
+                            } else {
+                                reject(new Error('Failed to compress image'));
+                            }
+                        },
+                        'image/jpeg',
+                        quality
+                    );
+                }
+            };
+            
+            img.onerror = () => reject(new Error('Failed to load image'));
+            img.src = URL.createObjectURL(file);
+        });
+    },
+    
+    /**
+     * Convert File to Base64
+     */
+    fileToBase64(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
         });
     }
 };
 
 // ==========================================
-// Utility Functions
+// AI Analysis Service
 // ==========================================
 
-/**
- * Format currency
- */
-function formatCurrency(amount, currency = CONFIG.DEFAULT_CURRENCY) {
-    const symbols = { EGP: 'ج.م', USD: '$', SAR: 'ر.س', AED: 'د.إ' };
-    return `${Number(amount).toFixed(2)} ${symbols[currency] || currency}`;
-}
-
-/**
- * Format date/time in Arabic
- */
-function formatDateTime(dateString) {
-    if (!dateString) return '---';
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) return '---';
+const AIAnalyzer = {
     
-    const options = {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-    };
-    return date.toLocaleDateString('ar-EG', options);
-}
-
-/**
- * Format short date
- */
-function formatDateShort(dateString) {
-    if (!dateString) return '---';
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) return '---';
+    /**
+     * Analyze menu image with multi-provider fallback
+     */
+    async analyzeImage(file) {
+        try {
+            // Compress image first
+            console.log('[AI] Compressing image...');
+            const compressedFile = await ImageUtils.compress(file, 1024, 0.85);
+            const base64 = await ImageUtils.fileToBase64(compressedFile);
+            
+            console.log(`[AI] Image compressed. Size: ${(base64.length * 3 / 4 / 1024).toFixed(1)}KB`);
+            
+            // Send to Worker for analysis
+            const result = await ApiService.analyzeMenu(compressedFile);
+            
+            if (result.success) {
+                return {
+                    success: true,
+                    data: result.data,
+                    provider: result.provider || 'unknown'
+                };
+            } else {
+                throw new Error(result.error || 'Analysis failed');
+            }
+            
+        } catch (error) {
+            console.error('[AI] Analysis error:', error);
+            return {
+                success: false,
+                error: error.message
+            };
+        }
+    },
     
-    return date.toLocaleDateString('ar-EG', {
-        month: 'short',
-        day: 'numeric'
-    });
-}
+    /**
+     * Import extracted data to menu
+     */
+    async importToMenu(analysisResult) {
+        if (!analysisResult || !analysisResult.categories) {
+            throw new Error('No data to import');
+        }
+        
+        let importedItems = 0;
+        
+        for (const category of analysisResult.categories) {
+            // Create category
+            const categoryId = await MenuManager.addCategory({
+                name: category.name,
+                icon: category.icon || '🍽️'
+            });
+            
+            if (categoryId) {
+                // Create items in this category
+                for (const item of category.items) {
+                    await MenuManager.addItem({
+                        name: item.name,
+                        description: item.description || { ar: '', en: '' },
+                        price: item.price,
+                        category: categoryId,
+                        available: item.available !== false
+                    });
+                    importedItems++;
+                }
+            }
+        }
+        
+        return importedItems;
+    }
+};
 
-/**
- * Generate unique ID
- */
-function generateId() {
-    return 'id_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-}
+// ==========================================
+// UI Utilities
+// ==========================================
 
-/**
- * Debounce function
- */
-function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-    };
-}
-
-/**
- * Show loading overlay
- */
-function showLoading(message = 'جاري التحميل...') {
-    AppState.isLoading = true;
-    let loader = document.getElementById('loadingOverlay');
+const UI = {
     
-    if (!loader) {
-        loader = document.createElement('div');
-        loader.id = 'loadingOverlay';
-        loader.innerHTML = `
-            <div class="loader-content">
-                <div class="spinner"></div>
-                <p class="loader-message">${message}</p>
-            </div>
+    /**
+     * Show toast notification
+     */
+    showToast(message, type = 'info') {
+        const container = document.querySelector('.toast-container') || this.createToastContainer();
+        
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+        toast.innerHTML = `
+            <i class="fas fa-${this.getToastIcon(type)}"></i>
+            <span>${message}</span>
         `;
-        document.body.appendChild(loader);
-    }
+        
+        container.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.style.animation = 'slideOut 0.3s ease forwards';
+            setTimeout(() => toast.remove(), 300);
+        }, 4000);
+    },
     
-    loader.querySelector('.loader-message').textContent = message;
-    loader.classList.add('active');
-}
-
-/**
- * Hide loading overlay
- */
-function hideLoading() {
-    AppState.isLoading = false;
-    const loader = document.getElementById('loadingOverlay');
-    if (loader) {
-        loader.classList.remove('active');
-    }
-}
-
-/**
- * Show notification toast
- */
-function showNotification(type, message, duration = 4000) {
-    // Remove existing notifications
-    const existing = document.querySelector('.notification-toast');
-    if (existing) existing.remove();
-
-    const icons = {
-        success: 'check-circle',
-        error: 'times-circle',
-        warning: 'exclamation-triangle',
-        info: 'info-circle'
-    };
-
-    const toast = document.createElement('div');
-    toast.className = `notification-toast ${type}`;
-    toast.innerHTML = `
-        <i class="fas fa-${icons[type] || 'info-circle'}"></i>
-        <span>${message}</span>
-        <button onclick="this.parentElement.remove()"><i class="fas fa-times"></i></button>
-    `;
-
-    document.body.appendChild(toast);
-
-    // Trigger animation
-    setTimeout(() => toast.classList.add('show'), 10);
-
-    // Auto-remove
-    setTimeout(() => {
-        toast.classList.remove('show');
-        setTimeout(() => toast.remove(), 300);
-    }, duration);
-}
-
-/**
- * Show confirmation dialog
- */
-function showConfirm(title, message, onConfirm, onCancel) {
-    const modal = document.createElement('div');
-    modal.className = 'confirm-modal-overlay';
-    modal.innerHTML = `
-        <div class="confirm-modal">
-            <h3><i class="fas fa-exclamation-triangle"></i> ${title}</h3>
-            <p>${message}</p>
-            <div class="confirm-actions">
-                <button class="btn btn-danger" id="confirmYes">تأكيد</button>
-                <button class="btn btn-secondary" id="confirmNo">إلغاء</button>
-            </div>
-        </div>
-    `;
-
-    document.body.appendChild(modal);
-
-    document.getElementById('confirmYes').onclick = () => {
-        modal.remove();
-        if (onConfirm) onConfirm();
-    };
-
-    document.getElementById('confirmNo').onclick = () => {
-        modal.remove();
-        if (onCancel) onCancel();
-    };
-}
-
-/**
- * Get restaurant ID from storage
- */
-function getRestaurantIdFromStorage() {
-    const user = Auth.getCurrentUser();
-    return user?.restaurantId || localStorage.getItem('restaurantId') || 'default';
-}
-
-/**
- * Get auth token
- */
-function getAuthToken() {
-    return Auth.getToken();
-}
-
-/**
- * Time ago formatter
- */
-function getTimeAgo(timestamp) {
-    if (!timestamp) return 'الآن';
+    createToastContainer() {
+        const container = document.createElement('div');
+        container.className = 'toast-container';
+        document.body.appendChild(container);
+        return container;
+    },
     
-    const now = new Date();
-    const date = new Date(timestamp);
-    const seconds = Math.floor((now - date) / 1000);
-
-    if (seconds < 60) return 'الآن';
+    getToastIcon(type) {
+        const icons = {
+            success: 'check-circle',
+            danger: 'exclamation-circle',
+            warning: 'exclamation-triangle',
+            info: 'info-circle'
+        };
+        return icons[type] || 'info-circle';
+    },
     
-    const intervals = [
-        { label: 'دقيقة', seconds: 60, plural: 'دقائق' },
-        { label: 'ساعة', seconds: 3600, plural: 'ساعات' },
-        { label: 'يوم', seconds: 86400, plural: 'أيام' },
-        { label: 'أسبوع', seconds: 604800, plural: 'أسابيع' },
-        { label: 'شهر', seconds: 2592000, plural: 'أشهر' }
-    ];
-
-    for (const interval of intervals) {
-        const count = Math.floor(seconds / interval.seconds);
-        if (count >= 1) {
-            return count === 1 ? `منذ ${interval.label}` : `منذ ${count} ${interval.plural}`;
+    /**
+     * Format currency
+     */
+    formatCurrency(amount, currency = null) {
+        const curr = currency || AppState.restaurant?.currency || CONFIG.DEFAULT_CURRENCY;
+        return `${parseFloat(amount || 0).toFixed(2)} ${curr}`;
+    },
+    
+    /**
+     * Format date
+     */
+    formatDate(timestamp, locale = 'ar-EG') {
+        return new Date(timestamp).toLocaleDateString(locale, {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    },
+    
+    /**
+     * Show loading state
+     */
+    showLoading(element, text = 'جاري التحميل...') {
+        if (element) {
+            element.innerHTML = `
+                <div class="loading-overlay">
+                    <div>
+                        <div class="spinner"></div>
+                        <p style="margin-top: 1rem;">${text}</p>
+                    </div>
+                </div>
+            `;
         }
+    },
+    
+    /**
+     * Hide loading state
+     */
+    hideLoading(element, originalContent = '') {
+        if (element) {
+            element.innerHTML = originalContent;
+        }
+    },
+    
+    /**
+     * Confirm action
+     */
+    confirm(message) {
+        return confirm(message);
+    },
+    
+    /**
+     * Debounce function
+     */
+    debounce(func, wait = 300) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
     }
+};
 
-    return formatDateTime(timestamp);
-}
+// ==========================================
+// Auth Helpers (Basic)
+// ==========================================
 
-/**
- * Validate email
- */
-function isValidEmail(email) {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-}
-
-/**
- * Validate phone (Egyptian format)
- */
-function isValidPhone(phone) {
-    return /^(\+20|0)?1[0-25][0-9]{8}$/.test(phone.replace(/\s/g, ''));
-}
-
-/**
- * URL validator
- */
-function isValidUrl(string) {
-    try {
-        new URL(string);
+const Auth = {
+    
+    /**
+     * Check if user is logged in
+     */
+    isLoggedIn() {
+        return localStorage.getItem('mezomenu_user') !== null;
+    },
+    
+    /**
+     * Get current user
+     */
+    getUser() {
+        const userData = localStorage.getItem('mezomenu_user');
+        return userData ? JSON.parse(userData) : null;
+    },
+    
+    /**
+     * Save user session
+     */
+    saveUser(user) {
+        localStorage.setItem('mezomenu_user', JSON.stringify(user));
+    },
+    
+    /**
+     * Clear user session
+     */
+    logout() {
+        localStorage.removeItem('mezomenu_user');
+        window.location.href = 'login.html';
+    },
+    
+    /**
+     * Require auth (redirect if not logged in)
+     */
+    requireAuth() {
+        if (!this.isLoggedIn()) {
+            window.location.href = `login.html?redirect=${encodeURIComponent(window.location.href)}`;
+            return false;
+        }
         return true;
-    } catch (_) {
-        return false;
     }
-}
+};
 
-/**
- * Copy to clipboard
- */
-async function copyToClipboard(text) {
-    try {
-        await navigator.clipboard.writeText(text);
-        showNotification('success', 'تم النسخ!');
-    } catch (error) {
-        // Fallback
-        const textarea = document.createElement('textarea');
-        textarea.value = text;
-        document.body.appendChild(textarea);
-        textarea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textarea);
-        showNotification('success', 'تم النسخ!');
-    }
-}
+// ==========================================
+// Initialize Firebase SDK
+// ==========================================
 
-/**
- * Print element
- */
-function printElement(elementId) {
-    const element = document.getElementById(elementId);
-    if (!element) return;
-
-    const win = window.open('', '_blank');
-    win.document.write(`
-        <!DOCTYPE html>
-        <html dir="rtl">
-        <head>
-            <title>طباعة</title>
-            <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
-            <style>
-                body { font-family: 'Cairo', sans-serif; padding: 20px; direction: rtl; }
-                @media print { body { padding: 0; } }
-            </style>
-        </head>
-        <body>${element.innerHTML}</body>
-        </html>
-    `);
-    win.document.close();
-    win.print();
-}
-
-/**
- * Download as JSON
- */
-function downloadJSON(data, filename) {
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    a.click();
-    URL.revokeObjectURL(url);
-}
-
-/**
- * Initialize app common functionality
- */
-function initApp() {
-    // Check online status
-    window.addEventListener('online', () => {
-        AppState.isOnline = true;
-        showNotification('success', 'تم استعادة الاتصال بالإنترنت');
+function initFirebase() {
+    // Load Firebase SDK from CDN
+    const scripts = [
+        'https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js',
+        'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js',
+        'https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js'
+    ];
+    
+    let loaded = 0;
+    
+    return new Promise((resolve, reject) => {
+        scripts.forEach(src => {
+            const script = document.createElement('script');
+            script.src = src;
+            script.onload = () => {
+                loaded++;
+                if (loaded === scripts.length) {
+                    // Initialize Firebase
+                    if (!firebase.apps.length) {
+                        firebase.initializeApp(CONFIG.FIREBASE);
+                    }
+                    resolve(firebase);
+                }
+            };
+            script.onerror = reject;
+            document.head.appendChild(script);
+        });
     });
-
-    window.addEventListener('offline', () => {
-        AppState.isOnline = false;
-        showNotification('warning', 'لا يوجد اتصال بالإنترنت');
-    });
-
-    // Restore user session
-    if (Auth.isAuthenticated()) {
-        Auth.getCurrentUser();
-        const restaurantId = localStorage.getItem('restaurantId');
-        if (restaurantId) {
-            Auth.loadRestaurantData(restaurantId);
-        }
-    }
 }
 
-// Initialize when DOM is ready
-document.addEventListener('DOMContentLoaded', initApp);
+// ==========================================
+// Export for use
+// ==========================================
 
-// Export for use in other modules
-window.CONFIG = CONFIG;
-window.AppState = AppState;
-window.FirebaseDB = FirebaseDB;
-window.WorkerAPI = WorkerAPI;
-window.NVIDIA_AI = NVIDIA_AI;
-window.Auth = Auth;
-window.DashboardService = DashboardService;
-window.OrdersService = OrdersService;
-window.NotificationsService = NotificationsService;
+// Make available globally
+window.MezoMenu = {
+    CONFIG,
+    AppState,
+    FirebaseDB,
+    ApiService,
+    MenuManager,
+    OrdersManager,
+    SettingsManager,
+    NotificationsManager,
+    PromotionsManager,
+    ReservationsManager,
+    ImageUtils,
+    AIAnalyzer,
+    UI,
+    Auth,
+    initFirebase
+};
+
+console.log('%c🍽️ MezoMenu Loaded!', 'color: #ff6b35; font-size: 16px; font-weight: bold;');

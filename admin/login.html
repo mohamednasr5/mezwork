@@ -6,301 +6,82 @@
     <title>تسجيل الدخول - MezoMenu</title>
     <link rel="icon" type="image/png" href="../assets/images/favicon.png">
     
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    
-    <!-- Font Awesome -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-    
-    <!-- Google Identity Services -->
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <link rel="stylesheet" href="../assets/css/main.css">
     
     <style>
-        /* ===================================
-           MezoMenu - Login Page Styles
-           =================================== */
-        
-        :root {
-            --primary-color: #ff6b35;
-            --primary-dark: #e55a2b;
-            --primary-light: #ff8c5a;
-            --secondary-color: #f7931e;
-            --accent-color: #ffb627;
-            --dark-color: #1a1a2e;
-            --dark-light: #16213e;
-            --gray-900: #212529;
-            --gray-800: #343a40;
-            --gray-700: #495057;
-            --gray-600: #6c757d;
-            --gray-500: #adb5bd;
-            --gray-400: #ced4da;
-            --gray-300: #dee2e6;
-            --gray-200: #e9ecef;
-            --gray-100: #f8f9fa;
-            --white: #ffffff;
-            --success: #28a745;
-            --success-light: #d4edda;
-            --warning: #ffc107;
-            --warning-light: #fff3cd;
-            --danger: #dc3545;
-            --danger-light: #f8d7da;
-            --info: #17a2b8;
-            --info-light: #d1ecf1;
-            --whatsapp-green: #25D366;
-            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
-            --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
-            --shadow-lg: 0 10px 25px rgba(0,0,0,0.15);
-            --shadow-xl: 0 20px 40px rgba(0,0,0,0.2);
-            --radius-sm: 4px;
-            --radius-md: 8px;
-            --radius-lg: 12px;
-            --radius-xl: 20px;
-            --radius-full: 50%;
-            --transition-fast: 0.15s ease;
-            --transition-normal: 0.3s ease;
-        }
-        
-        *, *::before, *::after {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        html { scroll-behavior: smooth; font-size: 16px; }
-        
         body {
-            font-family: 'Cairo', sans-serif;
-            line-height: 1.6;
-            color: var(--gray-900);
-            background-color: var(--white);
-            direction: rtl;
-            text-align: right;
-        }
-        
-        [dir="rtl"] { text-align: right; }
-        
-        h1, h2, h3, h4, h5, h6 {
-            font-weight: 700;
-            line-height: 1.3;
-            color: var(--dark-color);
-            margin-bottom: 0.5em;
-        }
-        
-        h1 { font-size: 2.5rem; }
-        h2 { font-size: 2rem; }
-        h3 { font-size: 1.75rem; }
-        h4 { font-size: 1.5rem; }
-        
-        p { margin-bottom: 1rem; color: var(--gray-700); }
-        
-        a {
-            color: var(--primary-color);
-            text-decoration: none;
-            transition: var(--transition-fast);
-        }
-        
-        a:hover { color: var(--primary-dark); }
-        
-        img { max-width: 100%; height: auto; }
-        
-        .auth-page {
             min-height: 100vh;
-            background: linear-gradient(135deg, #fff9f5 0%, #f0f7ff 100%);
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 20px;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #ff6b35 150%);
         }
         
-        .auth-container {
-            display: grid;
-            grid-template-columns: 480px 1fr;
-            max-width: 1100px;
+        .login-container {
+            background: white;
+            border-radius: 20px;
+            padding: 3rem;
             width: 100%;
-            background: var(--white);
-            border-radius: var(--radius-xl);
-            box-shadow: var(--shadow-xl);
-            overflow: hidden;
-            min-height: 700px;
+            max-width: 420px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
         }
         
-        .auth-card {
-            padding: 48px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
+        .login-header {
+            text-align: center;
+            margin-bottom: 2rem;
         }
         
-        .auth-logo {
+        .login-logo {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #ff6b35, #f7931e);
+            border-radius: 20px;
             display: flex;
             align-items: center;
-            gap: 10px;
-            margin-bottom: 32px;
+            justify-content: center;
+            font-size: 2.5rem;
+            margin: 0 auto 1rem;
         }
         
-        .auth-logo .logo-icon { font-size: 2rem; }
-        
-        .auth-logo h1 {
-            font-size: 1.75rem;
-            color: var(--dark-color);
-            margin: 0;
+        .social-login {
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e9ecef;
         }
         
-        .auth-logo h1 span { color: var(--primary-color); }
-        
-        .auth-header { margin-bottom: 32px; }
-        
-        .auth-header h2 { font-size: 1.75rem; margin-bottom: 8px; }
-        
-        .auth-header p { color: var(--gray-600); margin: 0; }
-        
-        .auth-form {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-        
-        .form-group { margin-bottom: 1.25rem; }
-        
-        .form-label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 600;
-            color: var(--gray-700);
-        }
-        
-        .form-control {
+        .google-btn {
             width: 100%;
-            padding: 12px 16px;
-            font-family: 'Cairo', sans-serif;
-            font-size: 1rem;
-            border: 2px solid var(--gray-300);
-            border-radius: var(--radius-md);
-            transition: var(--transition-fast);
-            background: var(--white);
-        }
-        
-        .form-control:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
-        }
-        
-        .form-control::placeholder { color: var(--gray-500); }
-        
-        .input-group { position: relative; }
-        
-        .input-group .input-icon {
-            position: absolute;
-            left: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--gray-500);
-        }
-        
-        .input-group .form-control { padding-left: 45px; }
-        
-        .toggle-password {
-            position: absolute;
-            left: 16px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            cursor: pointer;
-            color: var(--gray-500);
-            padding: 4px;
-        }
-        
-        .form-options {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 24px;
-        }
-        
-        .checkbox-label {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            color: var(--gray-600);
-        }
-        
-        .checkbox-label input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
-            accent-color: var(--primary-color);
-        }
-        
-        .forgot-link {
-            font-size: 0.9rem;
-            color: var(--primary-color);
-            font-weight: 600;
-            cursor: pointer;
-        }
-        
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            padding: 12px 24px;
-            font-family: 'Cairo', sans-serif;
+            padding: 0.875rem;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            background: white;
+            font-family: inherit;
             font-size: 1rem;
             font-weight: 600;
-            border: none;
-            border-radius: var(--radius-md);
             cursor: pointer;
-            transition: var(--transition-normal);
-            text-decoration: none;
-            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            transition: all 0.3s;
         }
         
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-lg);
+        .google-btn:hover {
+            border-color: #4285f4;
+            color: #4285f4;
+            background: #f8f9fa;
         }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            color: var(--white);
-        }
-        
-        .btn-primary:hover {
-            background: linear-gradient(135deg, var(--primary-dark), var(--primary-color));
-            color: var(--white);
-        }
-        
-        .btn-secondary {
-            background: var(--white);
-            color: var(--primary-color);
-            border: 2px solid var(--primary-color);
-        }
-        
-        .btn-success { background: var(--whatsapp-green); color: var(--white); }
-        .btn-danger { background: var(--danger); color: var(--white); }
-        .btn-outline { background: transparent; border: 2px solid currentColor; }
-        
-        .btn-lg { padding: 16px 32px; font-size: 1.125rem; }
-        .btn-sm { padding: 8px 16px; font-size: 0.875rem; }
-        .btn-icon { width: 44px; height: 44px; padding: 0; border-radius: var(--radius-full); }
-        .w-100 { width: 100%; }
         
         .divider {
             display: flex;
             align-items: center;
-            gap: 16px;
-            margin: 24px 0;
-            color: var(--gray-500);
+            gap: 1rem;
+            margin: 1.5rem 0;
+            color: #adb5bd;
         }
         
         .divider::before,
@@ -308,677 +89,125 @@
             content: '';
             flex: 1;
             height: 1px;
-            background: var(--gray-200);
+            background: #e9ecef;
         }
         
-        .social-login { 
-            display: flex; 
-            justify-content: center;
-            gap: 12px;
-        }
-        
-        .btn-social {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            padding: 14px 28px;
-            border: 2px solid var(--gray-200);
-            border-radius: var(--radius-md);
-            background: var(--white);
-            font-family: 'Cairo', sans-serif;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition-fast);
-            flex: 1;
-            max-width: 220px;
-        }
-        
-        .btn-social:hover {
-            background: var(--gray-50);
-            border-color: var(--gray-300);
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
-        }
-        
-        .btn-social.google:hover {
-            border-color: #4285F4;
-            background: #f8f9ff;
-        }
-        
-        .btn-social.loading {
-            opacity: 0.7;
-            pointer-events: none;
-        }
-        
-        .auth-footer {
+        .register-link {
             text-align: center;
-            margin-top: 24px;
-            padding-top: 24px;
-            border-top: 1px solid var(--gray-200);
-        }
-        
-        .auth-footer p { margin: 0; color: var(--gray-600); }
-        
-        .auth-footer a { color: var(--primary-color); font-weight: 700; }
-        
-        /* Side Illustration */
-        .auth-illustration {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 40px;
-        }
-        
-        .illustration-content {
-            text-align: center;
-            color: var(--white);
-            position: relative;
-            z-index: 1;
-        }
-        
-        .floating-cards {
-            position: relative;
-            height: 280px;
-            margin-bottom: 40px;
-        }
-        
-        .float-card {
-            position: absolute;
-            background: rgba(255,255,255,0.95);
-            color: var(--dark-color);
-            padding: 16px 24px;
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-lg);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-weight: 700;
-            animation: floatCard 4s ease-in-out infinite;
-        }
-        
-        .float-card i {
-            width: 36px; height: 36px;
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            color: var(--white);
-            border-radius: var(--radius-md);
-            display: flex; align-items: center; justify-content: center;
-        }
-        
-        .fc-1 { top: 20%; right: 10%; animation-delay: 0s; }
-        .fc-2 { top: 45%; left: 5%; animation-delay: 1s; }
-        .fc-3 { bottom: 10%; right: 25%; animation-delay: 2s; }
-        
-        @keyframes floatCard {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-15px); }
-        }
-        
-        .illustration-text h3 {
-            font-size: 2rem;
-            color: var(--white);
-            margin-bottom: 12px;
-        }
-        
-        .illustration-text p { opacity: 0.9; font-size: 1.1rem; }
-        
-        .auth-illustration::before,
-        .auth-illustration::after {
-            content: '';
-            position: absolute;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.1);
-        }
-        
-        .auth-illustration::before {
-            width: 400px; height: 400px;
-            top: -100px; left: -100px;
-        }
-        
-        .auth-illustration::after {
-            width: 300px; height: 300px;
-            bottom: -80px; right: -80px;
-        }
-        
-        @media (max-width: 900px) {
-            .auth-container {
-                grid-template-columns: 1fr;
-                max-width: 500px;
-            }
-            
-            .auth-illustration { display: none; }
-            .auth-card { padding: 32px 24px; }
-            
-            .social-login {
-                flex-direction: column;
-            }
-            
-            .btn-social {
-                max-width: 100%;
-            }
-        }
-        
-        /* Toast Notifications */
-        .toast-container {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            z-index: 9999;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        
-        .toast {
-            background: var(--white);
-            padding: 16px 20px;
-            border-radius: var(--radius-md);
-            box-shadow: var(--shadow-lg);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            min-width: 300px;
-            animation: slideIn 0.3s ease;
-            border-right: 4px solid var(--primary-color);
-        }
-        
-        .toast.success { border-right-color: var(--success); }
-        .toast.error { border-right-color: var(--danger); }
-        .toast.warning { border-right-color: var(--warning); }
-        .toast.info { border-right-color: var(--info); }
-        
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateX(-100%); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-        
-        /* Loading Spinner */
-        .spinner {
-            width: 40px; height: 40px;
-            border: 4px solid var(--gray-200);
-            border-top-color: var(--primary-color);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-        
-        @keyframes spin { to { transform: rotate(360deg); } }
-        
-        .loading-screen {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: var(--white);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-        }
-        
-        .loading-text {
-            margin-top: 1rem;
-            color: var(--gray-600);
-            font-weight: 600;
-        }
-
-        /* User info after login */
-        .user-welcome {
-            background: linear-gradient(135deg, rgba(255,107,53,0.1), rgba(247,147,30,0.1));
-            border-radius: var(--radius-lg);
-            padding: 16px;
-            margin-bottom: 24px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        
-        .user-avatar {
-            width: 48px;
-            height: 48px;
-            border-radius: var(--radius-full);
-            object-fit: cover;
-            border: 2px solid var(--primary-color);
-        }
-        
-        .user-info h4 {
-            margin: 0;
-            font-size: 1rem;
-            color: var(--dark-color);
-        }
-        
-        .user-info p {
-            margin: 0;
-            font-size: 0.85rem;
-            color: var(--gray-600);
+            margin-top: 1.5rem;
         }
     </style>
 </head>
-<body class="auth-page">
-    <div class="auth-container">
-        <!-- Auth Card -->
-        <div class="auth-card">
-            <!-- Logo -->
-            <div class="auth-logo">
-                <span class="logo-icon">🍽️</span>
-                <h1>Mezo<span>Menu</span></h1>
-            </div>
-
-            <!-- Header -->
-            <div class="auth-header">
-                <h2>مرحباً بعودتك!</h2>
-                <p>سجّل دخولك للوصول إلى لوحة تحكم مطعمك</p>
-            </div>
-
-            <!-- Login Form -->
-            <form id="loginForm" class="auth-form">
-                <div class="form-group">
-                    <label for="email" class="form-label">البريد الإلكتروني</label>
-                    <div class="input-group">
-                        <i class="fas fa-envelope input-icon"></i>
-                        <input type="email" id="email" name="email" class="form-control" 
-                               placeholder="example@restaurant.com" required>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="password" class="form-label">كلمة المرور</label>
-                    <div class="input-group">
-                        <i class="fas fa-lock input-icon"></i>
-                        <input type="password" id="password" name="password" class="form-control" 
-                               placeholder="••••••••" required>
-                        <button type="button" class="toggle-password" onclick="togglePassword()">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="form-options">
-                    <label class="checkbox-label">
-                        <input type="checkbox" name="remember" checked>
-                        <span>تذكرني</span>
-                    </label>
-                    <a href="#" class="forgot-link" onclick="forgotPassword(event)">نسيت كلمة المرور؟</a>
-                </div>
-
-                <button type="submit" class="btn btn-primary btn-lg w-100" id="loginBtn">
-                    <span class="btn-text">تسجيل الدخول</span>
-                    <span class="btn-loader" style="display:none;">
-                        <i class="fas fa-spinner fa-spin"></i>
-                    </span>
-                </button>
-
-                <div class="divider">
-                    <span>أو سجّل الدخول باستخدام</span>
-                </div>
-
-                <div class="social-login">
-                    <button type="button" class="btn btn-social google" id="googleLoginBtn" onclick="handleGoogleSignIn()">
-                        <svg viewBox="0 0 24 24" width="20" height="20">
-                            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/>
-                            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                        </svg>
-                        <span>Google</span>
-                    </button>
-                    
-                    <button type="button" class="btn btn-social" onclick="handleAppleSignIn()" style="border-color: #000;">
-                        <i class="fab fa-apple" style="font-size: 20px;"></i>
-                        <span>Apple</span>
-                    </button>
-                </div>
-            </form>
-
-            <!-- Footer -->
-            <div class="auth-footer">
-                <p>ليس لديك حساب؟ <a href="register.html">إنشاء حساب جديد</a></p>
-            </div>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <div class="login-logo">🍽️</div>
+            <h1>MezoMenu</h1>
+            <p style="color: #6c757d;">نظام إدارة المطاعم الذكي</p>
         </div>
 
-        <!-- Side Illustration -->
-        <div class="auth-illustration">
-            <div class="illustration-content">
-                <div class="floating-cards">
-                    <div class="float-card fc-1">
-                        <i class="fas fa-utensils"></i>
-                        <span>+250 صنف</span>
-                    </div>
-                    <div class="float-card fc-2">
-                        <i class="fab fa-whatsapp"></i>
-                        <span>١٥ طلب جديد</span>
-                    </div>
-                    <div class="float-card fc-3">
-                        <i class="fas fa-chart-line"></i>
-                        <span>↑ ٣٢% مبيعات</span>
-                    </div>
-                </div>
-                <div class="illustration-text">
-                    <h3>إدارة ذكية لمطعمك</h3>
-                    <p>تحكم كامل في قائمتك، طلباتك، وتحليلاتك من مكان واحد</p>
-                </div>
+        <!-- Google Login -->
+        <button class="google-btn" onclick="loginWithGoogle()">
+            <svg viewBox="0 0 24 24" width="20" height="20">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78.07-1.53.14-2.25.38V18h4.17c.92 0 1.77-.32 2.48-.85l2.95 2.12c-.83.59-1.81.94-2.88.94H12v-5.63h6.08c.14 0 .27.03.4.05l2.06-2.06c.55-.55.82-1.27.82-2V6.25c0-4.42-3.58-8-8-8z"/>
+                <path fill="#34A853" d="M12 22c5.52 0 10-4.48 10-10V11H7.93c.82 0 1.61-.34 2.21-.94L13 8.06A9.97 9.97 0 0012 22z"/>
+                <path fill="#FBBC05" d="M5.84 14.09c-.22.72-.35 1.49-.35 2.85V18l4.17-2.98c-.82.59-1.81.94-2.88.94H12v-5.63h6.08c.14 0 .27.03.4.05l2.06-2.06c.55-.55.82-1.27.82-2V6.25c0-4.42-3.58-8-8-8z"/>
+                <path fill="#EA4335" d="M12 2C6.48 2 2 6.48 2 12v4.67c0 .71-.12 1.39-.34 2l2.96 2.12c.83-.59 1.81-.94 2.88-.94V18h-4.17c-.72 0-1.47-.07-2.25-.38V12.25c0-4.42 3.58-8 8-8z"/>
+                <path fill="#4285F4" d="M12 2C6.48 2 2 6.48 2 12v4.67c0 .71-.12 1.39-.34 2l2.96 2.12c.83-.59 1.81-.94 2.88-.94V18h-4.17c-.72 0-1.47-.07-2.25-.38V12.25c0-4.42 3.58-8 8-8z"/>
+            </svg>
+            تسجيل الدخول بحساب Google
+        </button>
+
+        <div class="divider">أو</div>
+
+        <!-- Email/Password Form -->
+        <form id="loginForm" onsubmit="handleLogin(event)">
+            <div class="form-group">
+                <label class="form-label">البريد الإلكتروني</label>
+                <input type="email" class="form-control" id="email" placeholder="example@email.com" required>
             </div>
+
+            <div class="form-group">
+                <label class="form-label">كلمة المرور</label>
+                <input type="password" class="form-control" id="password" placeholder="•••••••" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100 mt-3">
+                <i class="fas fa-sign-in-alt"></i> دخول
+            </button>
+        </form>
+
+        <div class="register-link">
+            <p>ليس لديك حساب؟ 
+                <a href="register.html" style="color: var(--primary-color); font-weight: 600;">
+                    إنشاء حساب جديد
+                </a>
+            </p>
         </div>
     </div>
 
-    <!-- Toast Container -->
-    <div class="toast-container" id="toastContainer"></div>
-
-    <!-- Scripts -->
+    <script src="../assets/js/main.js"></script>
     <script>
-        // ==========================================
-        // Firebase Configuration
-        // ==========================================
-        const FIREBASE_CONFIG = {
-            apiKey: "AIzaSyB9SyGG0MNGWU-bmMVZVJITW0bxDbbkB94",
-            authDomain: "menu-b41e6.firebaseapp.com",
-            databaseURL: "https://menu-b41e6-default-rtdb.firebaseio.com",
-            projectId: "menu-b41e6",
-            storageBucket: "menu-b41e6.firebasestorage.app",
-            messagingSenderId: "912801475897",
-            appId: "1:912801475897:web:4b35f7a144b7c2cc3b4ce8"
-        };
-
-        // Initialize Firebase
-        if (!firebase.apps.length) {
-            firebase.initializeApp(FIREBASE_CONFIG);
-        }
-        
-        const auth = firebase.auth();
-        const db = firebase.database();
-
-        // ==========================================
-        // Utility Functions
-        // ==========================================
-        const Storage = {
-            set: (key, value) => localStorage.setItem(key, JSON.stringify(value)),
-            get: (key) => { try { return JSON.parse(localStorage.getItem(key)); } catch { return null; } },
-            remove: (key) => localStorage.removeItem(key)
-        };
-
-        const Toast = {
-            show: (message, type = 'info') => {
-                const container = document.getElementById('toastContainer');
-                const toast = document.createElement('div');
-                toast.className = `toast ${type}`;
-                
-                const icons = { success: 'check-circle', error: 'times-circle', warning: 'exclamation-triangle', info: 'info-circle' };
-                toast.innerHTML = `<i class="fas fa-${icons[type] || 'info-circle'}"></i><span>${message}</span>`;
-                
-                container.appendChild(toast);
-                setTimeout(() => toast.remove(), 3500);
-            },
-            success: (msg) => Toast.show(msg, 'success'),
-            error: (msg) => Toast.show(msg, 'error'),
-            warning: (msg) => Toast.show(msg, 'warning'),
-            info: (msg) => Toast.show(msg, 'info')
-        };
-
-        function isValidEmail(email) {
-            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-        }
-
-        function togglePassword() {
-            const input = document.getElementById('password');
-            const icon = document.querySelector('.toggle-password i');
+        document.addEventListener('DOMContentLoaded', async function() {
+            await initFirebase();
             
-            if (input.type === 'password') {
-                input.type = 'text';
-                icon.classList.remove('fa-eye');
-                icon.classList.add('fa-eye-slash');
-            } else {
-                input.type = 'password';
-                icon.classList.remove('fa-eye-slash');
-                icon.classList.add('fa-eye');
+            // Check if already logged in
+            if (Auth.isLoggedIn()) {
+                window.location.href = 'dashboard.html';
             }
-        }
-
-        function setLoading(loading) {
-            const btn = document.getElementById('loginBtn');
-            const btnText = btn.querySelector('.btn-text');
-            const btnLoader = btn.querySelector('.btn-loader');
             
-            btn.disabled = loading;
-            btnText.style.display = loading ? 'none' : 'inline';
-            btnLoader.style.display = loading ? 'inline-flex' : 'none';
-        }
+            // Check for redirect parameter
+            const params = new URLSearchParams(window.location.search);
+            const redirect = params.get('redirect');
+            if (redirect) {
+                sessionStorage.setItem('loginRedirect', redirect);
+            }
+        });
 
-        function setSocialLoading(provider, loading) {
-            const btn = document.getElementById(`${provider}LoginBtn`);
-            if (btn) {
-                btn.classList.toggle('loading', loading);
-                btn.disabled = loading;
-                if (loading) {
-                    btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i><span>جاري التحميل...</span>`;
+        async function loginWithGoogle() {
+            try {
+                const result = await FirebaseAuth.signInWithGoogle();
+                
+                if (result.success) {
+                    Auth.saveUser(result.user);
+                    
+                    const redirect = sessionStorage.getItem('loginRedirect') || 'dashboard.html';
+                    sessionStorage.removeItem('loginRedirect');
+                    
+                    UI.showToast('تم تسجيل الدخول بنجاح!', 'success');
+                    window.location.href = redirect;
+                } else {
+                    UI.showToast(result.error || 'فشل تسجيل الدخول', 'danger');
                 }
+            } catch (error) {
+                UI.showToast('خطأ: ' + error.message, 'danger');
             }
         }
 
-        // ==========================================
-        // Email/Password Login
-        // ==========================================
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        async function handleLogin(e) {
             e.preventDefault();
             
-            const email = document.getElementById('email').value.trim();
+            const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
-
-            if (!email || !password) {
-                Toast.warning('يرجى إدخال البريد الإلكتروني وكلمة المرور');
-                return;
-            }
-
-            if (!isValidEmail(email)) {
-                Toast.error('صيغة البريد الإلكتروني غير صحيحة');
-                return;
-            }
-
-            setLoading(true);
-
+            
             try {
-                // Firebase Email/Password Sign-In
-                const result = await auth.signInWithEmailAndPassword(email, password);
-                const user = result.user;
-
-                console.log('[Firebase Auth] Email login successful:', user.email);
-
-                // Save user session
-                saveUserSession(user);
-
-                Toast.success(`مرحباً ${user.displayName || email.split('@')[0]}! ✅`);
+                const result = await FirebaseAuth.signInWithEmail(email, password);
                 
-                setTimeout(() => {
-                    redirectAfterLogin();
-                }, 1000);
-
-            } catch (error) {
-                console.error('[Firebase Auth] Login error:', error.code, error.message);
-                
-                const errorMessages = {
-                    'auth/user-not-found': 'لا يوجد حساب بهذا البريد الإلكتروني',
-                    'auth/wrong-password': 'كلمة المرور غير صحيحة',
-                    'auth/invalid-email': 'البريد الإلكتروني غير صحيح',
-                    'auth/too-many-requests': 'محاولات كثيرة جداً. يرجى المحاولة لاحقاً',
-                    'auth/user-disabled': 'تم تعطيل هذا الحساب',
-                    'auth/network-request-failed': 'فشل الاتصال بالإنترنت'
-                };
-
-                Toast.error(errorMessages[error.code] || error.message || 'فشل تسجيل الدخول');
-                setLoading(false);
-            }
-        });
-
-        // ==========================================
-        // Google Sign-In
-        // ==========================================
-        async function handleGoogleSignIn() {
-            setSocialLoading('google', true);
-
-            try {
-                const provider = new firebase.auth.GoogleAuthProvider();
-                provider.setCustomParameters({
-                    prompt: 'select_account'
-                });
-
-                const result = await auth.signInWithPopup(provider);
-                const user = result.user;
-
-                console.log('[Firebase Auth] Google login successful:', user.email);
-
-                // Save user data to database
-                await saveUserDataToDB(user);
-                
-                // Save session
-                saveUserSession(user);
-
-                Toast.success(`مرحباً ${user.displayName || 'بك'}! ✅`);
-                
-                setTimeout(() => {
-                    redirectAfterLogin();
-                }, 1000);
-
-            } catch (error) {
-                console.error('[Firebase Auth] Google sign-in error:', error.code, error.message);
-                
-                if (error.code === 'auth/popup-closed-by-user') {
-                    Toast.info('تم إغلاق نافذة تسجيل الدخول');
-                } else if (error.code === 'auth/cancelled-popup-request') {
-                    Toast.info('تم إلغاء تسجيل الدخول');
-                } else if (error.code === 'auth/popup-blocked') {
-                    Toast.warning('تم حظر النافذة المنبثقة. يرجى السماح بالنوافذ.');
+                if (result.success) {
+                    Auth.saveUser(result.user);
+                    
+                    const redirect = sessionStorage.getItem('loginRedirect') || 'dashboard.html';
+                    sessionStorage.removeItem('loginRedirect');
+                    
+                    UI.showToast('تم تسجيل الدخول بنجاح!', 'success');
+                    window.location.href = redirect;
                 } else {
-                    Toast.error('فشل تسجيل الدخول بحساب Google');
+                    UI.showToast(result.error || 'فشل تسجيل الدخول', 'danger');
                 }
-                
-                resetGoogleButton();
-            }
-        }
-
-        function handleAppleSignIn() {
-            Toast.info('تسجيل الدخول عبر Apple قريباً...');
-        }
-
-        // ==========================================
-        // Forgot Password
-        // ==========================================
-        async function forgotPassword(e) {
-            e.preventDefault();
-            
-            const email = document.getElementById('email').value.trim();
-            
-            if (!email) {
-                Toast.warning('أدخل بريدك الإلكتروني أولاً');
-                return;
-            }
-
-            if (!isValidEmail(email)) {
-                Toast.error('صيغة البريد الإلكتروني غير صحيحة');
-                return;
-            }
-
-            try {
-                await auth.sendPasswordResetEmail(email);
-                Toast.success('تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني ✅');
             } catch (error) {
-                console.error('[Firebase Auth] Password reset error:', error);
-                
-                if (error.code === 'auth/user-not-found') {
-                    // Don't reveal if email exists
-                    Toast.info('إذا كان البريد مسجلاً، سيتم إرسال رابط إعادة التعيين');
-                } else {
-                    Toast.error('حدث خطأ. يرجى المحاولة مرة أخرى');
-                }
+                UI.showToast('خطأ: ' + error.message, 'danger');
             }
         }
-
-        // ==========================================
-        // Session Management
-        // ==========================================
-        function saveUserSession(user) {
-            const userData = {
-                uid: user.uid,
-                email: user.email,
-                displayName: user.displayName || 'مستخدم MezoMenu',
-                photoURL: user.photoURL || '',
-                emailVerified: user.emailVerified,
-                lastLogin: new Date().toISOString()
-            };
-            
-            Storage.set('mezomenu_user', userData);
-            Storage.set('user_data', userData); // Legacy support
-            
-            // Also store in Firebase DB
-            saveUserDataToDB(user).catch(console.error);
-        }
-
-        async function saveUserDataToDB(user) {
-            try {
-                await db.ref(`users/${user.uid}`).update({
-                    uid: user.uid,
-                    email: user.email,
-                    displayName: user.displayName || 'مستخدم MezoMenu',
-                    photoURL: user.photoURL || '',
-                    emailVerified: user.emailVerified,
-                    lastLogin: firebase.database.ServerValue.TIMESTAMP,
-                    role: 'customer' // Default role, can be changed to admin manually
-                });
-                console.log('[Firebase DB] User data saved successfully');
-            } catch (error) {
-                console.error('[Firebase DB] Error saving user data:', error);
-            }
-        }
-
-        function redirectAfterLogin() {
-            // Check for redirect URL parameter
-            const urlParams = new URLSearchParams(window.location.search);
-            const redirectUrl = urlParams.get('redirect') || 'dashboard.html';
-            window.location.href = redirectUrl;
-        }
-
-        function resetGoogleButton() {
-            const btn = document.getElementById('googleLoginBtn');
-            if (btn) {
-                btn.classList.remove('loading');
-                btn.disabled = false;
-                btn.innerHTML = `
-                    <svg viewBox="0 0 24 24" width="20" height="20">
-                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/>
-                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                    </svg>
-                    <span>Google</span>
-                `;
-            }
-        }
-
-        // ==========================================
-        // Auth State Observer & Auto Redirect
-        // ==========================================
-        auth.onAuthStateChanged((user) => {
-            if (user) {
-                console.log('[Firebase Auth] User is logged in:', user.email);
-                // User is signed in, you could auto-redirect here if needed
-            } else {
-                console.log('[Firebase Auth] User is not logged in');
-            }
-        });
-
-        // Check if already logged in on page load
-        document.addEventListener('DOMContentLoaded', () => {
-            const savedUser = Storage.get('mezomenu_user') || Storage.get('user_data');
-            
-            if (savedUser && savedUser.uid) {
-                console.log('[Login] Found existing session, checking...');
-                // Verify session is still valid by checking current Firebase user
-                const currentUser = auth.currentUser;
-                if (currentUser && currentUser.uid === savedUser.uid) {
-                    console.log('[Login] Valid session found, redirecting...');
-                    window.location.href = 'dashboard.html';
-                }
-            }
-        });
     </script>
 </body>
 </html>
