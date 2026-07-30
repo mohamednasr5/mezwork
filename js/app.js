@@ -2387,48 +2387,64 @@ function selectIcon(iconClass) {
 }
 
 // ============================================
-// FIXED: AI Import - Step Navigation
+// Helper Functions for AI Import
 // ============================================
 
-let aiSelectedFile = null;
+/**
+ * Helper: Delay function
+ */
+function delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 /**
- * Initialize AI Upload with better UX
+ * Update progress bar
  */
-function initAIUpload() {
-    const uploadArea = document.getElementById('uploadArea');
-    const fileInput = document.getElementById('menuImageInput');
-    
-    if (!uploadArea || !fileInput) return;
-    
-    // Click to upload
-    uploadArea.addEventListener('click', (e) => {
-        if (e.target.tagName !== 'BUTTON') {
-            fileInput.click();
+function updateProgress(element, percentElement, percent, status) {
+    element.style.width = `${percent}%`;
+    percentElement.textContent = `${percent}%`;
+    if (status && document.getElementById('loadingStatus')) {
+        document.getElementById('loadingStatus').textContent = status;
+    }
+}
+
+/**
+ * Update step indicators
+ */
+function updateStepIndicators(currentStep) {
+    const steps = document.querySelectorAll('.step-number');
+    steps.forEach((step, index) => {
+        step.classList.remove('active', 'completed');
+        if (index + 1 < currentStep) {
+            step.classList.add('completed');
+        } else if (index + 1 === currentStep) {
+            step.classList.add('active');
         }
     });
+}
+
+/**
+ * Remove preview and reset to step 1
+ */
+function removePreview() {
+    aiSelectedFile = null;
+    AppState.aiResults = null;
     
-    // File selection
-    fileInput.addEventListener('change', handleAIFileSelect);
+    document.getElementById('previewImage').src = '';
+    document.getElementById('menuImageInput').value = '';
     
-    // Drag and drop
-    uploadArea.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        uploadArea.classList.add('dragover');
-    });
+    // Show step 1, hide others
+    document.getElementById('aiStep1').classList.remove('hidden');
+    document.getElementById('aiStep2').classList.add('hidden');
+    document.getElementById('aiStep3').classList.add('hidden');
+    document.getElementById('aiLoading').classList.add('hidden');
     
-    uploadArea.addEventListener('dragleave', () => {
-        uploadArea.classList.remove('dragover');
-    });
+    // Reset progress
+    document.getElementById('progressFill').style.width = '0%';
+    document.getElementById('progressPercent').textContent = '0%';
     
-    uploadArea.addEventListener('drop', (e) => {
-        e.preventDefault();
-        uploadArea.classList.remove('dragover');
-        const files = e.dataTransfer.files;
-        if (files.length > 0) {
-            handleAIFile(files[0]);
-        }
-    });
+    // Reset step indicators
+    updateStepIndicators(1);
 }
 
 /**
@@ -2470,45 +2486,6 @@ function handleAIFile(file) {
         updateStepIndicators(2);
     };
     reader.readAsDataURL(file);
-}
-
-/**
- * Remove preview and reset to step 1
- */
-function removePreview() {
-    aiSelectedFile = null;
-    AppState.aiResults = null;
-    
-    document.getElementById('previewImage').src = '';
-    document.getElementById('menuImageInput').value = '';
-    
-    // Show step 1, hide others
-    document.getElementById('aiStep1').classList.remove('hidden');
-    document.getElementById('aiStep2').classList.add('hidden');
-    document.getElementById('aiStep3').classList.add('hidden');
-    document.getElementById('aiLoading').classList.add('hidden');
-    
-    // Reset progress
-    document.getElementById('progressFill').style.width = '0%';
-    document.getElementById('progressPercent').textContent = '0%';
-    
-    // Reset step indicators
-    updateStepIndicators(1);
-}
-
-/**
- * Update step indicators
- */
-function updateStepIndicators(currentStep) {
-    const steps = document.querySelectorAll('.step-number');
-    steps.forEach((step, index) => {
-        step.classList.remove('active', 'completed');
-        if (index + 1 < currentStep) {
-            step.classList.add('completed');
-        } else if (index + 1 === currentStep) {
-            step.classList.add('active');
-        }
-    });
 }
 
 /**
@@ -2555,8 +2532,18 @@ async function analyzeWithAI() {
             provider: document.getElementById('aiProvider')?.value || 'auto'
         };
         
-        // Simulate AI analysis (in real implementation, this calls the Worker)
-        await simulateAIAnalysis(base64, options, progressFill, progressPercent, loadingStatus);
+        // Try real AI analysis first, fallback to simulation
+        try {
+            const result = await MezoMenuAPI.analyzeMenuImage(base64, options);
+            if (result && result.items && result.items.length > 0) {
+                AppState.aiResults = result.items;
+            } else {
+                await simulateAIAnalysis(base64, options, progressFill, progressPercent, loadingStatus);
+            }
+        } catch (aiError) {
+            console.warn('AI API failed, using simulation:', aiError);
+            await simulateAIAnalysis(base64, options, progressFill, progressPercent, loadingStatus);
+        }
         
         // Complete
         updateProgress(progressFill, progressPercent, 100, 'مكت!');
@@ -2621,29 +2608,11 @@ function generateSampleMenuItems(options) {
         { name: 'سلطة سيزر', description: 'سلطة طازجة مع صلصة سيزر الكلاسيك', price: 35, category: options.category || categories[1], ingredients: ['خس', 'كروتون', 'بارميزان'] },
         { name: 'مشروب مانجو', description: 'مشروب منعش بالمانجو الطازج', price: 25, category: options.category || categories[2], ingredients: ['مانجو', 'حليب', 'سكر'] },
         { name: 'تشيز كيك', description: 'تشيز كيك نيويورك كلاسيكي', price: 40, category: options.category || categories[3], ingredients: ['جبنة كريمية', 'بسكويت', 'فراولة'] },
-        { name: 'كريب الدجاج', description: 'دجاج مقرمش مع الصلصة الخاصة', price: 42, category: options.category || categories[0], ingredients: ['دجاج', 'دقيق', 'توابل'] }
+        { name: 'كريب الدجاج', description: 'دجاج مقرمش مع الصلحة الخاصة', price: 42, category: options.category || categories[0], ingredients: ['دجاج', 'دقيق', 'توابل'] }
     ];
     
     // Add some randomness
     return sampleItems.slice(0, Math.floor(Math.random() * 3) + 4);
-}
-
-/**
- * Helper: Delay function
- */
-function delay(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-/**
- * Update progress bar
- */
-function updateProgress(element, percentElement, percent, status) {
-    element.style.width = `${percent}%`;
-    percentElement.textContent = `${percent}%`;
-    if (status && document.getElementById('loadingStatus')) {
-        document.getElementById('loadingStatus').textContent = status;
-    }
 }
 
 /**
@@ -2751,106 +2720,852 @@ function editResults() {
 }
 
 // ============================================
-// NEW: Test Notification Function
+// Logo & Banner Upload Functionality
 // ============================================
+
+let logoDataUrl = null;
+let coverDataUrl = null;
+
+/**
+ * Initialize logo upload
+ */
+function initLogoUpload() {
+    const logoInput = document.getElementById('logoInput');
+    const logoDropZone = document.getElementById('logoDropZone');
+    
+    if (!logoInput) return;
+    
+    // Click to upload
+    if (logoDropZone) {
+        logoDropZone.addEventListener('click', () => logoInput.click());
+        
+        // Drag and drop
+        logoDropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            logoDropZone.classList.add('dragover');
+        });
+        
+        logoDropZone.addEventListener('dragleave', () => {
+            logoDropZone.classList.remove('dragover');
+        });
+        
+        logoDropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            logoDropZone.classList.remove('dragover');
+            if (e.dataTransfer.files[0]) {
+                handleLogoUpload(e.dataTransfer.files[0]);
+            }
+        });
+    }
+    
+    logoInput.addEventListener('change', (e) => {
+        if (e.target.files[0]) {
+            handleLogoUpload(e.target.files[0]);
+        }
+    });
+}
+
+/**
+ * Handle logo file upload
+ */
+async function handleLogoUpload(file) {
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+        showToast('يرجى اختيار ملف صورة فقط', 'error');
+        return;
+    }
+    
+    // Validate file size (max 2MB for logo)
+    if (file.size > 2 * 1024 * 1024) {
+        showToast('حجم الشعار كبير جداً (حد أقصى 2MB)', 'error');
+        return;
+    }
+    
+    try {
+        // Compress and convert to data URL
+        const compressedFile = await MezoMenuAPI.compressImage(file, 512, 0.9);
+        logoDataUrl = await fileToBase64(compressedFile);
+        
+        // Show preview
+        const preview = document.getElementById('logoPreview');
+        const previewContainer = document.getElementById('logoPreviewContainer');
+        const placeholder = document.getElementById('logoPlaceholder');
+        
+        if (preview) preview.src = logoDataUrl;
+        if (previewContainer) previewContainer.style.display = 'block';
+        if (placeholder) placeholder.style.display = 'none';
+        
+        showToast('تم تحميل الشعار بنجاح', 'success');
+        
+        // Auto-extract colors from logo
+        extractColorsFromLogo(logoDataUrl);
+        
+    } catch (error) {
+        console.error('Logo upload error:', error);
+        showToast('خطأ في تحميل الشعار', 'error');
+    }
+}
+
+/**
+ * Initialize cover/banner upload
+ */
+function initCoverUpload() {
+    const coverInput = document.getElementById('coverInput');
+    const coverDropZone = document.getElementById('coverDropZone');
+    
+    if (!coverInput) return;
+    
+    // Click to upload
+    if (coverDropZone) {
+        coverDropZone.addEventListener('click', () => coverInput.click());
+        
+        // Drag and drop
+        coverDropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            coverDropZone.classList.add('dragover');
+        });
+        
+        coverDropZone.addEventListener('dragleave', () => {
+            coverDropZone.classList.remove('dragover');
+        });
+        
+        coverDropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            coverDropZone.classList.remove('dragover');
+            if (e.dataTransfer.files[0]) {
+                handleCoverUpload(e.dataTransfer.files[0]);
+            }
+        });
+    }
+    
+    coverInput.addEventListener('change', (e) => {
+        if (e.target.files[0]) {
+            handleCoverUpload(e.target.files[0]);
+        }
+    });
+}
+
+/**
+ * Handle cover/banner file upload
+ */
+async function handleCoverUpload(file) {
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+        showToast('يرجى اختيار ملف صورة فقط', 'error');
+        return;
+    }
+    
+    // Validate file size (max 5MB for cover)
+    if (file.size > 5 * 1024 * 1024) {
+        showToast('حجم الغلاف كبير جداً (حد أقصى 5MB)', 'error');
+        return;
+    }
+    
+    try {
+        // Compress and convert to data URL
+        const compressedFile = await MezoMenuAPI.compressImage(file, 1920, 0.85);
+        coverDataUrl = await fileToBase64(compressedFile);
+        
+        // Show preview
+        const preview = document.getElementById('coverPreview');
+        const previewContainer = document.getElementById('coverPreviewContainer');
+        const placeholder = document.getElementById('coverPlaceholder');
+        
+        if (preview) preview.src = coverDataUrl;
+        if (previewContainer) previewContainer.style.display = 'block';
+        if (placeholder) placeholder.style.display = 'none';
+        
+        showToast('تم تحميل الغلاف بنجاح', 'success');
+        
+    } catch (error) {
+        console.error('Cover upload error:', error);
+        showToast('خطأ في تحميل الغلاف', 'error');
+    }
+}
+
+/**
+ * Remove logo
+ */
+function removeLogo() {
+    logoDataUrl = null;
+    document.getElementById('logoInput').value = '';
+    const preview = document.getElementById('logoPreview');
+    const previewContainer = document.getElementById('logoPreviewContainer');
+    const placeholder = document.getElementById('logoPlaceholder');
+    
+    if (preview) preview.src = '';
+    if (previewContainer) previewContainer.style.display = 'none';
+    if (placeholder) placeholder.style.display = 'block';
+}
+
+/**
+ * Remove cover image
+ */
+function removeCover() {
+    coverDataUrl = null;
+    document.getElementById('coverInput').value = '';
+    const preview = document.getElementById('coverPreview');
+    const previewContainer = document.getElementById('coverPreviewContainer');
+    const placeholder = document.getElementById('coverPlaceholder');
+    
+    if (preview) preview.src = '';
+    if (previewContainer) previewContainer.style.display = 'none';
+    if (placeholder) placeholder.style.display = 'block';
+}
+
+// ============================================
+// AI Color Extraction from Logo
+// ============================================
+
+/**
+ * Extract dominant colors from logo using canvas
+ */
+function extractColorsFromLogo(imageDataUrl) {
+    if (!imageDataUrl) return;
+    
+    const statusEl = document.getElementById('colorExtractionStatus');
+    if (statusEl) statusEl.textContent = 'جاري استخراج الألوان...';
+    
+    try {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+            // Create canvas to analyze image
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Use smaller size for performance
+            const maxSize = 100;
+            const scale = Math.min(maxSize / img.width, maxSize / img.height);
+            canvas.width = img.width * scale;
+            canvas.height = img.height * scale;
+            
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            
+            // Get pixel data
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const pixels = imageData.data;
+            
+            // Extract colors using simple quantization
+            const colors = extractDominantColors(pixels, 5);
+            
+            // Apply colors to UI
+            applyExtractedColors(colors);
+            
+            if (statusEl) statusEl.textContent = 'تم استخراج الألوان بنجاح ✓';
+        };
+        img.onerror = () => {
+            if (statusEl) statusEl.textContent = 'فشل استخراج الألوان';
+        };
+        img.src = imageDataUrl;
+        
+    } catch (error) {
+        console.error('Color extraction error:', error);
+        if (statusEl) statusEl.textContent = 'خطأ في استخراج الألوان';
+    }
+}
+
+/**
+ * Extract dominant colors from pixel data
+ */
+function extractDominantColors(pixels, numColors) {
+    const colorMap = {};
+    
+    // Sample pixels (every 4th pixel for performance)
+    for (let i = 0; i < pixels.length; i += 16) {
+        const r = pixels[i];
+        const g = pixels[i + 1];
+        const b = pixels[i + 2];
+        const a = pixels[i + 3];
+        
+        // Skip transparent pixels
+        if (a < 128) continue;
+        
+        // Quantize colors (reduce to 32 levels per channel)
+        const qr = Math.floor(r / 32) * 32;
+        const qg = Math.floor(g / 32) * 32;
+        const qb = Math.floor(b / 32) * 32;
+        
+        const key = `${qr},${qg},${qb}`;
+        colorMap[key] = (colorMap[key] || 0) + 1;
+    }
+    
+    // Sort by frequency and get top colors
+    const sortedColors = Object.entries(colorMap)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, numColors * 2) // Get more than needed to filter
+        .map(([color]) => {
+            const [r, g, b] = color.split(',').map(Number);
+            return { r, g, b, hex: rgbToHex(r, g, b) };
+        });
+    
+    // Filter out similar colors and return top N
+    const filtered = [];
+    for (const color of sortedColors) {
+        const isSimilar = filtered.some(fc => colorDistance(color, fc) < 50);
+        if (!isSimilar) {
+            filtered.push(color);
+            if (filtered.length >= numColors) break;
+        }
+    }
+    
+    // If not enough colors, add some defaults
+    while (filtered.length < numColors) {
+        const defaults = [
+            { r: 255, g: 107, b: 53, hex: '#FF6B35' },  // Orange
+            { r: 45, g: 55, b: 72, hex: '#2D3748' },     // Dark
+            { r: 255, g: 255, b: 255, hex: '#FFFFFF' },   // White
+        ];
+        if (filtered.length < defaults.length) {
+            filtered.push(defaults[filtered.length]);
+        } else {
+            break;
+        }
+    }
+    
+    return filtered;
+}
+
+/**
+ * Calculate distance between two colors
+ */
+function colorDistance(c1, c2) {
+    return Math.sqrt(
+        Math.pow(c1.r - c2.r, 2) +
+        Math.pow(c1.g - c2.g, 2) +
+        Math.pow(c1.b - c2.b, 2)
+    );
+}
+
+/**
+ * Convert RGB to Hex
+ */
+function rgbToHex(r, g, b) {
+    return '#' + [r, g, b].map(x => {
+        const hex = x.toString(16);
+        return hex.length === 1 ? '0' + hex : hex;
+    }).join('');
+}
+
+/**
+ * Apply extracted colors to UI
+ */
+function applyExtractedColors(colors) {
+    if (!colors || colors.length === 0) return;
+    
+    // Set primary color (first dominant color)
+    const primaryColorInput = document.getElementById('primaryColor');
+    if (primaryColorInput && colors[0]) {
+        primaryColorInput.value = colors[0].hex;
+    }
+    
+    // Set secondary color (second dominant color)
+    const secondaryColorInput = document.getElementById('secondaryColor');
+    if (secondaryColorInput && colors[1]) {
+        secondaryColorInput.value = colors[1].hex;
+    }
+    
+    // Show color swatches
+    const swatchContainer = document.getElementById('colorSwatches');
+    if (swatchContainer) {
+        swatchContainer.innerHTML = colors.map((color, i) => `
+            <div class="color-swatch" 
+                 style="background-color: ${color.hex};"
+                 title="${color.hex}"
+                 onclick="document.getElementById('${i === 0 ? 'primaryColor' : 'secondaryColor'}').value = '${color.hex}'">
+            </div>
+        `).join('');
+        swatchContainer.style.display = 'flex';
+    }
+    
+    // Live preview
+    livePreviewTheme(colors[0]?.hex || '#FF6B35', colors[1]?.hex || '#2D3748');
+}
+
+/**
+ * Live theme preview
+ */
+function livePreviewTheme(primaryColor, secondaryColor) {
+    const previewBox = document.getElementById('themePreviewBox');
+    if (!previewBox) return;
+    
+    previewBox.style.background = `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`;
+    previewBox.innerHTML = `
+        <div style="background: rgba(255,255,255,0.9); padding: 20px; border-radius: 12px;">
+            <h3 style="color: ${primaryColor}; margin: 0 0 10px;">معاينة الثيم</h3>
+            <p style="color: ${secondaryColor}; margin: 0; font-size: 14px;">هذا كيف سيظهر المينو للعملاء</p>
+        </div>
+    `;
+}
+
+// ============================================
+// QR Code Generation
+// ============================================
+
+/**
+ * Generate QR Code for menu link
+ */
+function generateQRCode() {
+    const qrContainer = document.getElementById('qrCodeContainer');
+    if (!qrContainer) return;
+    
+    // Get restaurant name for the link
+    const restaurantName = AppState.settings?.restaurantName || 'MezoMenu';
+    
+    // Generate customer URL (relative path to customer page)
+    // In production, this would be your actual domain
+    const baseUrl = window.location.href.substring(0, window.location.lastIndexOf('/') + 1);
+    const menuUrl = `${baseUrl}customer/`;
+    
+    // Simple QR Code generation using a free API or library
+    // Using Google Charts API as fallback (or qrcode.js if loaded)
+    if (typeof QRCode !== 'undefined') {
+        // Using qrcode.js library
+        qrContainer.innerHTML = '';
+        new QRCode(qrContainer, {
+            text: menuUrl,
+            width: 200,
+            height: 200,
+            colorDark: '#000000',
+            colorLight: '#ffffff',
+            correctLevel: QRCode.CorrectLevel.H
+        });
+    } else {
+        // Fallback: Use online API or show instructions
+        qrContainer.innerHTML = `
+            <div style="text-center">
+                <div id="qrCodeImg" style="background: white; padding: 15px; display: inline-block; border-radius: 8px;">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(menuUrl)}" 
+                         alt="QR Code" 
+                         style="width: 200px; height: 200px;"
+                         onerror="this.parentElement.innerHTML='<p style=\\'color:#666\\'>QR Code<br><small>${menuUrl}</small></p>'">
+                </div>
+                <p style="margin-top: 15px; font-size: 13px; color: #666;">
+                    امسح Kod QR لمشاركة المينو مع العملاء
+                </p>
+                <button onclick="downloadQRCode()" class="btn btn-primary" style="margin-top: 10px;">
+                    <i class="fas fa-download"></i> تحميل QR Code
+                </button>
+                <button onclick="copyMenuLink()" class="btn btn-secondary" style="margin-top: 10px; margin-right: 8px;">
+                    <i class="fas fa-copy"></i> نسخ الرابط
+                </button>
+            </div>
+        `;
+    }
+    
+    // Store menu URL globally for copy function
+    window.currentMenuUrl = menuUrl;
+}
+
+/**
+ * Generate QR code in settings tab
+ */
+function generateSettingsQRCode() {
+    generateQRCode();
+}
+
+/**
+ * Download QR Code as image
+ */
+function downloadQRCode() {
+    const qrImg = document.querySelector('#qrCodeContainer img');
+    if (qrImg && qrImg.src) {
+        const link = document.createElement('a');
+        link.download = 'mezomenu-qrcode.png';
+        link.href = qrImg.src;
+        link.click();
+        showToast('تم تحميل QR Code', 'success');
+    } else {
+        showToast('لم يتم إنشاء QR Code بعد', 'warning');
+    }
+}
+
+/**
+ * Copy menu link to clipboard
+ */
+async function copyMenuLink() {
+    const menuUrl = window.currentMenuUrl || (window.location.href.replace('/index.html', '') + '/customer/');
+    
+    try {
+        await navigator.clipboard.writeText(menuUrl);
+        showToast('تم نسخ الرابط ✓', 'success');
+    } catch (error) {
+        // Fallback for older browsers
+        const textArea = document.createElement('textarea');
+        textArea.value = menuUrl;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        showToast('تم نسخ الرابط ✓', 'success');
+    }
+}
+
+// ============================================
+// Notifications System - Fixed
+// ============================================
+
+/**
+ * Load notifications data
+ */
+async function loadNotificationsData() {
+    try {
+        AppState.notifications = await MezoMenuAPI.Notifications.getAll();
+        renderNotifications();
+        updateNotificationBadge();
+    } catch (error) {
+        console.error('Error loading notifications:', error);
+        // Don't show toast for notifications to avoid spam
+    }
+}
+
+/**
+ * Render notifications list
+ */
+function renderNotifications() {
+    const container = document.getElementById('notificationsList');
+    if (!container) return;
+    
+    if (!AppState.notifications || AppState.notifications.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-bell-slash"></i>
+                <h3>لا توجد إشعارات</h3>
+                <p>ستظهر هنا الإشعارات الجديدة</p>
+                <button onclick="createTestNotification()" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> إنشاء إشعار اختباري
+                </button>
+            </div>
+        `;
+        return;
+    }
+    
+    // Sort by date (newest first)
+    const sorted = [...AppState.notifications].sort((a, b) => 
+        new Date(b.createdAt || 0) - new Date(a.createdAt || 0)
+    );
+    
+    container.innerHTML = sorted.map(notification => `
+        <div class="notification-item ${notification.read ? '' : 'unread'}" data-id="${notification.id}">
+            <div class="notification-icon">
+                <i class="fas ${getNotificationIcon(notification.type)}"></i>
+            </div>
+            <div class="notification-content">
+                <h4>${notification.title || 'إشعار'}</h4>
+                <p>${notification.message || ''}</p>
+                <span class="notification-time">${formatDate(notification.createdAt)}</span>
+            </div>
+            <div class="notification-actions">
+                ${!notification.read ? `<button onclick="markAsRead('${notification.id}')" class="btn-icon" title="تحديد كمقروء"><i class="fas fa-check"></i></button>` : ''}
+                <button onclick="deleteNotification('${notification.id}')" class="btn-icon text-danger" title="حذف"><i class="fas fa-trash"></i></button>
+            </div>
+        </div>
+    `).join('');
+}
+
+/**
+ * Get notification icon based on type
+ */
+function getNotificationIcon(type) {
+    const icons = {
+        order: 'fa-shopping-cart',
+        reservation: 'fa-calendar-check',
+        promotion: 'fa-tag',
+        system: 'fa-cog',
+        info: 'fa-info-circle',
+        warning: 'fa-exclamation-triangle',
+        success: 'fa-check-circle',
+        default: 'fa-bell'
+    };
+    return icons[type] || icons.default;
+}
+
+/**
+ * Mark notification as read
+ */
+async function markAsRead(id) {
+    try {
+        await MezoMenuAPI.Notifications.update(id, { read: true });
+        
+        // Update local state
+        const notification = AppState.notifications.find(n => n.id === id);
+        if (notification) notification.read = true;
+        
+        renderNotifications();
+        updateNotificationBadge();
+        showToast('تم تحديد الإشعار كمقروء', 'success');
+    } catch (error) {
+        console.error('Error marking notification as read:', error);
+        showToast('خطأ في تحديث الإشعار', 'error');
+    }
+}
+
+/**
+ * Delete notification
+ */
+async function deleteNotification(id) {
+    if (!confirm('هل أنت متأكد من حذف هذا الإشعار؟')) return;
+    
+    try {
+        await MezoMenuAPI.Notifications.delete(id);
+        
+        // Update local state
+        AppState.notifications = AppState.notifications.filter(n => n.id !== id);
+        
+        renderNotifications();
+        updateNotificationBadge();
+        showToast('تم حذف الإشعار', 'success');
+    } catch (error) {
+        console.error('Error deleting notification:', error);
+        showToast('خطأ في حذف الإشعار', 'error');
+    }
+}
+
+/**
+ * Mark all notifications as read
+ */
+async function markAllAsRead() {
+    try {
+        const unreadIds = AppState.notifications
+            .filter(n => !n.read)
+            .map(n => n.id);
+        
+        for (const id of unreadIds) {
+            await MezoMenuAPI.Notifications.update(id, { read: true });
+        }
+        
+        // Update local state
+        AppState.notifications.forEach(n => n.read = true);
+        
+        renderNotifications();
+        updateNotificationBadge();
+        showToast(`تم تحديد ${unreadIds.length} إشعارات كمقروءة`, 'success');
+    } catch (error) {
+        console.error('Error marking all as read:', error);
+        showToast('خطأ في تحديث الإشعارات', 'error');
+    }
+}
 
 /**
  * Create a test notification
  */
 async function createTestNotification() {
     try {
-        await MezoMenuAPI.Notifications.create({
+        const notification = {
             title: 'إشعار اختباري 🧪',
             message: 'هذا إشعار تجريبي للتأكد من أن نظام الإشعارات يعمل بشكل صحيح!',
             type: 'system',
+            read: false,
+            createdAt: new Date().toISOString(),
             data: { test: true }
-        });
+        };
+        
+        await MezoMenuAPI.Notifications.create(notification);
+        
+        // Reload notifications
+        await loadNotificationsData();
         
         showToast('تم إنشاء الإشعار الاختباري', 'success');
         
-        // Reload notifications if on notifications tab
-        if (AppState.currentTab === 'notifications') {
-            await loadNotificationsData();
-        }
-        
-        // Update badge
-        updateNotificationBadge();
-        
     } catch (error) {
-        console.error('Error creating notification:', error);
+        console.error('Error creating test notification:', error);
         showToast('خطأ في إنشاء الإشعار', 'error');
     }
 }
 
+/**
+ * Update notification badge count
+ */
+function updateNotificationBadge() {
+    const badge = document.getElementById('notificationBadge');
+    if (!badge) return;
+    
+    const unreadCount = AppState.notifications.filter(n => !n.read).length;
+    badge.textContent = unreadCount;
+    badge.style.display = unreadCount > 0 ? 'flex' : 'none';
+}
+
 // ============================================
-// Load Settings Data - Enhanced
+// Settings Save with Branding
 // ============================================
 
 /**
- * Load settings with branding
+ * Save settings including branding (logo, cover, colors)
  */
-async function loadSettingsDataEnhanced() {
-    AppState.settings = await MezoMenuAPI.Settings.get().catch(() => ({}));
+async function saveSettingsEnhanced() {
+    const restaurantName = document.querySelector('#restaurantInfoForm [name="restaurantName"]')?.value.trim();
+    const address = document.querySelector('#restaurantInfoForm [name="address"]')?.value.trim();
+    const phone = document.querySelector('#restaurantInfoForm [name="phone"]')?.value.trim();
+    const email = document.querySelector('#restaurantInfoForm [name="email"]')?.value.trim();
+    const description = document.querySelector('#restaurantInfoForm [name="description"]')?.value.trim();
+    const openingTime = document.querySelector('#workingHoursForm [name="openingTime"]')?.value || '10:00';
+    const closingTime = document.querySelector('#workingHoursForm [name="closingTime"]')?.value || '23:00';
     
-    // Fill restaurant info form
-    document.querySelector('#restaurantInfoForm [name="restaurantName"]').value = AppState.settings.restaurantName || '';
-    document.querySelector('#restaurantInfoForm [name="address"]').value = AppState.settings.address || '';
-    document.querySelector('#restaurantInfoForm [name="phone"]').value = AppState.settings.phone || '';
-    document.querySelector('#restaurantInfoForm [name="email"]').value = AppState.settings.email || '';
-    document.querySelector('#restaurantInfoForm [name="description"]').value = AppState.settings.description || '';
+    // Get working days
+    const days = [];
+    document.querySelectorAll('#workingHoursForm [name="days"]:checked').forEach(cb => {
+        days.push(cb.value);
+    });
     
-    // Fill working hours form
-    if (AppState.settings.workingHours) {
-        document.querySelector('#workingHoursForm [name="openingTime"]').value = AppState.settings.workingHours.openingTime || '10:00';
-        document.querySelector('#workingHoursForm [name="closingTime"]').value = AppState.settings.workingHours.closingTime || '23:00';
+    // Get colors
+    const primaryColor = document.getElementById('primaryColor')?.value || '#FF6B35';
+    const secondaryColor = document.getElementById('secondaryColor')?.value || '#2D3748';
+    
+    // Build settings object
+    const settingsData = {
+        restaurantName,
+        address,
+        phone,
+        email,
+        description,
+        workingHours: {
+            openingTime,
+            closingTime,
+            days
+        },
+        primaryColor,
+        secondaryColor,
+        // Include branding images
+        ...(logoDataUrl && { logo: logoDataUrl }),
+        ...(coverDataUrl && { coverImage: coverDataUrl }),
+        updatedAt: new Date().toISOString()
+    };
+    
+    try {
+        await MezoMenuAPI.Settings.update(settingsData);
+        AppState.settings = settingsData;
         
-        const days = AppState.settings.workingHours.days || [];
-        document.querySelectorAll('#workingHoursForm [name="days"]').forEach(cb => {
-            cb.checked = days.includes(cb.value);
-        });
+        showToast('تم حفظ الإعدادات بنجاح ✓', 'success');
+        
+        // Regenerate QR code with updated info
+        generateQRCode();
+        
+    } catch (error) {
+        console.error('Error saving settings:', error);
+        showToast('خطأ في حفظ الإعدادات: ' + error.message, 'error');
     }
-    
-    // Load branding (logo, cover, colors)
-    if (AppState.settings.logo) {
-        logoDataUrl = AppState.settings.logo;
-        document.getElementById('logoPreview').src = logoDataUrl;
-        document.getElementById('logoPreviewContainer').style.display = 'block';
-        document.getElementById('logoPlaceholder').style.display = 'none';
-    }
-    
-    if (AppState.settings.coverImage) {
-        coverDataUrl = AppState.settings.coverImage;
-        document.getElementById('coverPreview').src = coverDataUrl;
-        document.getElementById('coverPreviewContainer').style.display = 'block';
-        document.getElementById('coverPlaceholder').style.display = 'none';
-    }
-    
-    if (AppState.settings.primaryColor) {
-        document.getElementById('primaryColor').value = AppState.settings.primaryColor;
-    }
-    
-    if (AppState.settings.secondaryColor) {
-        document.getElementById('secondaryColor').value = AppState.settings.secondaryColor;
-    }
-    
-    // Render categories management
-    renderCategoriesManagement();
-    
-    // Generate QR Code
-    generateSettingsQRCode();
 }
 
-// Override loadTabData for settings to use enhanced version
-const originalLoadTabData = typeof loadTabData !== 'undefined' ? loadTabData : async function(tabName) {};
+// ============================================
+// File to Base64 Converter
+// ============================================
 
-// Initialize QR code when settings tab is opened
-const originalSwitchTab = typeof switchTab !== 'undefined' ? switchTabTab : function(tab) {
-    // Original switchTab logic would be here
-};
+/**
+ * Convert File to Base64
+ */
+function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = error => reject(error);
+    });
+}
 
-// Generate QR code on page load after settings are loaded
-setTimeout(() => {
-    if (document.getElementById('qrCode')) {
-        generateSettingsQRCode();
+// ============================================
+// Additional Helper Functions for HTML Events
+// ============================================
+
+/**
+ * Preview logo when selected via input
+ */
+async function previewLogo(input) {
+    if (input.files && input.files[0]) {
+        await handleLogoUpload(input.files[0]);
     }
-}, 2000);
+}
+
+/**
+ * Preview cover image when selected via input
+ */
+async function previewCover(input) {
+    if (input.files && input.files[0]) {
+        await handleCoverUpload(input.files[0]);
+    }
+}
+
+/**
+ * Apply custom colors manually selected by user
+ */
+function applyCustomColors() {
+    const primaryColor = document.getElementById('primaryColor')?.value || '#FF6B35';
+    const secondaryColor = document.getElementById('secondaryColor')?.value || '#2D3748';
+    
+    livePreviewTheme(primaryColor, secondaryColor);
+    showToast('تم تطبيق الألوان ✓', 'success');
+}
+
+/**
+ * Print QR Code
+ */
+function printQRCode() {
+    const qrContainer = document.getElementById('qrCodeContainer');
+    if (!qrContainer) return;
+    
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+        <html dir="rtl">
+        <head>
+            <title>QR Code - ${AppState.settings?.restaurantName || 'MezoMenu'}</title>
+            <style>
+                body { 
+                    font-family: Arial, sans-serif; 
+                    text-align: center; 
+                    padding: 40px;
+                    direction: rtl;
+                }
+                h2 { margin-bottom: 20px; }
+                .qr-wrapper { 
+                    display: inline-block; 
+                    padding: 20px; 
+                    background: white;
+                    border-radius: 12px;
+                    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+                }
+                p { color: #666; margin-top: 15px; }
+            </style>
+        </head>
+        <body>
+            <h2>${AppState.settings?.restaurantName || 'MezoMenu'}</h2>
+            <div class="qr-wrapper">
+                ${qrContainer.innerHTML}
+            </div>
+            <p>امسح Kod QR للوصول إلى القائمة</p>
+            <script>window.onload = () => window.print();</script>
+        </body>
+        </html>
+    `);
+    printWindow.document.close();
+}
+
+// ============================================
+// Initialization Enhancements
+// ============================================
+
+/**
+ * Enhanced initialization for settings tab
+ */
+function initSettingsEnhanced() {
+    // Initialize logo upload
+    initLogoUpload();
+    
+    // Initialize cover upload
+    initCoverUpload();
+    
+    // Load settings with branding
+    loadSettingsDataEnhanced();
+}
+
+// Override or enhance the switchTab function to initialize settings when needed
+const originalSwitchTabInit = typeof switchTab === 'function';
+
+// Auto-initialize when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+    // Wait for main initialization, then setup settings enhancements
+    setTimeout(() => {
+        // Initialize logo/cover upload if on settings tab
+        if (AppState.currentTab === 'settings') {
+            initSettingsEnhanced();
+        }
+    }, 500);
+});
