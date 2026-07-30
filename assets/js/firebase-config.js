@@ -4,7 +4,8 @@
    =================================== */
 
 // Firebase Configuration
-// استبدل هذه القيم بقيم مشروعك من Firebase Console
+// ⚠️ مهم: استبدل هذه القيم بقيم مشروعك من Firebase Console
+// Settings → General → Your apps → SDK setup and configuration
 const firebaseConfig = {
   apiKey: "AIzaSyB9SyGG0MNGWU-bmMVZVJITW0bxDbbkB94",
   authDomain: "menu-b41e6.firebaseapp.com",
@@ -17,8 +18,9 @@ const firebaseConfig = {
 };
 
 // Google OAuth Client ID
-// احصل عليه من Google Cloud Console
-const GOOGLE_CLIENT_ID = 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com';
+// ⚠️ احصل عليه من: Firebase Console → Authentication → Sign-in method → Google → Web SDK configuration
+// أو من: Google Cloud Console → APIs & Services → Credentials → OAuth 2.0 Client IDs
+const GOOGLE_CLIENT_ID = '912801475897-7utqokjfrl90grl1gbvlveqoi82vl8fm.apps.googleusercontent.com';  // ← استبدل بـ Client ID الحقيقي
 
 // Application Configuration
 const APP_CONFIG = {
