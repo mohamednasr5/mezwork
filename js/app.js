@@ -51,26 +51,33 @@ async function loadInitialData() {
     try {
         showLoading(true);
         
+        // Test connection first
+        const connectionOk = await testFirebaseConnection();
+        if (!connectionOk) {
+            showFirebaseErrorHelp();
+            return;
+        }
+        
         // Load settings first
-        AppState.settings = await MezoMenuAPI.Settings.get();
+        AppState.settings = await MezoMenuAPI.Settings.get().catch(() => ({}));
         
         // Load categories
-        AppState.categories = await MezoMenuAPI.Categories.getAll();
+        AppState.categories = await MezoMenuAPI.Categories.getAll().catch(() => []);
         
         // Load menu items
-        AppState.menuItems = await MezoMenuAPI.MenuItems.getAll();
+        AppState.menuItems = await MezoMenuAPI.MenuItems.getAll().catch(() => []);
         
         // Load orders
-        AppState.orders = await MezoMenuAPI.Orders.getAll();
+        AppState.orders = await MezoMenuAPI.Orders.getAll().catch(() => []);
         
         // Load promotions
-        AppState.promotions = await MezoMenuAPI.Promotions.getAll();
+        AppState.promotions = await MezoMenuAPI.Promotions.getAll().catch(() => []);
         
         // Load reservations
-        AppState.reservations = await MezoMenuAPI.Reservations.getAll();
+        AppState.reservations = await MezoMenuAPI.Reservations.getAll().catch(() => []);
         
         // Load notifications
-        AppState.notifications = await MezoMenuAPI.Notifications.getAll();
+        AppState.notifications = await MezoMenuAPI.Notifications.getAll().catch(() => []);
         
         // Update UI
         updateDashboardStats();
@@ -85,8 +92,99 @@ async function loadInitialData() {
         
     } catch (error) {
         console.error('Error loading initial data:', error);
-        showToast('خطأ في تحميل البيانات', 'error');
+        handleLoadError(error);
         showLoading(false);
+    }
+}
+
+/**
+ * Test Firebase connection
+ */
+async function testFirebaseConnection() {
+    try {
+        const response = await fetch(`${FIREBASE_CONFIG.DATABASE_URL}/.json`);
+        return response.ok;
+    } catch (e) {
+        return false;
+    }
+}
+
+/**
+ * Show Firebase error help
+ */
+function showFirebaseErrorHelp() {
+    showLoading(false);
+    
+    // Create error overlay
+    const overlay = document.createElement('div');
+    overlay.id = 'firebaseErrorOverlay';
+    overlay.style.cssText = `
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0,0,0,0.8);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    `;
+    
+    overlay.innerHTML = `
+        <div style="background: white; border-radius: 20px; padding: 40px; max-width: 600px; width: 100%; text-align: right;">
+            <h2 style="color: #c33; margin-bottom: 15px;">⚠️ خطأ في الاتصال بـ Firebase</h2>
+            <p style="color: #666; margin-bottom: 25px; line-height: 1.8;">
+                يبدو أن هناك مشكلة في الاتصال بقاعدة البيانات.<br>
+                هذا عادةً بسبب قواعد الأمان في Firebase.
+            </p>
+            
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+                <strong style="display: block; margin-bottom: 10px;">🔧 الحل السريع:</strong>
+                <ol style="padding-right: 20px; line-height: 2;">
+                    <li>اذهب إلى <a href="https://console.firebase.google.com/" target="_blank" style="color: #667eea;">Firebase Console</a></li>
+                    <li>اختر مشروعك ثم <strong>Realtime Database</strong></li>
+                    <li>اضغط على تبويب <strong>Rules</strong></li>
+                    <li>استبدل الكود بهذا:
+                        <pre style="background: #1a1a2e; color: #00ff88; padding: 10px; border-radius: 8px; direction: ltr; text-align: left; margin-top: 10px;">{
+  "rules": {
+    ".read": true,
+    ".write": true
+  }
+}</pre>
+                    </li>
+                    <li>اضغط <strong>Publish</strong></li>
+                </ol>
+            </div>
+            
+            <div style="display: flex; gap: 15px;">
+                <button onclick="location.reload()" style="flex:1; padding: 15px; background: linear-gradient(135deg, #FF6B35, #FF8C5A); color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer;">
+                    🔄 إعادة المحاولة
+                </button>
+                <button onclick="window.open('setup.html', '_blank')" style="flex:1; padding: 15px; background: #667eea; color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer;">
+                    📋 صفحة الإعداد
+                </button>
+            </div>
+            
+            <button onclick="this.closest('#firebaseErrorOverlay').remove()" style="margin-top: 15px; width:100%; padding: 10px; background: transparent; border: 1px solid #ddd; border-radius: 8px; cursor: pointer; color: #666;">
+                ✕ إغلاق والاستمرار بدون بيانات (وضع العرض)
+            </button>
+        </div>
+    `;
+    
+    document.body.appendChild(overlay);
+}
+
+/**
+ * Handle load errors with specific messages
+ */
+function handleLoadError(error) {
+    if (error.code === 'AUTH_REQUIRED' || error.message?.includes('401')) {
+        showFirebaseErrorHelp();
+    } else if (error.code === 'NOT_FOUND') {
+        showToast('قاعدة البيانات فارغة - أضف بعض البيانات!', 'info');
+    } else if (error.code === 'NETWORK_ERROR') {
+        showToast('خطأ في الشبكة - تأكد من اتصال الإنترنت', 'error');
+    } else {
+        showToast(`خطأ: ${error.message}`, 'error');
     }
 }
 

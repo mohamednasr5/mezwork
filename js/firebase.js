@@ -1,38 +1,50 @@
 /**
  * MezoMenu - Firebase Configuration & API Integration
  * Uses Firebase Realtime Database REST API
+ * 
+ * ⚠️ مهم: قبل الاستخدام، تأكد من:
+ * 1. إنشاء مشروع Firebase
+ * 2. تفعيل Realtime Database
+ * 3. تغيير قواعد الأمان للسماح بالوصول (للتطوير)
  */
 
 // ============================================
-// Configuration
+// 🔧 CONFIGURATION - غيّر هذه القيم
 // ============================================
-const CONFIG = {
-    // Firebase Configuration
-    firebase: {
-        projectId: 'menu-b41e6',
-        databaseURL: 'https://menu-b41e6-default-rtdb.firebaseio.com',
-        // If using Worker as proxy, set this to your worker URL
-        // Otherwise, use direct Firebase URL
-        apiBase: null // Will be set based on environment
-    },
+
+const FIREBASE_CONFIG = {
+    // 🔴 REQUIRED: ضع رابط قاعدة بيانات Firebase هنا
+    // مثال: 'https://your-project-id-default-rtdb.firebaseio.com'
+    DATABASE_URL: 'https://menu-b41e6-default-rtdb.firebaseio.com',
     
-    // Cloudflare Worker URL (for API proxy)
-    // Set this to your deployed worker URL
-    workerURL: window.location.origin, // Same origin for local dev
+    // 🔵 OPTIONAL: مفتاح API إذا كانت قواعد الأمان تتطلب مصادقة
+    // احصل عليه من: Firebase Console > Project Settings > General > Web API Key
+    API_KEY: '',
     
-    // R2 Storage
-    r2: {
-        bucket: 'mezomenu-images'
-    }
+    // 🟢 وضع التشغيل: 'direct' أو 'worker'
+    MODE: 'direct' // استخدم 'worker' عند نشر Cloudflare Worker
 };
 
-// Auto-detect if we're using Worker or direct Firebase
-const isWorkerMode = false; // Set to true when using Worker
+// ============================================
+// Auto-configuration
+// ============================================
 
-// Base URL for API calls
-const API_BASE = isWorkerMode 
-    ? (CONFIG.workerURL + '/api') 
-    : CONFIG.firebase.databaseURL;
+// Base URL for Firebase requests
+const FIREBASE_BASE_URL = FIREBASE_CONFIG.DATABASE_URL;
+
+/**
+ * Build URL with optional authentication
+ */
+function buildFirebaseUrl(path) {
+    let url = `${FIREBASE_BASE_URL}/${path}.json`;
+    
+    // Add API key if available (for authenticated access)
+    if (FIREBASE_CONFIG.API_KEY) {
+        url += `?access_token=${FIREBASE_CONFIG.API_KEY}`;
+    }
+    
+    return url;
+}
 
 // ============================================
 // Firebase REST API Helper Functions
@@ -40,33 +52,89 @@ const API_BASE = isWorkerMode
 
 /**
  * Generic fetch wrapper for Firebase REST API
+ * With proper error handling and debugging
  */
 async function firebaseRequest(path, options = {}) {
-    const url = `${API_BASE}/${path}.json`;
+    const url = buildFirebaseUrl(path);
     
     const defaultOptions = {
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
         }
     };
     
     const mergedOptions = { ...defaultOptions, ...options };
     
     try {
+        console.log(`[Firebase] ${options.method || 'GET'} ${url}`);
+        
         const response = await fetch(url, mergedOptions);
+        
+        // Handle specific HTTP errors
+        if (response.status === 401) {
+            throw new FirebaseError('AUTH_REQUIRED', `
+                ❌ خطأ في المصادقة (401)
+                
+                الحلول الممكنة:
+                1. افتح Firebase Console > Realtime Database > Rules
+                2. غيّر القواعد إلى:
+                
+                   {
+                     "rules": {
+                       ".read": true,
+                       ".write": true
+                     }
+                   }
+                   
+                3. انقر "Publish"
+                
+                أو أضف API_KEY في إعدادات FIREBASE_CONFIG
+            `);
+        }
+        
+        if (response.status === 404) {
+            throw new FirebaseError('NOT_FOUND', `المسار غير موجود: ${path}`);
+        }
+        
+        if (response.status === 403) {
+            throw new FirebaseError('FORBIDDEN', `ممنوع الوصول. تحقق من قواعد الأمان.`);
+        }
         
         if (!response.ok) {
             throw new Error(`HTTP Error: ${response.status} ${response.statusText}`);
         }
         
-        // Handle empty responses (e.g., DELETE)
+        // Handle empty responses (e.g., DELETE returns null)
         const text = await response.text();
-        return text ? JSON.parse(text) : null;
+        return text && text !== 'null' ? JSON.parse(text) : null;
+        
     } catch (error) {
-        console.error('Firebase Request Error:', error);
-        throw error;
+        // Re-throw Firebase errors as-is
+        if (error instanceof FirebaseError) {
+            throw error;
+        }
+        
+        // Wrap other errors
+        console.error('[Firebase] Request Error:', error);
+        throw new FirebaseError('NETWORK_ERROR', error.message);
     }
 }
+
+/**
+ * Custom Firebase Error class
+ */
+class FirebaseError extends Error {
+    constructor(code, message) {
+        super(message);
+        this.name = 'FirebaseError';
+        this.code = code;
+    }
+}
+
+// ============================================
+// CRUD Operations
+// ============================================
 
 /**
  * GET - Retrieve data from Firebase
@@ -79,48 +147,49 @@ async function firebaseGet(path) {
  * POST - Create new data with auto-generated ID
  */
 async function firebasePost(path, data) {
-    return firebaseRequest(path, {
+    const result = await firebaseRequest(path, {
         method: 'POST',
         body: JSON.stringify(data)
     });
+    return result; // Returns { name: "newId" }
 }
 
 /**
  * PUT - Update/Replace data at specific path
  */
 async function firebasePut(path, data) {
-    return firebaseRequest(path, {
+    await firebaseRequest(path, {
         method: 'PUT',
         body: JSON.stringify(data)
     });
+    return data;
 }
 
 /**
  * PATCH - Partial update of data
  */
 async function firebasePatch(path, data) {
-    return firebaseRequest(path, {
+    await firebaseRequest(path, {
         method: 'PATCH',
         body: JSON.stringify(data)
     });
+    return data;
 }
 
 /**
  * DELETE - Remove data at specific path
  */
 async function firebaseDelete(path) {
-    return firebaseRequest(path, { method: 'DELETE' });
+    await firebaseRequest(path, { method: 'DELETE' });
+    return true;
 }
 
 // ============================================
 // Data Models & Types
 // ============================================
 
-/**
- * Menu Item Type
- */
 const MenuItemType = {
-    id: '',
+    id: null,
     name: '',
     description: '',
     price: 0,
@@ -136,11 +205,8 @@ const MenuItemType = {
     updatedAt: null
 };
 
-/**
- * Category Type
- */
 const CategoryType = {
-    id: '',
+    id: null,
     name: '',
     description: '',
     icon: 'fa-utensils',
@@ -149,41 +215,24 @@ const CategoryType = {
     createdAt: null
 };
 
-/**
- * Order Type
- */
 const OrderType = {
-    id: '',
+    id: null,
     customerName: '',
     customerPhone: '',
     items: [],
     total: 0,
-    status: 'pending', // pending, preparing, ready, delivered, cancelled
+    status: 'pending',
     notes: '',
     address: '',
     createdAt: null,
     updatedAt: null
 };
 
-/**
- * Order Item Type
- */
-const OrderItemType = {
-    itemId: '',
-    itemName: '',
-    quantity: 1,
-    price: 0,
-    notes: ''
-};
-
-/**
- * Promotion Type
- */
 const PromotionType = {
-    id: '',
+    id: null,
     title: '',
     description: '',
-    type: 'percentage', // percentage, fixed, bogo, free_delivery
+    type: 'percentage',
     value: 0,
     code: '',
     startDate: '',
@@ -195,37 +244,28 @@ const PromotionType = {
     createdAt: null
 };
 
-/**
- * Reservation Type
- */
 const ReservationType = {
-    id: '',
+    id: null,
     customerName: '',
     phone: '',
     date: '',
     time: '',
     guests: 1,
-    status: 'confirmed', // confirmed, pending, cancelled, completed
+    status: 'confirmed',
     notes: '',
     createdAt: null
 };
 
-/**
- * Notification Type
- */
 const NotificationType = {
-    id: '',
+    id: null,
     title: '',
     message: '',
-    type: 'system', // order, reservation, promotion, system
+    type: 'system',
     read: false,
     data: {},
     createdAt: null
 };
 
-/**
- * Settings Type
- */
 const SettingsType = {
     restaurantName: '',
     address: '',
@@ -264,7 +304,13 @@ class MenuItemsAPI {
     
     static async getAll() {
         const data = await firebaseGet(this.basePath);
-        return data ? Object.entries(data).map(([id, item]) => ({ id, ...item })) : [];
+        if (!data) return [];
+        return Object.entries(data).map(([id, item]) => ({ 
+            id, 
+            ...item,
+            price: Number(item.price) || 0,
+            orderCount: Number(item.orderCount) || 0
+        }));
     }
     
     static async getById(id) {
@@ -319,7 +365,12 @@ class CategoriesAPI {
     
     static async getAll() {
         const data = await firebaseGet(this.basePath);
-        return data ? Object.entries(data).map(([id, cat]) => ({ id, ...cat })) : [];
+        if (!data) return [];
+        return Object.entries(data).map(([id, cat]) => ({ 
+            id, 
+            ...cat,
+            order: Number(cat.order) || 0
+        }));
     }
     
     static async getById(id) {
@@ -354,11 +405,14 @@ class OrdersAPI {
     
     static async getAll() {
         const data = await firebaseGet(this.basePath);
-        return data 
-            ? Object.entries(data)
-                .map(([id, order]) => ({ id, ...order }))
-                .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-            : [];
+        if (!data) return [];
+        return Object.entries(data)
+            .map(([id, order]) => ({ 
+                id, 
+                ...order,
+                total: Number(order.total) || 0
+            }))
+            .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
     }
     
     static async getById(id) {
@@ -375,12 +429,16 @@ class OrdersAPI {
         const result = await firebasePost(this.basePath, newOrder);
         
         // Create notification for new order
-        await NotificationsAPI.create({
-            title: 'طلب جديد',
-            message: `طلب جديد #${result.name} من ${orderData.customerName}`,
-            type: 'order',
-            data: { orderId: result.name }
-        });
+        try {
+            await NotificationsAPI.create({
+                title: 'طلب جديد',
+                message: `طلب جديد #${result.name} من ${orderData.customerName}`,
+                type: 'order',
+                data: { orderId: result.name }
+            });
+        } catch (e) {
+            console.warn('Could not create notification:', e);
+        }
         
         return { id: result.name, ...newOrder };
     }
@@ -391,7 +449,6 @@ class OrdersAPI {
             updatedAt: new Date().toISOString()
         };
         
-        // Add completed/delivered timestamp
         if (status === 'delivered') {
             updateData.deliveredAt = new Date().toISOString();
         }
@@ -456,9 +513,13 @@ class PromotionsAPI {
     
     static async getAll() {
         const data = await firebaseGet(this.basePath);
-        return data 
-            ? Object.entries(data).map(([id, promo]) => ({ id, ...promo }))
-            : [];
+        if (!data) return [];
+        return Object.entries(data).map(([id, promo]) => ({ 
+            id, 
+            ...promo,
+            value: Number(promo.value) || 0,
+            usageCount: Number(promo.usageCount) || 0
+        }));
     }
     
     static async getActive() {
@@ -499,11 +560,10 @@ class ReservationsAPI {
     
     static async getAll() {
         const data = await firebaseGet(this.basePath);
-        return data 
-            ? Object.entries(data)
-                .map(([id, res]) => ({ id, ...res }))
-                .sort((a, b) => new Date(a.date + ' ' + a.time) - new Date(b.date + ' ' + b.time))
-            : [];
+        if (!data) return [];
+        return Object.entries(data)
+            .map(([id, res]) => ({ id, ...res }))
+            .sort((a, b) => new Date(a.date + ' ' + a.time) - new Date(b.date + ' ' + b.time));
     }
     
     static async getToday() {
@@ -520,13 +580,16 @@ class ReservationsAPI {
         };
         const result = await firebasePost(this.basePath, newReservation);
         
-        // Create notification
-        await NotificationsAPI.create({
-            title: 'حجز جديد',
-            message: `حجز جديد من ${reservationData.customerName} لـ ${reservationData.guests} أشخاص`,
-            type: 'reservation',
-            data: { reservationId: result.name }
-        });
+        try {
+            await NotificationsAPI.create({
+                title: 'حجز جديد',
+                message: `حجز جديد من ${reservationData.customerName} لـ ${reservationData.guests} أشخاص`,
+                type: 'reservation',
+                data: { reservationId: result.name }
+            });
+        } catch (e) {
+            console.warn('Could not create notification:', e);
+        }
         
         return { id: result.name, ...newReservation };
     }
@@ -554,11 +617,10 @@ class NotificationsAPI {
     
     static async getAll() {
         const data = await firebaseGet(this.basePath);
-        return data 
-            ? Object.entries(data)
-                .map(([id, notif]) => ({ id, ...notif }))
-                .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-            : [];
+        if (!data) return [];
+        return Object.entries(data)
+            .map(([id, notif]) => ({ id, ...notif }))
+            .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
     }
     
     static async getUnread() {
@@ -583,12 +645,8 @@ class NotificationsAPI {
     
     static async markAllAsRead() {
         const unread = await this.getUnread();
-        const updates = {};
-        unread.forEach(notif => {
-            updates[`${this.basePath}/${notif.id}/read`] = true;
-        });
-        if (Object.keys(updates).length > 0) {
-            await firebasePatch('', updates);
+        for (const notif of unread) {
+            await this.markAsRead(notif.id);
         }
         return unread.length;
     }
@@ -611,7 +669,7 @@ class SettingsAPI {
     
     static async get() {
         const data = await firebaseGet(this.basePath);
-        return data || SettingsType;
+        return data || { ...SettingsType };
     }
     
     static async update(settingsData) {
@@ -631,10 +689,10 @@ class SettingsAPI {
 class DashboardAPI {
     static async getStats() {
         const [orders, menuItems, reservations, promotions] = await Promise.all([
-            OrdersAPI.getStats(),
-            MenuItemsAPI.getAll(),
-            ReservationsAPI.getToday(),
-            PromotionsAPI.getActive()
+            OrdersAPI.getStats().catch(() => ({ total: 0, revenue: 0 })),
+            MenuItemsAPI.getAll().catch(() => []),
+            ReservationsAPI.getToday().catch(() => []),
+            PromotionsAPI.getActive().catch(() => [])
         ]);
         
         return {
@@ -658,52 +716,15 @@ class DashboardAPI {
 }
 
 // ============================================
-// Image Upload (Direct to R2 or via Worker)
+// Image Upload & Compression
 // ============================================
 
 /**
- * Upload image to storage
- * Supports both direct upload and Worker proxy
- */
-async function uploadImage(file, path = 'images') {
-    // For now, convert to base64 and store reference
-    // In production, use R2 or Firebase Storage
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = async (e) => {
-            const base64 = e.target.result;
-            
-            if (isWorkerMode) {
-                // Upload via Worker to R2
-                try {
-                    const formData = new FormData();
-                    formData.append('file', file);
-                    formData.append('path', path);
-                    
-                    const response = await fetch(`${CONFIG.workerURL}/api/upload`, {
-                        method: 'POST',
-                        body: formData
-                    });
-                    
-                    if (!response.ok) throw new Error('Upload failed');
-                    const data = await response.json();
-                    resolve(data.url);
-                } catch (error) {
-                    reject(error);
-                }
-            } else {
-                // Store base64 in Firebase (for demo/small images)
-                // In production, limit size or use proper storage
-                resolve(base64);
-            }
-        };
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-    });
-}
-
-/**
  * Compress image before upload
+ * @param {File} file - Image file to compress
+ * @param {number} maxWidth - Maximum width in pixels
+ * @param {number} quality - JPEG quality (0-1)
+ * @returns {Promise<File>} Compressed file
  */
 function compressImage(file, maxWidth = 1024, quality = 0.85) {
     return new Promise((resolve) => {
@@ -715,6 +736,7 @@ function compressImage(file, maxWidth = 1024, quality = 0.85) {
                 let width = img.width;
                 let height = img.height;
                 
+                // Calculate new dimensions
                 if (width > maxWidth) {
                     height = (height * maxWidth) / width;
                     width = maxWidth;
@@ -740,17 +762,27 @@ function compressImage(file, maxWidth = 1024, quality = 0.85) {
     });
 }
 
-// ============================================
-// AI Analysis API (via Worker)
-// ============================================
+/**
+ * Upload image (converts to base64 for Firebase storage)
+ * For production, use R2 or Firebase Storage instead
+ */
+async function uploadImage(file, path = 'images') {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+}
 
 /**
- * Analyze menu image using AI
+ * Analyze menu image using AI (via Worker)
  */
 async function analyzeMenuImage(imageBase64, options = {}) {
-    if (isWorkerMode) {
-        // Use Worker AI endpoint
-        const response = await fetch(`${CONFIG.workerURL}/api/ai/analyze`, {
+    // Check if we're in worker mode
+    if (FIREBASE_CONFIG.MODE === 'worker') {
+        const workerURL = window.location.origin;
+        const response = await fetch(`${workerURL}/api/ai/analyze`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -763,8 +795,11 @@ async function analyzeMenuImage(imageBase64, options = {}) {
         if (!response.ok) throw new Error('AI analysis failed');
         return response.json();
     } else {
-        // Direct AI API call (requires CORS or same-origin)
-        throw new Error('AI analysis requires Worker mode. Please deploy the Cloudflare Worker.');
+        throw new Error(
+            '⚠️ تحليل الصور يتطلب نشر Cloudflare Worker\n\n' +
+            '1. انشر Worker باستخدام: wrangler deploy\n' +
+            '2. غيّر MODE إلى "worker" في FIREBASE_CONFIG'
+        );
     }
 }
 
@@ -788,6 +823,19 @@ window.MezoMenuAPI = {
     analyzeMenuImage,
     
     // Config
-    config: CONFIG,
-    isWorkerMode
+    config: FIREBASE_CONFIG,
+    
+    // Error class
+    FirebaseError
 };
+
+// Log configuration status
+console.log(`%c[MezoMenu] Firebase Config Loaded`, 'color: #FF6B35; font-weight: bold');
+console.log(`  Database URL: ${FIREBASE_CONFIG.DATABASE_URL}`);
+console.log(`  Mode: ${FIREBASE_CONFIG.MODE}`);
+console.log(`  API Key: ${FIREBASE_CONFIG.API_KEY ? '✓ Set' : '✗ Not set'}`);
+
+// Show setup instructions if no API key
+if (!FIREBASE_CONFIG.API_KEY) {
+    console.log(`%c⚠️ تلميح: إذا واجهت خطأ 401، تأكد من قواعد أمان Firebase`, 'color: #FDCB6E;');
+}
