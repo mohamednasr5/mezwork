@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل الدخول - MezoMenu</title>
+    <link rel="icon" type="image/png" href="../assets/images/favicon.png">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../assets/css/main.css">
+    
+    <style>
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #ff6b35 150%);
+        }
+        
+        .login-container {
+            background: white;
+            border-radius: 20px;
+            padding: 3rem;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+        
+        .login-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .login-logo {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #ff6b35, #f7931e);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            margin: 0 auto 1rem;
+        }
+        
+        .social-login {
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        .google-btn {
+            width: 100%;
+            padding: 0.875rem;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            background: white;
+            font-family: inherit;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            transition: all 0.3s;
+        }
+        
+        .google-btn:hover {
+            border-color: #4285f4;
+            color: #4285f4;
+            background: #f8f9fa;
+        }
+        
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin: 1.5rem 0;
+            color: #adb5bd;
+        }
+        
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #e9ecef;
+        }
+        
+        .register-link {
+            text-align: center;
+            margin-top: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <div class="login-logo">🍽️</div>
+            <h1>MezoMenu</h1>
+            <p style="color: #6c757d;">نظام إدارة المطاعم الذكي</p>
+        </div>
+
+        <!-- Google Login -->
+        <button class="google-btn" onclick="loginWithGoogle()">
+            <svg viewBox="0 0 24 24" width="20" height="20">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78.07-1.53.14-2.25.38V18h4.17c.92 0 1.77-.32 2.48-.85l2.95 2.12c-.83.59-1.81.94-2.88.94H12v-5.63h6.08c.14 0 .27.03.4.05l2.06-2.06c.55-.55.82-1.27.82-2V6.25c0-4.42-3.58-8-8-8z"/>
+                <path fill="#34A853" d="M12 22c5.52 0 10-4.48 10-10V11H7.93c.82 0 1.61-.34 2.21-.94L13 8.06A9.97 9.97 0 0012 22z"/>
+                <path fill="#FBBC05" d="M5.84 14.09c-.22.72-.35 1.49-.35 2.85V18l4.17-2.98c-.82.59-1.81.94-2.88.94H12v-5.63h6.08c.14 0 .27.03.4.05l2.06-2.06c.55-.55.82-1.27.82-2V6.25c0-4.42-3.58-8-8-8z"/>
+                <path fill="#EA4335" d="M12 2C6.48 2 2 6.48 2 12v4.67c0 .71-.12 1.39-.34 2l2.96 2.12c.83-.59 1.81-.94 2.88-.94V18h-4.17c-.72 0-1.47-.07-2.25-.38V12.25c0-4.42 3.58-8 8-8z"/>
+                <path fill="#4285F4" d="M12 2C6.48 2 2 6.48 2 12v4.67c0 .71-.12 1.39-.34 2l2.96 2.12c.83-.59 1.81-.94 2.88-.94V18h-4.17c-.72 0-1.47-.07-2.25-.38V12.25c0-4.42 3.58-8 8-8z"/>
+            </svg>
+            تسجيل الدخول بحساب Google
+        </button>
+
+        <div class="divider">أو</div>
+
+        <!-- Email/Password Form -->
+        <form id="loginForm" onsubmit="handleLogin(event)">
+            <div class="form-group">
+                <label class="form-label">البريد الإلكتروني</label>
+                <input type="email" class="form-control" id="email" placeholder="example@email.com" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">كلمة المرور</label>
+                <input type="password" class="form-control" id="password" placeholder="•••••••" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100 mt-3">
+                <i class="fas fa-sign-in-alt"></i> دخول
+            </button>
+        </form>
+
+        <div class="register-link">
+            <p>ليس لديك حساب؟ 
+                <a href="register.html" style="color: var(--primary-color); font-weight: 600;">
+                    إنشاء حساب جديد
+                </a>
+            </p>
+        </div>
+    </div>
+
+    <script src="../assets/js/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            await initFirebase();
+            
+            // Check if already logged in
+            if (Auth.isLoggedIn()) {
+                window.location.href = 'dashboard.html';
+            }
+            
+            // Check for redirect parameter
+            const params = new URLSearchParams(window.location.search);
+            const redirect = params.get('redirect');
+            if (redirect) {
+                sessionStorage.setItem('loginRedirect', redirect);
+            }
+        });
+
+        async function loginWithGoogle() {
+            try {
+                const result = await FirebaseAuth.signInWithGoogle();
+                
+                if (result.success) {
+                    Auth.saveUser(result.user);
+                    
+                    const redirect = sessionStorage.getItem('loginRedirect') || 'dashboard.html';
+                    sessionStorage.removeItem('loginRedirect');
+                    
+                    UI.showToast('تم تسجيل الدخول بنجاح!', 'success');
+                    window.location.href = redirect;
+                } else {
+                    UI.showToast(result.error || 'فشل تسجيل الدخول', 'danger');
+                }
+            } catch (error) {
+                UI.showToast('خطأ: ' + error.message, 'danger');
+            }
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            try {
+                const result = await FirebaseAuth.signInWithEmail(email, password);
+                
+                if (result.success) {
+                    Auth.saveUser(result.user);
+                    
+                    const redirect = sessionStorage.getItem('loginRedirect') || 'dashboard.html';
+                    sessionStorage.removeItem('loginRedirect');
+                    
+                    UI.showToast('تم تسجيل الدخول بنجاح!', 'success');
+                    window.location.href = redirect;
+                } else {
+                    UI.showToast(result.error || 'فشل تسجيل الدخول', 'danger');
+                }
+            } catch (error) {
+                UI.showToast('خطأ: ' + error.message, 'danger');
+            }
+        }
+    </script>
+</body>
+</html>

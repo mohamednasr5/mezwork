@@ -1,0 +1,23 @@
+name = "mezomenu-api"
+main = "worker/index.js"
+compatibility_date = "2024-01-01"
+
+# R2 Bucket Binding (configure in Cloudflare Dashboard)
+# [[r2_buckets]]
+# binding = "R2_BUCKET"
+# bucket_name = "your-bucket-name"
+
+# Environment Variables (set in Cloudflare Dashboard or using wrangler secret)
+# FIREBASE_DB_URL = "https://your-project-default-rtdb.firebaseio.com"
+# FIREBASE_API_KEY = "your-firebase-api-key"
+# MISTRAL_API_KEY = "your-mistral-api-key"
+# GEMINI_API_KEY = "your-gemini-api-key"
+# QWEN_API_KEY = "your-qwen-api-key"
+
+[vars]
+ENVIRONMENT = "production"
+
+# For development
+[dev]
+port = 8787
+local_protocol = "http"

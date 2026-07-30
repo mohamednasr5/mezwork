@@ -1,0 +1,1879 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم - MezoMenu</title>
+    <link rel="icon" type="image/png" href="../assets/images/favicon.png">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Main Styles -->
+    <link rel="stylesheet" href="../assets/css/main.css">
+    <link rel="stylesheet" href="../assets/css/admin.css">
+</head>
+<body>
+    <!-- ===================================
+         Sidebar Navigation
+         =================================== -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">
+                <div class="sidebar-logo-icon">🍽️</div>
+                <div class="sidebar-logo-text">
+                    <h3>MezoMenu</h3>
+                    <p>لوحة التحكم</p>
+                </div>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="nav-section">
+                <div class="nav-section-title">الرئيسية</div>
+                <a href="#dashboard" class="nav-item active" data-tab="dashboard">
+                    <i class="fas fa-chart-line"></i>
+                    <span>لوحة التحكم</span>
+                </a>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-title">الإدارة</div>
+                <a href="#menu" class="nav-item" data-tab="menu">
+                    <i class="fas fa-utensils"></i>
+                    <span>إدارة القائمة</span>
+                </a>
+                <a href="#orders" class="nav-item" data-tab="orders">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span>إدارة الطلبات</span>
+                    <span class="nav-badge" id="pendingOrdersBadge">0</span>
+                </a>
+                <a href="#ai-import" class="nav-item" data-tab="ai-import">
+                    <i class="fas fa-brain"></i>
+                    <span>استيراد ذكي</span>
+                </a>
+                <a href="#promotions" class="nav-item" data-tab="promotions">
+                    <i class="fas fa-tags"></i>
+                    <span>العروض</span>
+                </a>
+                <a href="#reservations" class="nav-item" data-tab="reservations">
+                    <i class="fas fa-calendar-check"></i>
+                    <span>الحجوزات</span>
+                </a>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-title">أخرى</div>
+                <a href="#notifications" class="nav-item" data-tab="notifications">
+                    <i class="fas fa-bell"></i>
+                    <span>الإشعارات</span>
+                    <span class="nav-badge" id="unreadNotifBadge">0</span>
+                </a>
+                <a href="#settings" class="nav-item" data-tab="settings">
+                    <i class="fas fa-cog"></i>
+                    <span>الإعدادات</span>
+                </a>
+            </div>
+        </nav>
+
+        <div class="sidebar-user">
+            <div class="user-info">
+                <img src="https://ui-avatars.com/api/?name=M&background=ff6b35&color=fff&size=40" alt="User" class="user-avatar">
+                <div class="user-details">
+                    <h4>مدير النظام</h4>
+                    <p>admin@mezomenu.com</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ===================================
+         Main Content
+         =================================== -->
+    <main class="main-content">
+        <!-- Header -->
+        <header class="admin-header">
+            <div class="header-right">
+                <button class="mobile-menu-toggle" id="mobileMenuToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                
+                <button class="header-btn" id="notifBtn">
+                    <i class="fas fa-bell"></i>
+                    <span class="badge-count" id="notifCount">0</span>
+                </button>
+                
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <img src="https://ui-avatars.com/api/?name=M&background=28a745&color=fff&size=36" alt="User" style="width: 36px; height: 36px; border-radius: 50%;">
+                    <div style="text-align: right;">
+                        <p style="font-weight: 600; font-size: 0.9rem; margin: 0;">مدير النظام</p>
+                        <p style="font-size: 0.75rem; color: #6c757d; margin: 0;">متصل الآن</p>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Page Content -->
+        <div class="page-content">
+            
+            <!-- ================================
+                 Dashboard Tab
+                 ================================ -->
+            <section id="tab-dashboard" class="tab-content active">
+                <!-- Welcome Banner -->
+                <div class="welcome-banner">
+                    <div class="welcome-text">
+                        <h2>مرحباً بك! 👋</h2>
+                        <p id="restaurantName">مطعم المبروك</p>
+                    </div>
+                    <div class="welcome-icon">🎉</div>
+                </div>
+
+                <!-- Stats Grid -->
+                <div class="stats-grid" id="statsGrid">
+                    <div class="stat-card-admin">
+                        <div class="stat-icon bg-blue-100 text-blue-600">
+                            <i class="fas fa-shopping-cart"></i>
+                        </div>
+                        <div>
+                            <div class="stat-value" id="totalOrders">0</div>
+                            <div class="stat-label">إجمالي الطلبات</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card-admin">
+                        <div class="stat-icon bg-green-100 text-green-600">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                        <div>
+                            <div class="stat-value" id="totalRevenue">0.00</div>
+                            <div class="stat-label">إجمالي الإيرادات (ج.م)</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card-admin">
+                        <div class="stat-icon bg-purple-100 text-purple-600">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div>
+                            <div class="stat-value" id="totalCustomers">0</div>
+                            <div class="stat-label">عدد العملاء</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card-admin">
+                        <div class="stat-icon bg-orange-100 text-orange-600">
+                            <i class="fas fa-receipt"></i>
+                        </div>
+                        <div>
+                            <div class="stat-value" id="todayOrders">0</div>
+                            <div class="stat-label">طلبات اليوم</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions & Recent Orders -->
+                <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem;" class="grid-lg-1-col">
+                    <!-- Quick Actions -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h4><i class="fas fa-bolt text-warning"></i> إجراءات سريعة</h4>
+                        </div>
+                        <div class="card-body">
+                            <div class="quick-actions">
+                                <button class="quick-action-btn" onclick="switchTab('ai-import')">
+                                    <i class="fas fa-plus-circle"></i>
+                                    <span>إضافة صنف</span>
+                                </button>
+                                <button class="quick-action-btn" onclick="switchTab('orders')">
+                                    <i class="fas fa-eye"></i>
+                                    <span>عرض الطلبات</span>
+                                </button>
+                                <button class="quick-action-btn" onclick="switchTab('settings')">
+                                    <i class="fas fa-cog"></i>
+                                    <span>الإعدادات</span>
+                                </button>
+                                <button class="quick-action-btn" onclick="switchTab('promotions')">
+                                    <i class="fas fa-percentage"></i>
+                                    <span>إنشاء عرض</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Orders -->
+                    <div class="card">
+                        <div class="card-header d-flex justify-between align-center">
+                            <h4><i class="fas fa-clock text-info"></i> آخر الطلبات</h4>
+                            <a href="#orders" onclick="switchTab('orders')" style="font-size: 0.9rem;">عرض الكل</a>
+                        </div>
+                        <div class="card-body">
+                            <div class="recent-orders-list" id="recentOrdersList">
+                                <div class="text-center p-4 text-muted">
+                                    <i class="fas fa-inbox" style="font-size: 3rem; opacity: 0.3;"></i>
+                                    <p class="mt-2">لا توجد طلبات حتى الآن</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ================================
+                 Menu Management Tab
+                 ================================ -->
+            <section id="tab-menu" class="tab-content">
+                <div class="d-flex justify-between align-center mb-4">
+                    <div>
+                        <h2>إدارة القائمة</h2>
+                        <p class="text-muted mt-1">إدارة الأصناف والفئات</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline btn-sm" onclick="openCategoryModal()">
+                            <i class="fas fa-folder-plus"></i> إضافة فئة
+                        </button>
+                        <button class="btn btn-primary btn-sm" onclick="openItemModal()">
+                            <i class="fas fa-plus"></i> إضافة صنف
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Categories Grid -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h4><i class="fas fa-folder text-warning"></i> الفئات</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="categories-grid" id="categoriesGrid">
+                            <!-- Categories will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Items Table -->
+                <div class="card">
+                    <div class="card-header">
+                        <h4><i class="fas fa-list text-primary"></i> الأصناف (<span id="itemsCount">0</span>)</h4>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table menu-items-table">
+                                <thead>
+                                    <tr>
+                                        <th>الصورة</th>
+                                        <th>اسم الصنف</th>
+                                        <th>الفئة</th>
+                                        <th>السعر</th>
+                                        <th>الحالة</th>
+                                        <th>إجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="menuItemsTableBody">
+                                    <tr>
+                                        <td colspan="6" class="text-center p-4 text-muted">
+                                            <i class="fas fa-utensils" style="font-size: 2rem; opacity: 0.3;"></i>
+                                            <p class="mt-2">لا توجد أصناف. أضف صنفاً جديداً!</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ================================
+                 AI Import Tab
+                 ================================ -->
+            <section id="tab-ai-import" class="tab-content">
+                <div class="mb-4">
+                    <h2 class="d-flex align-center gap-2">
+                        <i class="fas fa-brain text-purple-600"></i>
+                        استيراد القائمة بالذكاء الاصطناعي
+                    </h2>
+                    <p class="text-muted mt-1">ارفع صورة القائمة وسنستخرج الأصناف والأسعار تلقائياً</p>
+                </div>
+
+                <!-- AI Pipeline Info -->
+                <div class="ai-pipeline-steps mb-4">
+                    <span class="font-medium text-purple-700">سير التحليل:</span>
+                    <span class="pipeline-step bg-purple-100 text-purple-800">رفع صورة</span>
+                    <i class="fas fa-arrow-down pipeline-arrow"></i>
+                    <span class="pipeline-step bg-blue-100 text-blue-800">Mistral OCR</span>
+                    <i class="fas fa-arrow-down pipeline-arrow"></i>
+                    <span class="pipeline-step bg-green-100 text-green-800">Gemini 2.5 Flash</span>
+                    <i class="fas fa-arrow-down pipeline-arrow"></i>
+                    <span class="pipeline-step bg-orange-100 text-orange-800">JSON → Firebase</span>
+                </div>
+                <p class="text-xs text-gray-500 mb-4">
+                    📌 الصور تُضغط تلقائياً (1024px، جودة 85%) قبل الإرسال لسرعة أفضل
+                </p>
+
+                <div class="grid gap-4" style="grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));">
+                    <!-- Upload Section -->
+                    <div class="ai-upload-section">
+                        <h4 class="mb-3"><i class="fas fa-camera"></i> رفع صورة القائمة</h4>
+                        
+                        <div class="upload-zone" id="aiUploadZone" onclick="document.getElementById('aiFileInput').click()">
+                            <input type="file" id="aiFileInput" accept="image/*" hidden onchange="handleAIFileSelect(event)">
+                            
+                            <div id="aiUploadContent">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <p class="mt-2 font-medium">اضغط لرفع صورة</p>
+                                <p class="text-sm text-muted">أو اسحب الصورة هنا</p>
+                                <p class="text-xs text-muted mt-2">PNG, JPG, WebP - حد أقصى 5MB</p>
+                            </div>
+                        </div>
+
+                        <!-- Progress -->
+                        <div id="aiProgressContainer" class="mt-4" style="display: none;">
+                            <div class="d-flex justify-between text-sm mb-2">
+                                <span id="aiProgressText">جاري التحليل...</span>
+                                <span class="font-medium" id="aiProgressPercent">0%</span>
+                            </div>
+                            <div class="progress">
+                                <div class="progress-bar" id="aiProgressBar" style="width: 0%"></div>
+                            </div>
+                        </div>
+
+                        <!-- Error -->
+                        <div id="aiErrorContainer" class="alert alert-danger mt-3" style="display: none;"></div>
+                    </div>
+
+                    <!-- Results Section -->
+                    <div class="ai-results-section">
+                        <h4 class="mb-3"><i class="fas fa-magic"></i> نتائج التحليل</h4>
+                        
+                        <div id="aiResultsPlaceholder" class="text-center py-5 text-muted">
+                            <i class="fas fa-brain" style="font-size: 3rem; opacity: 0.3;"></i>
+                            <p class="mt-2">ارفع صورة قائمة لبدء التحليل</p>
+                        </div>
+
+                        <div id="aiResultsContainer" style="display: none;">
+                            <!-- Stats -->
+                            <div class="ai-stats-grid">
+                                <div class="ai-stat-box bg-green-50">
+                                    <div class="ai-stat-value text-green-600" id="aiTotalItems">0</div>
+                                    <div class="ai-stat-label">صنف</div>
+                                </div>
+                                <div class="ai-stat-box bg-blue-50">
+                                    <div class="ai-stat-value text-blue-600" id="aiTotalCategories">0</div>
+                                    <div class="ai-stat-label">فئة</div>
+                                </div>
+                                <div class="ai-stat-box bg-purple-50">
+                                    <div class="ai-stat-value text-purple-600" id="aiConfidence">0%</div>
+                                    <div class="ai-stat-label">الدقة</div>
+                                </div>
+                            </div>
+
+                            <!-- Provider Info -->
+                            <div class="provider-badge mb-4">
+                                <i class="fas fa-check-circle text-success"></i>
+                                <span>المزود:</span>
+                                <span class="badge badge-secondary" id="aiProviderName">-</span>
+                            </div>
+
+                            <!-- Extracted Categories -->
+                            <div id="extractedCategoriesContainer" style="max-height: 400px; overflow-y: auto;">
+                                <!-- Categories will be loaded here -->
+                            </div>
+
+                            <!-- Actions -->
+                            <div class="d-flex gap-2 mt-4 pt-3 border-top">
+                                <button class="btn btn-primary flex-1" id="aiImportBtn" onclick="importAIToMenu()">
+                                    <i class="fas fa-save"></i> استيراد للقائمة
+                                </button>
+                                <button class="btn btn-outline" onclick="resetAIImport()">
+                                    <i class="fas fa-redo"></i> إعادة
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fallback Info -->
+                <div class="fallback-providers mt-4">
+                    <h5 class="mb-2"><i class="fas fa-shield-alt"></i> البدائل الاحتياطية:</h5>
+                    <div class="d-flex flex-wrap gap-2">
+                        <span class="badge badge-warning">البديل 1: Gemini 2.5 Flash Vision</span>
+                        <span class="badge badge-warning">البديل 2: Qwen2.5-VL</span>
+                    </div>
+                    <p class="text-xs mt-2">💡 النظام يجرب تلقائياً جميع المزودين حتى ينجح التحليل</p>
+                </div>
+            </section>
+
+            <!-- ================================
+                 Orders Tab
+                 ================================ -->
+            <section id="tab-orders" class="tab-content">
+                <div class="d-flex justify-between align-center mb-4">
+                    <div>
+                        <h2>إدارة الطلبات</h2>
+                        <p class="text-muted mt-1">متابعة وإدارة جميع الطلبات</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <span class="badge badge-warning" id="pendingCount">قيد الانتظار: 0</span>
+                        <span class="badge badge-info" id="preparingCount">قيد التحضير: 0</span>
+                    </div>
+                </div>
+
+                <!-- Filters -->
+                <div class="orders-filters card mb-4">
+                    <div class="card-body py-3">
+                        <div class="filter-group">
+                            <label class="form-label">الحالة:</label>
+                            <select class="filter-select" id="orderStatusFilter" onchange="filterOrders()">
+                                <option value="">كل الحالات</option>
+                                <option value="pending">قيد الانتظار</option>
+                                <option value="confirmed">تم التأكيد</option>
+                                <option value="preparing">قيد التحضير</option>
+                                <option value="ready">جاهز</option>
+                                <option value="delivered">تم التسليم</option>
+                                <option value="cancelled">ملغي</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Orders Table -->
+                <div class="card">
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>العميل</th>
+                                        <th>الأصناف</th>
+                                        <th>المبلغ</th>
+                                        <th>الحالة</th>
+                                        <th>التاريخ</th>
+                                        <th>تغيير الحالة</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="ordersTableBody">
+                                    <tr>
+                                        <td colspan="7" class="text-center p-4 text-muted">
+                                            <i class="fas fa-shopping-cart" style="font-size: 2rem; opacity: 0.3;"></i>
+                                            <p class="mt-2">لا توجد طلبات حالياً</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ================================
+                 Promotions Tab
+                 ================================ -->
+            <section id="tab-promotions" class="tab-content">
+                <div class="d-flex justify-between align-center mb-4">
+                    <div>
+                        <h2>إدارة العروض</h2>
+                        <p class="text-muted mt-1">إنشاء وإدارة العروض والتخفيضات</p>
+                    </div>
+                    <button class="btn btn-primary" onclick="openPromotionModal()">
+                        <i class="fas fa-plus"></i> إنشاء عرض جديد
+                    </button>
+                </div>
+
+                <div class="grid gap-4" id="promotionsGrid" style="grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));">
+                    <!-- Promotions will be loaded here -->
+                </div>
+            </section>
+
+            <!-- ================================
+                 Notifications Tab
+                 ================================ -->
+            <section id="tab-notifications" class="tab-content">
+                <div class="d-flex justify-between align-center mb-4">
+                    <div>
+                        <h2>الإشعارات</h2>
+                        <p class="text-muted mt-1">جميع الإشعارات والتنبيهات</p>
+                    </div>
+                    <button class="btn btn-outline btn-sm" onclick="markAllNotificationsRead()">
+                        <i class="fas fa-check-double"></i> تحديد الكل كمقروء
+                    </button>
+                </div>
+
+                <div id="notificationsContainer">
+                    <!-- Notifications will be loaded here -->
+                </div>
+            </section>
+
+            <!-- ================================
+                 Reservations Tab
+                 ================================ -->
+            <section id="tab-reservations" class="tab-content">
+                <div class="mb-4">
+                    <h2>إدارة الحجوزات</h2>
+                    <p class="text-muted mt-1">متابعة حجوزات الطاولات</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-body text-center py-5 text-muted">
+                        <i class="fas fa-calendar-check" style="font-size: 3rem; opacity: 0.3;"></i>
+                        <p class="mt-2">سيتم عرض الحجوزات هنا عند استلامها من واجهة العميل</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ================================
+                 Settings Tab
+                 ================================ -->
+            <section id="tab-settings" class="tab-content">
+                <div class="mb-4">
+                    <h2>إعدادات المطعم</h2>
+                    <p class="text-muted mt-1">إعدادات عامة ومعلومات المطعم</p>
+                </div>
+
+                <form id="settingsForm" onsubmit="saveSettings(event)">
+                    <div class="settings-grid">
+                        <!-- Basic Info -->
+                        <div class="settings-section">
+                            <h3><i class="fas fa-info-circle"></i> المعلومات الأساسية</h3>
+                            
+                            <div class="form-group">
+                                <label class="form-label">اسم المطعم (عربي)</label>
+                                <input type="text" class="form-control" id="settingNameAr" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">اسم المطعم (إنجليزي)</label>
+                                <input type="text" class="form-control" id="settingNameEn">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">هاتف</label>
+                                <input type="tel" class="form-control" id="settingPhone">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">واتساب</label>
+                                <input type="tel" class="form-control" id="settingWhatsapp">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">البريد الإلكتروني</label>
+                                <input type="email" class="form-control" id="settingEmail">
+                            </div>
+                        </div>
+
+                        <!-- Appearance -->
+                        <div class="settings-section">
+                            <h3><i class="fas fa-palette"></i> المظهر</h3>
+                            
+                            <div class="form-group">
+                                <label class="form-label">العنوان (عربي)</label>
+                                <input type="text" class="form-control" id="settingAddressAr">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">العملة</label>
+                                <select class="form-control" id="settingCurrency">
+                                    <option value="EGP">جنيه مصري (EGP)</option>
+                                    <option value="SAR">ريال سعودي (SAR)</option>
+                                    <option value="AED">درهم إماراتي (AED)</option>
+                                    <option value="USD">دولار أمريكي (USD)</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">شعار المطعم (URL)</label>
+                                <input type="url" class="form-control" id="settingLogo" placeholder="https://...">
+                                <img id="logoPreview" class="logo-preview mt-2" style="display: none;">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">صورة الغلاف (URL)</label>
+                                <input type="url" class="form-control" id="settingCover" placeholder="https://...">
+                                <img id="coverPreview" class="cover-preview mt-2" style="display: none;">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-end pt-4 border-top mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> حفظ الإعدادات
+                        </button>
+                    </div>
+                </form>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- ==========================================
+         Modals
+         ========================================== -->
+    
+    <!-- Item Modal -->
+    <div class="modal-overlay" id="itemModal">
+        <div class="modal" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3 id="itemModalTitle">إضافة صنف جديد</h3>
+                <button class="modal-close" onclick="closeModal('itemModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="itemForm" onsubmit="saveItem(event)">
+                    <input type="hidden" id="editItemId">
+                    
+                    <div class="grid gap-3" style="grid-template-columns: 1fr 1fr;">
+                        <div class="form-group">
+                            <label class="form-label">اسم الصنف (عربي) *</label>
+                            <input type="text" class="form-control" id="itemNameAr" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Name (English)</label>
+                            <input type="text" class="form-control" id="itemNameEn">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">وصف الصنف</label>
+                        <textarea class="form-control" id="itemDescription" rows="2"></textarea>
+                    </div>
+                    
+                    <div class="grid gap-3" style="grid-template-columns: 1fr 1fr;">
+                        <div class="form-group">
+                            <label class="form-label">السعر *</label>
+                            <input type="number" class="form-control" id="itemPrice" step="0.01" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">الفئة *</label>
+                            <select class="form-control" id="itemCategory" required>
+                                <option value="">اختر الفئة</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="grid gap-3" style="grid-template-columns: 1fr 1fr;">
+                        <div class="form-group">
+                            <label class="form-label">وقت التحضير (دقيقة)</label>
+                            <input type="number" class="form-control" id="itemPrepTime" value="15" min="1">
+                        </div>
+                        <div class="form-group d-flex align-end gap-4 pt-2">
+                            <label class="d-flex align-center gap-2 cursor-pointer">
+                                <input type="checkbox" id="itemAvailable" checked> متاح
+                            </label>
+                            <label class="d-flex align-center gap-2 cursor-pointer">
+                                <input type="checkbox" id="itemPopular"> مميز
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">صورة الصنف</label>
+                        <input type="file" class="form-control" id="ItemImage" accept="image/*" onchange="previewImage(this, 'itemImagePreview')">
+                        <img id="itemImagePreview" class="mt-2" style="max-width: 150px; display: none;">
+                    </div>
+                    
+                    <div class="d-flex justify-end gap-2 pt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> حفظ
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="closeModal('itemModal')">إلغاء</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Category Modal -->
+    <div class="modal-overlay" id="categoryModal">
+        <div class="modal" style="max-width: 450px;">
+            <div class="modal-header">
+                <h3 id="categoryModalTitle">إضافة فئة جديدة</h3>
+                <button class="modal-close" onclick="closeModal('categoryModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="categoryForm" onsubmit="saveCategory(event)">
+                    <input type="hidden" id="editCategoryId">
+                    
+                    <div class="form-group">
+                        <label class="form-label">اسم الفئة (عربي) *</label>
+                        <input type="text" class="form-control" id="categoryNameAr" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Name (English)</label>
+                        <input type="text" class="form-control" id="categoryNameEn">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">الأيقونة</label>
+                        <div class="d-flex flex-wrap gap-2" id="categoryIcons">
+                            <button type="button" class="icon-option" data-icon="🍽️" onclick="selectCategoryIcon(this)">🍽️</button>
+                            <button type="button" class="icon-option" data-icon="🍕" onclick="selectCategoryIcon(this)">🍕</button>
+                            <button type="button" class="icon-option" data-icon="🍔" onclick="selectCategoryIcon(this)">🍔</button>
+                            <button type="button" class="icon-option" data-icon="🌮" onclick="selectCategoryIcon(this)">🌮</button>
+                            <button type="button" class="icon-option" data-icon="🥗" onclick="selectCategoryIcon(this)">🥗</button>
+                            <button type="button" class="icon-option" data-icon="🍜" onclick="selectCategoryIcon(this)">🍜</button>
+                            <button type="button" class="icon-option" data-icon="🍣" onclick="selectCategoryIcon(this)">🍣</button>
+                            <button type="button" class="icon-option" data-icon="🥤" onclick="selectCategoryIcon(this)">🥤</button>
+                            <button type="button" class="icon-option" data-icon="☕" onclick="selectCategoryIcon(this)">☕</button>
+                            <button type="button" class="icon-option" data-icon="🧁" onclick="selectCategoryIcon(this)">🧁</button>
+                        </div>
+                        <input type="hidden" id="categoryIcon" value="🍽️">
+                    </div>
+                    
+                    <div class="d-flex justify-end gap-2 pt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> حفظ
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="closeModal('categoryModal')">إلغاء</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Promotion Modal -->
+    <div class="modal-overlay" id="promotionModal">
+        <div class="modal" style="max-width: 550px;">
+            <div class="modal-header">
+                <h3>إنشاء عرض جديد</h3>
+                <button class="modal-close" onclick="closeModal('promotionModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="promotionForm" onsubmit="savePromotion(event)">
+                    <div class="grid gap-3" style="grid-template-columns: 1fr 1fr;">
+                        <div class="form-group">
+                            <label class="form-label">عنوان العرض (عربي) *</label>
+                            <input type="text" class="form-control" id="promoTitleAr" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Title (English)</label>
+                            <input type="text" class="form-control" id="promoTitleEn">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">وصف العرض</label>
+                        <textarea class="form-control" id="promoDescription" rows="2"></textarea>
+                    </div>
+                    
+                    <div class="grid gap-3" style="grid-template-columns: 1fr 1fr;">
+                        <div class="form-group">
+                            <label class="form-label">نوع الخصم</label>
+                            <select class="form-control" id="promoDiscountType">
+                                <option value="percentage">نسبة مئوية (%)</option>
+                                <option value="fixed">مبلغ ثابت</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">قيمة الخصم</label>
+                            <input type="number" class="form-control" id="promoDiscountValue" min="0">
+                        </div>
+                    </div>
+                    
+                    <div class="grid gap-3" style="grid-template-columns: 1fr 1fr;">
+                        <div class="form-group">
+                            <label class="form-label">تاريخ البداية</label>
+                            <input type="date" class="form-control" id="promoStartDate">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">تاريخ النهاية</label>
+                            <input type="date" class="form-control" id="promoEndDate">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">كود الخصم (اختياري)</label>
+                        <input type="text" class="form-control" id="promoCode" placeholder="SALE2024">
+                    </div>
+                    
+                    <label class="d-flex items-center gap-2 mt-3">
+                        <input type="checkbox" id="promoActive" checked>
+                        <span>عرض نشط</span>
+                    </label>
+                    
+                    <div class="d-flex justify-end gap-2 pt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> إنشاء
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="closeModal('promotionModal')">إلغاء</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- ==========================================
+         JavaScript
+         ========================================== -->
+    <script src="../assets/js/main.js"></script>
+    <script>
+        // ==========================================
+        // Global State
+        // ==========================================
+        
+        let currentData = {
+            categories: {},
+            items: {},
+            orders: {},
+            promotions: {},
+            notifications: {},
+            settings: null,
+            aiResult: null
+        };
+
+        let selectedCategoryIcon = '🍽️';
+
+        // ==========================================
+        // Initialize App
+        // ==========================================
+        
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('🍽️ MezoMenu Admin Loading...');
+            
+            // Load Firebase SDK
+            await initFirebase();
+            
+            // Load initial data
+            await loadDashboard();
+            await loadCategories();
+            await loadOrders();
+            await loadPromotions();
+            await loadNotifications();
+            await SettingsManager.get();
+            
+            // Setup event listeners
+            setupEventListeners();
+            
+            console.log('✅ MezoMenu Admin Ready!');
+        });
+
+        // ==========================================
+        // Event Listeners
+        // ==========================================
+        
+        function setupEventListeners() {
+            // Mobile menu toggle
+            document.getElementById('mobileMenuToggle').addEventListener('click', function() {
+                document.getElementById('sidebar').classList.toggle('open');
+            });
+
+            // Tab navigation
+            document.querySelectorAll('.nav-item[data-tab]').forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const tab = this.dataset.tab;
+                    switchTab(tab);
+                });
+            });
+        }
+
+        // ==========================================
+        // Tab Switching
+        // ==========================================
+        
+        function switchTab(tabId) {
+            // Update nav items
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+                if (item.dataset.tab === tabId) item.classList.add('active');
+            });
+            
+            // Update content
+            document.querySelectorAll('.tab-content'.replace('.', '\\.')).forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            const targetTab = document.getElementById(`tab-${tabId}`);
+            if (targetTab) targetTab.classList.add('active');
+            
+            // Close mobile menu
+            document.getElementById('sidebar').classList.remove('open');
+            
+            // Load tab-specific data
+            if (tabId === 'dashboard') loadDashboard();
+            if (tabId === 'notifications') loadNotifications();
+        }
+
+        // ==========================================
+        // Dashboard Functions
+        // ==========================================
+        
+        async function loadDashboard() {
+            try {
+                const stats = await OrdersManager.getStats();
+                
+                document.getElementById('totalOrders').textContent = stats.totalOrders;
+                document.getElementById('totalRevenue').textContent = UI.formatCurrency(stats.totalRevenue);
+                document.getElementById('totalCustomers').textContent = stats.totalCustomers;
+                document.getElementById('todayOrders').textContent = stats.todayOrders;
+                
+                if (AppState.restaurant) {
+                    document.getElementById('restaurantName').textContent = AppState.restaurant.name?.ar || 'مطعم المبروك';
+                }
+                
+                // Render recent orders
+                renderRecentOrders(stats.recentOrders);
+                
+                // Update badges
+                updateBadges(stats);
+                
+            } catch (error) {
+                console.error('Dashboard error:', error);
+                UI.showToast('خطأ في تحميل الإحصائيات', 'danger');
+            }
+        }
+        
+        function renderRecentOrders(orders) {
+            const container = document.getElementById('recentOrdersList');
+            
+            if (!orders || orders.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center p-4 text-muted">
+                        <i class="fas fa-inbox" style="font-size: 3rem; opacity: 0.3;"></i>
+                        <p class="mt-2">لا توجد طلبات حتى الآن</p>
+                    </div>`;
+                return;
+            }
+            
+            container.innerHTML = orders.slice(0, 5).map(order => `
+                <div class="order-item">
+                    <div class="order-icon bg-blue-100 text-blue-600">
+                        <i class="fas fa-receipt"></i>
+                    </div>
+                    <div class="order-info">
+                        <div class="order-customer">${order.customerName}</div>
+                        <div class="order-details">${order.items?.length || 0} أصناف • ${UI.formatDate(order.createdAt)}</div>
+                    </div>
+                    <span class="order-status status-${order.status}">${getStatusLabel(order.status)}</span>
+                    <span class="order-total">${UI.formatCurrency(order.totalAmount)}</span>
+                </div>
+            `).join('');
+        }
+        
+        function getStatusLabel(status) {
+            const labels = {
+                pending: 'قيد الانتظار',
+                confirmed: 'تم التأكيد',
+                preparing: 'قيد التحضير',
+                ready: 'جاهز',
+                delivered: 'تم التسليم',
+                cancelled: 'ملغي'
+            };
+            return labels[status] || status;
+        }
+
+        // ==========================================
+        // Menu Functions
+        // ==========================================
+        
+        async function loadCategories() {
+            try {
+                const result = await MenuManager.getAll();
+                currentData.categories = result.categories;
+                currentData.items = result.items;
+                
+                renderCategories();
+                renderMenuItems();
+                populateCategorySelect();
+                
+            } catch (error) {
+                console.error('Load menu error:', error);
+            }
+        }
+        
+        function renderCategories() {
+            const container = document.getElementById('categoriesGrid');
+            const categories = Object.values(currentData.categories);
+            
+            if (categories.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center p-4 text-muted w-100">
+                        <i class="fas fa-folder-open" style="font-size: 2rem; opacity: 0.3;"></i>
+                        <p class="mt-2">لا توجد فئات. أضف فئة جديدة!</p>
+                    </div>`;
+                return;
+            }
+            
+            container.innerHTML = categories.map(cat => `
+                <div class="category-card" onclick="filterByCategory('${cat.id}')">
+                    <div class="category-icon">${cat.icon || '🍽️'}</div>
+                    <div class="category-name">${cat.name?.ar || 'بدون اسم'}</div>
+                    <div class="category-actions">
+                        <button class="btn btn-sm btn-icon" onclick="event.stopPropagation(); editCategory('${cat.id}')">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-icon text-danger" onclick="event.stopPropagation(); deleteCategory('${cat.id}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function renderMenuItems(filterCategoryId = null) {
+            const tbody = document.getElementById('menuItemsTableBody');
+            let items = Object.values(currentData.items);
+            
+            if (filterCategoryId) {
+                items = items.filter(item => item.category === filterCategoryId);
+            }
+            
+            document.getElementById('itemsCount').textContent = items.length;
+            
+            if (items.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center p-4 text-muted">
+                            <i class="fas fa-utensils" style="font-size: 2rem; opacity: 0.3;"></i>
+                            <p class="mt-2">لا توجد أصناف${filterCategoryId ? ' في هذه الفئة' : ''}</p>
+                        </td>
+                    </tr>`;
+                return;
+            }
+            
+            tbody.innerHTML = items.map(item => `
+                <tr>
+                    <td>
+                        ${item.image 
+                            ? `<img src="${item.image}" alt="${item.name?.ar}" class="item-image">` 
+                            : `<div class="item-image bg-gray-100 d-flex align-center justify-center"><i class="fas fa-image text-gray-400"></i></div>`
+                        }
+                    </td>
+                    <td>
+                        <div class="item-name-cell">${item.name?.ar || '-'}</div>
+                        <div class="item-name-en">${item.name?.en || ''}</div>
+                    </td>
+                    <td>
+                        <span class="badge badge-secondary">${currentData.categories[item.category]?.name?.ar || item.category || '-'}</span>
+                    </td>
+                    <td class="item-price">${UI.formatCurrency(item.price)}</td>
+                    <td>
+                        <span class="badge ${item.available ? 'badge-success' : 'badge-danger'}">
+                            ${item.available ? 'متاح' : 'غير متاح'}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="d-flex gap-1">
+                            <button class="btn btn-sm btn-icon" onclick="editItem('${item.id}')" title="تعديل">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-icon text-danger" onclick="deleteItem('${item.id}')" title="حذف">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+        
+        function populateCategorySelect() {
+            const select = document.getElementById('itemCategory');
+            const currentValue = select.value;
+            
+            select.innerHTML = '<option value="">اختر الفئة</option>' + 
+                Object.entries(currentData.categories).map(([id, cat]) => 
+                    `<option value="${id}">${cat.name?.ar || 'بدون اسم'}</option>`
+                ).join('');
+            
+            if (currentValue && currentData.categories[currentValue]) {
+                select.value = currentValue;
+            }
+        }
+        
+        function filterByCategory(categoryId) {
+            renderMenuItems(categoryId);
+        }
+
+        // Item CRUD
+        function openItemModal(itemId = null) {
+            const modal = document.getElementById('itemModal');
+            const title = document.getElementById('itemModalTitle');
+            const form = document.getElementById('itemForm');
+            
+            form.reset();
+            document.getElementById('editItemId').value = '';
+            document.getElementById('itemImagePreview').style.display = 'none';
+            
+            if (itemId && currentData.items[itemId]) {
+                const item = currentData.items[itemId];
+                title.textContent = 'تعديل الصنف';
+                document.getElementById('editItemId').value = itemId;
+                document.getElementById('itemNameAr').value = item.name?.ar || '';
+                document.getElementById('itemNameEn').value = item.name?.en || '';
+                document.getElementById('itemDescription').value = item.description?.ar || '';
+                document.getElementById('itemPrice').value = item.price || '';
+                document.getElementById('itemCategory').value = item.category || '';
+                document.getElementById('itemPrepTime').value = item.preparationTime || 15;
+                document.getElementById('itemAvailable').checked = item.available !== false;
+                document.getElementById('itemPopular').checked = item.popular || false;
+                
+                if (item.image) {
+                    document.getElementById('itemImagePreview').src = item.image;
+                    document.getElementById('itemImagePreview').style.display = 'block';
+                }
+            } else {
+                title.textContent = 'إضافة صنف جديد';
+            }
+            
+            modal.classList.add('active');
+        }
+        
+        async function saveItem(e) {
+            e.preventDefault();
+            
+            const itemId = document.getElementById('editItemId').value;
+            const itemData = {
+                name: {
+                    ar: document.getElementById('itemNameAr').value,
+                    en: document.getElementById('itemNameEn').value
+                },
+                description: {
+                    ar: document.getElementById('itemDescription').value,
+                    en: ''
+                },
+                price: parseFloat(document.getElementById('itemPrice').value) || 0,
+                category: document.getElementById('itemCategory').value,
+                available: document.getElementById('itemAvailable').checked,
+                popular: document.getElementById('itemPopular').checked,
+                preparationTime: parseInt(document.getElementById('itemPrepTime').value) || 15
+            };
+            
+            // Handle image
+            const imagePreview = document.getElementById('itemImagePreview');
+            if (imagePreview.style.display !== 'none') {
+                itemData.image = imagePreview.src;
+            }
+            
+            try {
+                if (itemId) {
+                    await MenuManager.update(itemId, itemData);
+                    UI.showToast('تم تحديث الصنف بنجاح', 'success');
+                } else {
+                    await MenuManager.addItem(itemData);
+                    UI.showToast('تم إضافة الصنف بنجاح', 'success');
+                }
+                
+                closeModal('itemModal');
+                await loadCategories();
+                
+            } catch (error) {
+                UI.showToast('خطأ: ' + error.message, 'danger');
+            }
+        }
+        
+        window.editItem = openItemModal;
+        
+        async function deleteItem(itemId) {
+            if (!confirm('هل أنت متأكد من حذف هذا الصنف؟')) return;
+            
+            try {
+                await MenuManager.deleteItem(itemId);
+                UI.showToast('تم حذف الصنف', 'success');
+                await loadCategories();
+            } catch (error) {
+                UI.showToast('خطأ: ' + error.message, 'danger');
+            }
+        }
+        
+        window.deleteItem = deleteItem;
+
+        // Category CRUD
+        function openCategoryModal(categoryId = null) {
+            const modal = document.getElementById('categoryModal');
+            const title = document.getElementById('categoryModalTitle');
+            const form = document.getElementById('categoryForm');
+            
+            form.reset();
+            document.getElementById('editCategoryId').value = '';
+            selectCategoryIcon(document.querySelector('.icon-option[data-icon="🍽️"]'));
+            
+            if (categoryId && currentData.categories[categoryId]) {
+                const cat = currentData.categories[categoryId];
+                title.textContent = 'تعديل الفئة';
+                document.getElementById('editCategoryId').value = categoryId;
+                document.getElementById('categoryNameAr').value = cat.name?.ar || '';
+                document.getElementById('categoryNameEn').value = cat.name?.en || '';
+                
+                const iconBtn = document.querySelector(`.icon-option[data-icon="${cat.icon || '🍽️'}"]`);
+                if (iconBtn) selectCategoryIcon(iconBtn);
+            } else {
+                title.textContent = 'إضافة فئة جديدة';
+            }
+            
+            modal.classList.add('active');
+        }
+        
+        window.openCategoryModal = openCategoryModal;
+        
+        function selectCategoryIcon(btn) {
+            document.querySelectorAll('.icon-option').forEach(b => b.classList.remove('bg-primary', 'text-white'));
+            btn.classList.add('bg-primary', 'text-white');
+            selectedCategoryIcon = btn.dataset.icon;
+            document.getElementById('categoryIcon').value = btn.dataset.icon;
+        }
+        
+        window.selectCategoryIcon = selectCategoryIcon;
+        
+        async function saveCategory(e) {
+            e.preventDefault();
+            
+            const categoryId = document.getElementById('editCategoryId').value;
+            const categoryData = {
+                name: {
+                    ar: document.getElementById('categoryNameAr').value,
+                    en: document.getElementById('categoryNameEn').value
+                },
+                icon: selectedCategoryIcon
+            };
+            
+            try {
+                if (categoryId) {
+                    await MenuManager.updateCategory(categoryId, categoryData);
+                    UI.showToast('تم تحديث الفئة', 'success');
+                } else {
+                    await MenuManager.addCategory(categoryData);
+                    UI.showToast('تم إضافة الفئة', 'success');
+                }
+                
+                closeModal('categoryModal');
+                await loadCategories();
+                
+            } catch (error) {
+                UI.showToast('خطأ: ' + error.message, 'danger');
+            }
+        }
+        
+        window.editCategory = openCategoryModal;
+        
+        async function deleteCategory(categoryId) {
+            if (!confirm('هل أنت متأكد من حذف هذه الفئة؟')) return;
+            
+            try {
+                await MenuManager.deleteCategory(categoryId);
+                UI.showToast('تم حذف الفئة', 'success');
+                await loadCategories();
+            } catch (error) {
+                UI.showToast('خطأ: ' + error.message, 'danger');
+            }
+        }
+        
+        window.deleteCategory = deleteCategory;
+
+        // ==========================================
+        // Orders Functions
+        // ==========================================
+        
+        async function loadOrders() {
+            try {
+                const orders = await OrdersManager.getAll();
+                currentData.orders = orders;
+                renderOrdersTable(Object.entries(orders));
+                updateOrderBadges();
+            } catch (error) {
+                console.error('Load orders error:', error);
+            }
+        }
+        
+        function renderOrdersTable(ordersEntries) {
+            const tbody = document.getElementById('ordersTableBody');
+            const orders = ordersEntries.map(([id, order]) => ({ ...order, id }))
+                .sort((a, b) => b.createdAt - a.createdAt);
+            
+            if (orders.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="text-center p-4 text-muted">
+                            <i class="fas fa-shopping-cart" style="font-size: 2rem; opacity: 0.3;"></i>
+                            <p class="mt-2">لا توجد طلبات حالياً</p>
+                        </td>
+                    </tr>`;
+                return;
+            }
+            
+            tbody.innerHTML = orders.map(order => `
+                <tr>
+                    <td class="text-muted font-mono text-sm">${order.id.substring(0, 8)}...</td>
+                    <td>
+                        <div class="font-medium">${order.customerName}</div>
+                        <div class="text-sm text-muted">${order.customerPhone}</div>
+                    </td>
+                    <td>
+                        <span>${order.items?.length || 0} أصناف</span>
+                        <div class="text-sm text-muted truncate" style="max-width: 200px;">
+                            ${order.items?.map(i => i.name).join('، ') || '-'}
+                        </div>
+                    </td>
+                    <td class="font-bold">${UI.formatCurrency(order.totalAmount)}</td>
+                    <td>
+                        <span class="order-status status-${order.status}">${getStatusLabel(order.status)}</span>
+                    </td>
+                    <td class="text-sm text-muted">${UI.formatDate(order.createdAt)}</td>
+                    <td>
+                        <select class="form-control form-control-sm" onchange="updateOrderStatus('${order.id}', this.value)" style="width: 120px;">
+                            <option value="pending" ${order.status === 'pending' ? 'selected' : ''}>قيد الانتظار</option>
+                            <option value="confirmed" ${order.status === 'confirmed' ? 'selected' : ''}>تم التأكيد</option>
+                            <option value="preparing" ${order.status === 'preparing' ? 'selected' : ''}>قيد التحضير</option>
+                            <option value="ready" ${order.status === 'ready' ? 'selected' : ''}>جاهز</option>
+                            <option value="delivered" ${order.status === 'delivered' ? 'selected' : ''}>تم التسليم</option>
+                            <option value="cancelled" ${order.status === 'cancelled' ? 'selected' : ''}>ملغي</option>
+                        </select>
+                    </td>
+                </tr>
+            `).join('');
+        }
+        
+        async function updateOrderStatus(orderId, status) {
+            try {
+                await OrdersManager.updateStatus(orderId, status);
+                UI.showToast(`تم تحديث حالة الطلب إلى: ${getStatusLabel(status)}`, 'success');
+                await loadOrders();
+                await loadDashboard();
+            } catch (error) {
+                UI.showToast('خطأ: ' + error.message, 'danger');
+            }
+        }
+        
+        window.updateOrderStatus = updateOrderStatus;
+        
+        function filterOrders() {
+            const status = document.getElementById('orderStatusFilter').value;
+            const filtered = status 
+                ? Object.entries(currentData.orders).filter(([id, o]) => o.status === status)
+                : Object.entries(currentData.orders);
+            renderOrdersTable(filtered);
+        }
+        
+        window.filterOrders = filterOrders;
+        
+        function updateOrderBadges() {
+            const orders = Object.values(currentData.orders);
+            const pending = orders.filter(o => o.status === 'pending').length;
+            const preparing = orders.filter(o => o.status === 'preparing').length;
+            
+            document.getElementById('pendingOrdersBadge').textContent = pending;
+            document.getElementById('pendingCount').textContent = `قيد الانتظار: ${pending}`;
+            document.getElementById('preparingCount').textContent = `قيد التحضير: ${preparing}`;
+        }
+
+        // ==========================================
+        // Promotions Functions
+        // ==========================================
+        
+        async function loadPromotions() {
+            try {
+                const promotions = await PromotionsManager.getAll();
+                currentData.promotions = promotions;
+                renderPromotions();
+            } catch (error) {
+                console.error('Load promotions error:', error);
+            }
+        }
+        
+        function renderPromotions() {
+            const container = document.getElementById('promotionsGrid');
+            const promotions = Object.entries(currentData.promotions)
+                .map(([id, promo]) => ({ ...promo, id }));
+            
+            if (promotions.length === 0) {
+                container.innerHTML = `
+                    <div class="card text-center p-5 text-muted">
+                        <i class="fas fa-tags" style="font-size: 3rem; opacity: 0.3;"></i>
+                        <p class="mt-2">لا توجد عروض. أنشئ عرضاً جديداً!</p>
+                    </div>`;
+                return;
+            }
+            
+            container.innerHTML = promotions.map(promo => `
+                <div class="card ${!promo.active ? 'opacity-60' : ''}">
+                    <div class="card-body">
+                        <div class="d-flex justify-between align-start mb-3">
+                            <h4>${promo.title?.ar || 'بدون عنوان'}</h4>
+                            <label class="d-flex align-center gap-2 cursor-pointer">
+                                <input type="checkbox" ${promo.active ? 'checked' : ''} 
+                                       onchange="togglePromotion('${promo.id}', this.checked)">
+                            </label>
+                        </div>
+                        <p class="text-muted text-sm mb-3">${promo.description?.ar || ''}</p>
+                        
+                        <div class="d-flex justify-between align-items-center">
+                            <div>
+                                <span class="text-2xl font-bold text-primary">
+                                    ${promo.discountType === 'percentage' ? promo.discountValue + '%' : UI.formatCurrency(promo.discountValue)}
+                                </span>
+                                <p class="text-sm text-muted">
+                                    ${new Date(promo.startDate).toLocaleDateString('ar-EG')} - 
+                                    ${new Date(promo.endDate).toLocaleDateString('ar-EG')}
+                                </p>
+                            </div>
+                            <button class="btn btn-sm btn-icon text-danger" onclick="deletePromotion('${promo.id}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                        
+                        ${promo.code ? `<span class="badge badge-secondary mt-2">كود: ${promo.code}</span>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function openPromotionModal() {
+            document.getElementById('promotionForm').reset();
+            document.getElementById('promotionModal').classList.add('active');
+            
+            // Set default dates
+            const today = new Date();
+            const nextMonth = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
+            document.getElementById('promoStartDate').value = today.toISOString().split('T')[0];
+            document.getElementById('promoEndDate').value = nextMonth.toISOString().split('T')[0];
+        }
+        
+        window.openPromotionModal = openPromotionModal;
+        
+        async function savePromotion(e) {
+            e.preventDefault();
+            
+            const promoData = {
+                title: {
+                    ar: document.getElementById('promoTitleAr').value,
+                    en: document.getElementById('promoTitleEn').value
+                },
+                description: {
+                    ar: document.getElementById('promoDescription').value,
+                    en: ''
+                },
+                discountType: document.getElementById('promoDiscountType').value,
+                discountValue: parseFloat(document.getElementById('promoDiscountValue').value) || 0,
+                startDate: document.getElementById('promoStartDate').value,
+                endDate: document.getElementById('promoEndDate').value,
+                code: document.getElementById('promoCode').value.toUpperCase(),
+                active: document.getElementById('promoActive').checked
+            };
+            
+            try {
+                await PromotionsManager.create(promoData);
+                UI.showToast('تم إنشاء العرض بنجاح', 'success');
+                closeModal('promotionModal');
+                await loadPromotions();
+            } catch (error) {
+                UI.showToast('خطأ: ' + error.message, 'danger');
+            }
+        }
+        
+        async function togglePromotion(promoId, active) {
+            try {
+                await PromotionsManager.update(promoId, { active });
+                UI.showToast(active ? 'تم تفعيل العرض' : 'تم تعطيل العرض', 'info');
+                await loadPromotions();
+            } catch (error) {
+                UI.showToast('خطأ: ' + error.message, 'danger');
+            }
+        }
+        
+        window.togglePromotion = togglePromotion;
+        
+        async function deletePromotion(promoId) {
+            if (!confirm('هل أنت متأكد من حذف هذا العرض؟')) return;
+            
+            try {
+                await PromotionsManager.delete(promoId);
+                UI.showToast('تم حذف العرض', 'success');
+                await loadPromotions();
+            } catch (error) {
+                UI.showToast('خطأ: ' + error.message, 'danger');
+            }
+        }
+        
+        window.deletePromotion = deletePromotion;
+
+        // ==========================================
+        // Notifications Functions
+        // ==========================================
+        
+        async function loadNotifications() {
+            try {
+                const notifications = await NotificationsManager.getAll();
+                currentData.notifications = notifications;
+                renderNotifications();
+                updateNotificationBadges();
+            } catch (error) {
+                console.error('Load notifications error:', error);
+            }
+        }
+        
+        function renderNotifications() {
+            const container = document.getElementById('notificationsContainer');
+            const notifications = Object.entries(currentData.notifications)
+                .map(([id, notif]) => ({ ...notif, id }))
+                .sort((a, b) => b.createdAt - a.createdAt);
+            
+            if (notifications.length === 0) {
+                container.innerHTML = `
+                    <div class="card text-center p-5 text-muted">
+                        <i class="fas fa-bell-slash" style="font-size: 3rem; opacity: 0.3;"></i>
+                        <p class="mt-2">لا توجد إشعارات</p>
+                    </div>`;
+                return;
+            }
+            
+            container.innerHTML = notifications.map(notif => `
+                <div class="notification-item ${notif.read ? '' : 'unread'}" onclick="markAsRead('${notif.id}')">
+                    <div class="notification-icon ${
+                        notif.type === 'order' ? 'bg-blue-100 text-blue-600' :
+                        notif.type === 'promotion' ? 'bg-green-100 text-green-600' :
+                        notif.type === 'warning' ? 'bg-yellow-100 text-yellow-600' :
+                        notif.type === 'error' ? 'bg-red-100 text-red-600' :
+                        'bg-gray-100 text-gray-600'
+                    }">
+                        <i class="fas fa-${
+                            notif.type === 'order' ? 'shopping-cart' :
+                            notif.type === 'promotion' ? 'tag' :
+                            notif.type === 'warning' ? 'exclamation-triangle' :
+                            notif.type === 'error' ? 'exclamation-circle' : 'bell'
+                        }"></i>
+                    </div>
+                    <div class="notification-content">
+                        <div class="notification-title">${notif.title?.ar || ''}</div>
+                        <div class="notification-message">${notif.message?.ar || ''}</div>
+                    </div>
+                    <div class="notification-time">${UI.formatDate(notif.createdAt)}</div>
+                    ${!notif.read ? '<div class="notification-unread-dot"></div>' : ''}
+                </div>
+            `).join('');
+        }
+        
+        async function markAsRead(notifId) {
+            try {
+                await NotificationsManager.markAsRead(notifId);
+                await loadNotifications();
+                await loadDashboard();
+            } catch (error) {
+                console.error('Mark as read error:', error);
+            }
+        }
+        
+        window.markAsRead = markAsRead;
+        
+        async function markAllNotificationsRead() {
+            try {
+                await NotificationsManager.markAllAsRead();
+                UI.showToast('تم تحديد الكل كمقروء', 'success');
+                await loadNotifications();
+                await loadDashboard();
+            } catch (error) {
+                UI.showToast('خطأ: ' + error.message, 'danger');
+            }
+        }
+        
+        window.markAllNotificationsRead = markAllNotificationsRead;
+        
+        function updateNotificationBadges() {
+            const unread = Object.values(currentData.notifications).filter(n => !n.read).length;
+            document.getElementById('unreadNotifBadge').textContent = unread;
+            document.getElementById('notifCount').textContent = unread;
+        }
+
+        // ==========================================
+        // Settings Functions
+        // ==========================================
+        
+        async function saveSettings(e) {
+            e.preventDefault();
+            
+            const settingsData = {
+                name: {
+                    ar: document.getElementById('settingNameAr').value,
+                    en: document.getElementById('settingNameEn').value
+                },
+                phone: document.getElementById('settingPhone').value,
+                whatsapp: leftToRight ? document.getElementById('settingWhatsapp').value : document.getElementById('settingWhatsapp').value,
+                email: document.getElementById('settingEmail').value,
+                address: {
+                    ar: document.getElementById('settingAddressAr').value,
+                    en: ''
+                },
+                currency: document.getElementById('settingCurrency').value,
+                logo: document.getElementById('settingLogo').value,
+                coverImage: document.getElementById('settingCover').value
+            };
+            
+            try {
+                await SettingsManager.update(settingsData);
+                UI.showToast('تم حفظ الإعدادات بنجاح!', 'success');
+            } catch (error) {
+                UI.showToast('خطأ: ' + error.message, 'danger');
+            }
+        }
+        
+        // Preview images on input change
+        document.getElementById('settingLogo').addEventListener('change', function() {
+            const preview = document.getElementById('logoPreview');
+            if (this.value) {
+                preview.src = this.value;
+                preview.style.display = 'block';
+            } else {
+                preview.style.display = 'none';
+            }
+        });
+        
+        document.getElementById('settingCover').addEventListener('change', function() {
+            const preview = document.getElementById('coverPreview');
+            if (this.value) {
+                preview.src = this.value;
+                preview.style.display = 'block';
+            } else {
+                preview.style.display = 'none';
+            }
+        });
+
+        // ==========================================
+        // AI Import Functions
+        // ==========================================
+        
+        function handleAIFileSelect(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            if (!file.type.startsWith('image/')) {
+                UI.showToast('يجب اختيار ملف صورة', 'warning');
+                return;
+            }
+            
+            // Show preview and analyze
+            const reader = new FileReader();
+            reader.onload = async function(event) {
+                const originalBase64 = event.target.result;
+                
+                // Update upload zone UI
+                document.getElementById('aiUploadContent').innerHTML = `
+                    <img src="${originalBase64}" alt="Menu Preview" style="max-height: 250px; object-fit: contain; border-radius: 8px;">
+                    <p class="mt-2 text-sm text-muted">اضغط لتغيير الصورة</p>
+                `;
+                
+                // Compress and analyze
+                await analyzeMenuImage(file);
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        async function analyzeMenuImage(file) {
+            const progressContainer = document.getElementById('aiProgressContainer');
+            const progressBar = document.getElementById('aiProgressBar');
+            const progressText = document.getElementById('aiProgressText');
+            const progressPercent = document.getElementById('aiProgressPercent');
+            const errorContainer = document.getElementById('aiErrorContainer');
+            const resultsPlaceholder = document.getElementById('aiResultsPlaceholder');
+            const resultsContainer = document.getElementById('aiResultsContainer');
+            
+            // Show progress
+            progressContainer.style.display = 'block';
+            errorContainer.style.display = 'none';
+            resultsPlaceholder.style.display = 'block';
+            resultsContainer.style.display = 'none';
+            
+            try {
+                // Step 1: Compress image
+                progressText.textContent = 'جاري ضغط الصورة...';
+                progressBar.style.width = '20%';
+                progressPercent.textContent = '20%';
+                
+                const compressedFile = await ImageUtils.compress(file, 1024, 0.85);
+                
+                // Step 2: Upload & Analyze
+                progressText.textContent = 'جاري رفع وتحليل الصورة...';
+                progressBar.style.width = '50%';
+                progressPercent.textContent = '50%';
+                
+                const result = await AIAnalyzer.analyzeImage(compressedFile);
+                
+                if (result.success) {
+                    progressBar.style.width = '100%';
+                    progressPercent.textContent = '100%';
+                    progressText.textContent = 'تم التحليل بنجاح!';
+                    
+                    // Store result
+                    currentData.aiResult = result.data;
+                    
+                    // Show results
+                    showAIResults(result.data);
+                    
+                } else {
+                    throw new Error(result.error || 'فشل التحليل');
+                }
+                
+            } catch (error) {
+                progressContainer.style.display = 'none';
+                errorContainer.style.display = 'block';
+                errorContainer.innerHTML = `<i class="fas fa-exclamation-circle"></i> <div><strong>حدث خطأ:</strong> ${error.message}</div>`;
+                UI.showToast('فشل التحليل: ' + error.message, 'danger');
+            }
+        }
+        
+        function showAIResults(data) {
+            const placeholder = document.getElementById('aiResultsPlaceholder');
+            const container = document.getElementById('aiResultsContainer');
+            
+            placeholder.style.display = 'none';
+            container.style.display = 'block';
+            
+            // Update stats
+            const totalItems = data.categories.reduce((sum, cat) => sum + cat.items.length, 0);
+            document.getElementById('aiTotalItems').textContent = totalItems;
+            document.getElementById('aiTotalCategories').textContent = data.categories.length;
+            document.getElementById('aiConfidence').textContent = data.confidence + '%';
+            document.getElementById('aiProviderName').textContent = getProviderName(data.provider);
+            
+            // Render categories
+            const catsContainer = document.getElementById('extractedCategoriesContainer');
+            catsContainer.innerHTML = data.categories.map((cat, idx) => `
+                <div class="extracted-category">
+                    <div class="extracted-category-header">
+                        <span class="text-xl">${cat.icon || '📁'}</span>
+                        <span class="font-medium">${cat.name?.ar || 'فئة'}</span>
+                        <span class="badge badge-secondary mr-auto">${cat.items.length} أصناف</span>
+                    </div>
+                    <div class="extracted-items">
+                        ${cat.items.slice(0, 5).map((item, i) => `
+                            <div class="extracted-item">
+                                <span>${item.name?.ar || '-'}</span>
+                                <span class="font-medium">${UI.formatCurrency(item.price)}</span>
+                            </div>
+                        `).join('')}
+                        ${cat.items.length > 5 ? `<p class="text-xs text-center text-muted py-2">+${cat.items.length - 5} أصناف أخرى...</p>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function getProviderName(provider) {
+            const names = {
+                'mistral-gemini': 'Mistral OCR + Gemini 2.5 Flash',
+                'gemini-vision': 'Gemini 2.5 Flash Vision',
+                'qwen-vl': 'Qwen2.5-VL'
+            };
+            return names[provider] || provider;
+        }
+        
+        async function importAIToMenu() {
+            if (!currentData.aiResult) return;
+            
+            const btn = document.getElementById('aiImportBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الاستيراد...';
+            
+            try {
+                const importedCount = await AIAnalyzer.importToMenu(currentData.aiResult);
+                
+                UI.showToast(`✅ تم استيراد ${importedCount} صنف بنجاح!`, 'success');
+                
+                // Reset AI section
+                resetAIImport();
+                
+                // Refresh menu
+                await loadCategories();
+                await loadDashboard();
+                
+                // Switch to menu tab to show imported items
+                switchTab('menu');
+                
+            } catch (error) {
+                UI.showToast('خطأ في الاستيراد: ' + error.message, 'danger');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-save"></i> استيراد للقائمة';
+            }
+        }
+        
+        window.importAIToMenu = importAIToMenu;
+        
+        function resetAIImport() {
+            currentData.aiResult = null;
+            document.getElementById('aiFileInput').value = '';
+            document.getElementById('aiUploadContent').innerHTML = `
+                <i class="fas fa-cloud-upload-alt"></i>
+                <p class="mt-2 font-medium">اضغط لرفع صورة</p>
+                <p class="text-sm text-muted">أو اسحب الصورة هنا</p>
+                <p class="text-xs text-muted mt-2">PNG, JPG, WebP - حد أقصى 5MB</p>
+            `;
+            document.getElementById('aiProgressContainer').style.display = 'none';
+            document.getElementById('aiErrorContainer').style.display = 'none';
+            document.getElementById('aiResultsPlaceholder').style.display = 'block';
+            document.getElementById('aiResultsContainer').style.display = 'none';
+            document.getElementById('aiProgressBar').style.width = '0%';
+            document.getElementById('aiProgressPercent').textContent = '0%';
+        }
+        
+        window.resetAIImport = resetAIImport;
+
+        // ==========================================
+        // Utility Functions
+        // ==========================================
+        
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+        
+        window.closeModal = closeModal;
+        
+        function previewImage(input, previewId) {
+            const preview = document.getElementById(previewId);
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+        
+        window.previewImage = previewImage;
+        
+        function updateBadges(stats) {
+            const pending = stats.ordersByStatus?.pending || 0;
+            document.getElementById('pendingOrdersBadge').textContent = pending;
+        }
+
+        // Fix for RTL left/right
+        function leftToRight(text) {
+            return text.replace(/right/g, 'left').replace(/left/g, 'right');
+        }
+    </script>
+
+    <style>
+        /* Additional styles for icons */
+        .icon-option {
+            width: 45px;
+            height: 45px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            background: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .icon-option:hover,
+        .icon-option.bg-primary {
+            border-color: var(--primary-color);
+            background: var(--primary-color);
+        }
+        
+        @media (min-width: 992px) {
+            .grid-lg-1-col > div:first-child {
+                grid-column: span 1;
+            }
+        }
+        
+        .opacity-60 {
+            opacity: 0.6;
+        }
+    </style>
+</body>
+</html>

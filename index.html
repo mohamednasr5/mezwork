@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MezoMenu - لوحة إدارة المطعم</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="logo">
+            <i class="fas fa-utensils"></i>
+            <span>MezoMenu</span>
+        </div>
+        <nav class="nav-menu">
+            <a href="#" class="nav-link active" data-tab="dashboard">
+                <i class="fas fa-chart-line"></i>
+                <span>لوحة التحكم</span>
+            </a>
+            <a href="#" class="nav-link" data-tab="menu">
+                <i class="fas fa-book-open"></i>
+                <span>إدارة القائمة</span>
+            </a>
+            <a href="#" class="nav-link" data-tab="orders">
+                <i class="fas fa-shopping-cart"></i>
+                <span>الطلبات</span>
+            </a>
+            <a href="#" class="nav-link" data-tab="promotions">
+                <i class="fas fa-tags"></i>
+                <span>العروض</span>
+            </a>
+            <a href="#" class="nav-link" data-tab="reservations">
+                <i class="fas fa-calendar-alt"></i>
+                <span>الحجوزات</span>
+            </a>
+            <a href="#" class="nav-link" data-tab="notifications">
+                <i class="fas fa-bell"></i>
+                <span>الإشعارات</span>
+            </a>
+            <a href="#" class="nav-link" data-tab="settings">
+                <i class="fas fa-cog"></i>
+                <span>الإعدادات</span>
+            </a>
+            <a href="#" class="nav-link" data-tab="ai-import">
+                <i class="fas fa-robot"></i>
+                <span>استيراد بالذكاء الاصطناعي</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="customer/index.html" target="_blank" class="btn btn-outline">
+                <i class="fas fa-eye"></i>
+                <span>معاينة القائمة</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content" id="mainContent">
+        <!-- Header -->
+        <header class="header">
+            <button class="menu-toggle" id="menuToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="بحث..." id="globalSearch">
+            </div>
+            <div class="header-actions">
+                <button class="btn-icon notification-btn" id="notificationBtn">
+                    <i class="fas fa-bell"></i>
+                    <span class="badge" id="notificationBadge">3</span>
+                </button>
+                <div class="user-info">
+                    <img src="https://ui-avatars.com/api/?name=Admin&background=FF6B35&color=fff" alt="Admin" class="user-avatar">
+                    <span>مدير النظام</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Dashboard Tab -->
+        <section class="tab-content active" id="dashboardTab">
+            <div class="page-header">
+                <h1>لوحة التحكم</h1>
+                <p>نظرة عامة على أداء مطعمك</p>
+            </div>
+            
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon bg-primary">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <div class="stat-details">
+                        <h3 id="totalOrders">0</h3>
+                        <p>إجمالي الطلبات</p>
+                    </div>
+                    <div class="stat-trend up">
+                        <i class="fas fa-arrow-up"></i> 12%
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon bg-success">
+                        <i class="fas fa-dollar-sign"></i>
+                    </div>
+                    <div class="stat-details">
+                        <h3 id="totalRevenue">$0</h3>
+                        <p>إجمالي الإيرادات</p>
+                    </div>
+                    <div class="stat-trend up">
+                        <i class="fas fa-arrow-up"></i> 8%
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon bg-warning">
+                        <i class="fas fa-book-open"></i>
+                    </div>
+                    <div class="stat-details">
+                        <h3 id="totalItems">0</h3>
+                        <p>عناصر القائمة</p>
+                    </div>
+                    <div class="stat-trend down">
+                        <i class="fas fa-arrow-down"></i> 2%
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon bg-danger">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-details">
+                        <h3 id="totalReservations">0</h3>
+                        <p>الحجوزات اليوم</p>
+                    </div>
+                    <div class="stat-trend up">
+                        <i class="fas fa-arrow-up"></i> 5%
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="dashboard-grid">
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-clock"></i> آخر الطلبات</h3>
+                        <a href="#" class="btn-link" onclick="switchTab('orders')">عرض الكل</a>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>العميل</th>
+                                        <th>المبلغ</th>
+                                        <th>الحالة</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="recentOrdersTable">
+                                    <tr><td colspan="4" class="text-center">جاري التحميل...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-fire"></i> الأكثر مبيعاً</h3>
+                    </div>
+                    <div class="card-body">
+                        <ul class="top-items-list" id="topItemsList">
+                            <li class="text-center">جاري التحميل...</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Menu Management Tab -->
+        <section class="tab-content" id="menuTab">
+            <div class="page-header">
+                <h1>إدارة القائمة</h1>
+                <button class="btn btn-primary" onclick="openMenuItemModal()">
+                    <i class="fas fa-plus"></i> إضافة عنصر
+                </button>
+            </div>
+
+            <!-- Categories Tabs -->
+            <div class="categories-tabs" id="categoriesTabs">
+                <button class="category-tab active" data-category="all">الكل</button>
+            </div>
+
+            <!-- Search & Filter -->
+            <div class="filter-bar">
+                <div class="search-input">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="بحث في القائمة..." id="menuSearch">
+                </div>
+                <select id="categoryFilter" class="form-select">
+                    <option value="">كل الفئات</option>
+                </select>
+                <select id="availabilityFilter" class="form-select">
+                    <option value="">كل الحالات</option>
+                    <option value="available">متاح</option>
+                    <option value="unavailable">غير متاح</option>
+                </select>
+            </div>
+
+            <!-- Menu Items Grid -->
+            <div class="menu-grid" id="menuGrid">
+                <div class="text-center p-5">جاري تحميل القائمة...</div>
+            </div>
+        </section>
+
+        <!-- Orders Tab -->
+        <section class="tab-content" id="ordersTab">
+            <div class="page-header">
+                <h1>إدارة الطلبات</h1>
+                <div class="header-actions">
+                    <select id="orderStatusFilter" class="form-select">
+                        <option value="">كل الحالات</option>
+                        <option value="pending">قيد الانتظار</option>
+                        <option value="preparing">قيد التحضير</option>
+                        <option value="ready">جاهز</option>
+                        <option value="delivered">تم التسليم</option>
+                        <option value="cancelled">ملغي</option>
+                    </select>
+                    <button class="btn btn-outline" onclick="exportOrders()">
+                        <i class="fas fa-download"></i> تصدير
+                    </button>
+                </div>
+            </div>
+
+            <!-- Orders Table -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>العميل</th>
+                                    <th>العناصر</th>
+                                    <th>المجموع</th>
+                                    <th>الحالة</th>
+                                    <th>التاريخ</th>
+                                    <th>إجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ordersTableBody">
+                                <tr><td colspan="7" class="text-center">جاري التحميل...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Promotions Tab -->
+        <section class="tab-content" id="promotionsTab">
+            <div class="page-header">
+                <h1>إدارة العروض</h1>
+                <button class="btn btn-primary" onclick="openPromotionModal()">
+                    <i class="fas fa-plus"></i> إضافة عرض
+                </button>
+            </div>
+
+            <!-- Promotions Grid -->
+            <div class="promotions-grid" id="promotionsGrid">
+                <div class="text-center p-5">جاري تحميل العروض...</div>
+            </div>
+        </section>
+
+        <!-- Reservations Tab -->
+        <section class="tab-content" id="reservationsTab">
+            <div class="page-header">
+                <h1>إدارة الحجوزات</h1>
+                <button class="btn btn-primary" onclick="openReservationModal()">
+                    <i class="fas fa-plus"></i> إضافة حجز
+                </button>
+            </div>
+
+            <!-- Reservations Table -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>الاسم</th>
+                                    <th>الهاتف</th>
+                                    <th>التاريخ</th>
+                                    <th>الوقت</th>
+                                    <th>عدد الأشخاص</th>
+                                    <th>الحالة</th>
+                                    <th>إجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reservationsTableBody">
+                                <tr><td colspan="8" class="text-center">جاري التحميل...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Notifications Tab -->
+        <section class="tab-content" id="notificationsTab">
+            <div class="page-header">
+                <h1>الإشعارات</h1>
+                <button class="btn btn-outline" onclick="markAllAsRead()">
+                    <i class="fas fa-check-double"></i> تعيين الكل كمقروء
+                </button>
+            </div>
+
+            <!-- Notifications List -->
+            <div class="notifications-list" id="notificationsList">
+                <div class="text-center p-5">جاري تحميل الإشعارات...</div>
+            </div>
+        </section>
+
+        <!-- Settings Tab -->
+        <section class="tab-content" id="settingsTab">
+            <div class="page-header">
+                <h1>الإعدادات</h1>
+            </div>
+
+            <div class="settings-grid">
+                <!-- Restaurant Info -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-store"></i> معلومات المطعم</h3>
+                    </div>
+                    <div class="card-body">
+                        <form id="restaurantInfoForm" class="settings-form">
+                            <div class="form-group">
+                                <label>اسم المطعم</label>
+                                <input type="text" name="restaurantName" class="form-control" placeholder="أدخل اسم المطعم">
+                            </div>
+                            <div class="form-group">
+                                <label>العنوان</label>
+                                <textarea name="address" class="form-control" rows="2" placeholder="أدخل العنوان"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>رقم الهاتف</label>
+                                <input type="tel" name="phone" class="form-control" placeholder="أدخل رقم الهاتف">
+                            </div>
+                            <div class="form-group">
+                                <label>البريد الإلكتروني</label>
+                                <input type="email" name="email" class="form-control" placeholder="أدخل البريد الإلكتروني">
+                            </div>
+                            <div class="form-group">
+                                <label>وصف المطعم</label>
+                                <textarea name="description" class="form-control" rows="3" placeholder="أدخل وصفاً للمطعم"></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> حفظ الإعدادات
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Working Hours -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-clock"></i> ساعات العمل</h3>
+                    </div>
+                    <div class="card-body">
+                        <form id="workingHoursForm" class="settings-form">
+                            <div class="working-hours-grid">
+                                <div class="form-group">
+                                    <label>من الساعة</label>
+                                    <input type="time" name="openingTime" class="form-control">
+                                </div>
+                                <div class="form-group">
+                                    <label>إلى الساعة</label>
+                                    <input type="time" name="closingTime" class="form-control">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>الأيام</label>
+                                <div class="checkbox-group">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" name="days" value="sunday"> الأحد
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" name="days" value="monday"> الاثنين
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" name="days" value="tuesday"> الثلاثاء
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" name="days" value="wednesday"> الأربعاء
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" name="days" value="thursday"> الخميس
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" name="days" value="friday"> الجمعة
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" name="days" value="saturday"> السبت
+                                    </label>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> حفظ ساعات العمل
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Categories Management -->
+                <div class="card full-width">
+                    <div class="card-header">
+                        <h3><i class="fas fa-folder"></i> إدارة الفئات</h3>
+                        <button class="btn btn-sm btn-primary" onclick="openCategoryModal()">
+                            <i class="fas fa-plus"></i> إضافة فئة
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div class="categories-management" id="categoriesManagement">
+                            <p class="text-muted">جاري تحميل الفئات...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- AI Import Tab -->
+        <section class="tab-content" id="aiImportTab">
+            <div class="page-header">
+                <h1>استيراد قائمة بالذكاء الاصطناعي</h1>
+                <p>ارفع صورة القائمة وسنقوم باستخراج البيانات تلقائياً</p>
+            </div>
+
+            <div class="ai-import-container">
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                    </div>
+                    <h3>اسحب الصورة هنا أو انقر للاختيار</h3>
+                    <p>يدعم: JPG, PNG, WEBP (حد أقصى 10MB)</p>
+                    <input type="file" id="menuImageInput" accept="image/*" hidden>
+                    <button class="btn btn-primary" onclick="document.getElementById('menuImageInput').click()">
+                        <i class="fas fa-folder-open"></i> اختر صورة
+                    </button>
+                </div>
+
+                <div class="preview-area" id="previewArea" style="display:none;">
+                    <div class="preview-image-container">
+                        <img id="previewImage" alt="Preview">
+                        <button class="btn-remove-preview" onclick="removePreview()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="ai-options">
+                        <div class="form-group">
+                            <label>الفئة الافتراضية</label>
+                            <select id="defaultCategory" class="form-select">
+                                <option value="">اختر فئة</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>العملة</label>
+                            <select id="currencySelect" class="form-select">
+                                <option value="EGP">جنيه مصري (EGP)</option>
+                                <option value="USD">دولار أمريكي (USD)</option>
+                                <option value="SAR">ريال سعودي (SAR)</option>
+                                <option value="AED">درهم إماراتي (AED)</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-success btn-lg" id="analyzeBtn" onclick="analyzeWithAI()">
+                            <i class="fas fa-robot"></i> تحليل بالذكاء الاصطناعي
+                        </button>
+                    </div>
+                </div>
+
+                <div class="ai-results" id="aiResults" style="display:none;">
+                    <div class="results-header">
+                        <h3><i class="fas fa-check-circle"></i> اكتمل التحليل!</h3>
+                        <p>تم استخراج <span id="extractedCount">0</span> عناصر من الصورة</p>
+                    </div>
+                    <div class="results-actions">
+                        <button class="btn btn-primary" onclick="importToMenu()">
+                            <i class="fas fa-import"></i> استيراد للقائمة
+                        </button>
+                        <button class="btn btn-outline" onclick="editResults()">
+                            <i class="fas fa-edit"></i> تعديل النتائج
+                        </button>
+                    </div>
+                    <div class="results-preview" id="resultsPreview"></div>
+                </div>
+
+                <div class="ai-loading" id="aiLoading" style="display:none;">
+                    <div class="loading-spinner"></div>
+                    <h3>جاري التحليل...</h3>
+                    <p id="loadingStatus">تهيئة الذكاء الاصطناعي...</p>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Menu Item Modal -->
+    <div class="modal" id="menuItemModal">
+        <div class="modal-content modal-lg">
+            <div class="modal-header">
+                <h3 id="menuItemModalTitle">إضافة عنصر جديد</h3>
+                <button class="modal-close" onclick="closeModal('menuItemModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="menuItemForm" enctype="multipart/form-data">
+                    <input type="hidden" id="itemId" name="id">
+                    
+                    <div class="form-row">
+                        <div class="form-group flex-2">
+                            <label>اسم العنصر *</label>
+                            <input type="text" id="itemName" name="name" class="form-control" required placeholder="مثال: بيتزا مارجريتا">
+                        </div>
+                        <div class="form-group">
+                            <label>السعر *</label>
+                            <input type="number" id="itemPrice" name="price" class="form-control" required min="0" step="0.01" placeholder="0.00">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>الفئة *</label>
+                            <select id="itemCategory" name="categoryId" class="form-control" required>
+                                <option value="">اختر فئة</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>الحالة</label>
+                            <select id="itemAvailability" name="available" class="form-control">
+                                <option value="true">متاح</option>
+                                <option value="false">غير متاح</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>الوصف</label>
+                        <textarea id="itemDescription" name="description" class="form-control" rows="3" placeholder="وصف موجز للعنصر..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>المكونات (فصل بفواصل)</label>
+                        <input type="text" id="itemIngredients" name="ingredients" class="form-control" placeholder="مثال: طحين, صلصة, جبنة, بازلاء">
+                    </div>
+
+                    <div class="form-group">
+                        <label>صورة العنصر</label>
+                        <div class="image-upload-area" id="ItemImageUploadArea">
+                            <input type="file" id="itemImageInput" accept="image/*" hidden onchange="previewItemImage(this)">
+                            <div class="upload-placeholder" id="ItemUploadPlaceholder">
+                                <i class="fas fa-camera"></i>
+                                <span>اضغط لرفع صورة</span>
+                            </div>
+                            <img id="itemImagePreview" src="" alt="Preview" style="display:none;">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="itemFeatured" name="featured">
+                            <span>إضافة للمميزات</span>
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="itemSpicy" name="spicy">
+                            <span>حار</span>
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="itemVegetarian" name="vegetarian">
+                            <span>نباتي</span>
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('menuItemModal')">إلغاء</button>
+                <button class="btn btn-primary" onclick="saveMenuItem()">حفظ</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Promotion Modal -->
+    <div class="modal" id="promotionModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="promotionModalTitle">إضافة عرض جديد</h3>
+                <button class="modal-close" onclick="closeModal('promotionModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="promotionForm">
+                    <input type="hidden" id="promotionId" name="id">
+                    
+                    <div class="form-group">
+                        <label>عنوان العرض *</label>
+                        <input type="text" id="promotionTitle" name="title" class="form-control" required placeholder="مثال: خصم 20%">
+                    </div>
+
+                    <div class="form-group">
+                        <label>الوصف</label>
+                        <textarea id="promotionDescription" name="description" class="form-control" rows="3" placeholder="وصف العرض..."></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>نوع الخصم *</label>
+                            <select id="promotionType" name="type" class="form-control" required>
+                                <option value="percentage">نسبة مئوية</option>
+                                <option value="fixed">مبلغ ثابت</option>
+                                <option value="bogo">اشتر واحد واحصل على واحد</option>
+                                <option value="free_delivery">توصيل مجاني</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>قيمة الخصم *</label>
+                            <input type="number" id="promotionValue" name="value" class="form-control" required min="0" placeholder="0">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>تاريخ البداية *</label>
+                            <input type="date" id="promotionStartDate" name="startDate" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label>تاريخ النهاية *</label>
+                            <input type="date" id="promotionEndDate" name="endDate" class="form-control" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>رمز الكوبون (اختياري)</label>
+                        <input type="text" id="promotionCode" name="code" class="form-control" placeholder="مثال: SUMMER20">
+                    </div>
+
+                    <div class="form-group">
+                        <label>صورة العرض</label>
+                        <div class="image-upload-area" onclick="document.getElementById('promotionImageInput').click()">
+                            <input type="file" id="promotionImageInput" accept="image/*" hidden onchange="previewPromotionImage(this)">
+                            <div class="upload-placeholder" id="promotionUploadPlaceholder">
+                                <i class="fas fa-camera"></i>
+                                <span>اضغط لرفع صورة</span>
+                            </div>
+                            <img id="promotionImagePreview" src="" alt="Preview" style="display:none;">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="promotionActive" name="active" checked>
+                            <span>تفعيل العرض</span>
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('promotionModal')">إلغاء</button>
+                <button class="btn btn-primary" onclick="savePromotion()">حفظ</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reservation Modal -->
+    <div class="modal" id="reservationModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="reservationModalTitle">إضافة حجز جديد</h3>
+                <button class="modal-close" onclick="closeModal('reservationModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="reservationForm">
+                    <input type="hidden" id="reservationId" name="id">
+                    
+                    <div class="form-group">
+                        <label>اسم العميل *</label>
+                        <input type="text" id="reservationName" name="customerName" class="form-control" required placeholder="اسم العميل">
+                    </div>
+
+                    <div class="form-group">
+                        <label>رقم الهاتف *</label>
+                        <input type="tel" id="reservationPhone" name="phone" class="form-control" required placeholder="رقم الهاتف">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>التاريخ *</label>
+                            <input type="date" id="reservationDate" name="date" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label>الوقت *</label>
+                            <input type="time" id="reservationTime" name="time" class="form-control" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>عدد الأشخاص *</label>
+                        <input type="number" id="reservationGuests" name="guests" class="form-control" required min="1" max="50" placeholder="عدد الأشخاص">
+                    </div>
+
+                    <div class="form-group">
+                        <label>ملاحظات</label>
+                        <textarea id="reservationNotes" name="notes" class="form-control" rows="2" placeholder="أي ملاحظات إضافية..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>الحالة</label>
+                        <select id="reservationStatus" name="status" class="form-control">
+                            <option value="confirmed">مؤكد</option>
+                            <option value="pending">قيد الانتظار</option>
+                            <option value="cancelled">ملغي</option>
+                            <option value="completed">مكتمل</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('reservationModal')">إلغاء</button>
+                <button class="btn btn-primary" onclick="saveReservation()">حفظ</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Category Modal -->
+    <div class="modal" id="categoryModal">
+        <div class="modal-content modal-sm">
+            <div class="modal-header">
+                <h3 id="categoryModalTitle">إضافة فئة جديدة</h3>
+                <button class="modal-close" onclick="closeModal('categoryModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="categoryForm">
+                    <input type="hidden" id="categoryId" name="id">
+                    
+                    <div class="form-group">
+                        <label>اسم الفئة *</label>
+                        <input type="text" id="categoryName" name="name" class="form-control" required placeholder="مثال: المقبلات">
+                    </div>
+
+                    <div class="form-group">
+                        <label>الأيقونة (Font Awesome)</label>
+                        <input type="text" id="categoryIcon" name="icon" class="form-control" placeholder="مثال: fa-utensils">
+                    </div>
+
+                    <div class="form-group">
+                        <label>الوصف</label>
+                        <textarea id="categoryDescription" name="description" class="form-control" rows="2" placeholder="وصف الفئة..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>الترتيب</label>
+                        <input type="number" id="categoryOrder" name="order" class="form-control" min="0" placeholder="0">
+                    </div>
+
+                    <div class="form-group">
+                        <label>صورة الفئة</label>
+                        <div class="image-upload-area" onclick="document.getElementById('categoryImageInput').click()">
+                            <input type="file" id="categoryImageInput" accept="image/*" hidden onchange="previewCategoryImage(this)">
+                            <div class="upload-placeholder" id="categoryUploadPlaceholder">
+                                <i class="fas fa-camera"></i>
+                                <span>اضغط لرفع صورة</span>
+                            </div>
+                            <img id="categoryImagePreview" src="" alt="Preview" style="display:none;">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('categoryModal')">إلغاء</button>
+                <button class="btn btn-primary" onclick="saveCategory()">حفظ</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Details Modal -->
+    <div class="modal" id="orderDetailsModal">
+        <div class="modal-content modal-lg">
+            <div class="modal-header">
+                <h3>تفاصيل الطلب #<span id="orderDetailId"></span></h3>
+                <button class="modal-close" onclick="closeModal('orderDetailsModal')">&times;</button>
+            </div>
+            <div class="modal-body" id="orderDetailsBody">
+                <!-- Dynamic content -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('orderDetailsModal')">إغلاق</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Scripts -->
+    <script src="js/firebase.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
